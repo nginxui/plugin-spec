@@ -1,0 +1,18 @@
+{
+  "description": "A plugin whose manifest never requested the kv permission (or whose upgrade added it without re-approval, SEC-9) is refused, not given partial access.",
+  "requirement": "HOST-2",
+  "method": "host.kv.get",
+  "direction": "plugin_to_host",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 101,
+    "method": "host.kv.get",
+    "params": { "key": "last_sync" }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 101,
+    "error": { "code": -32001, "message": "permission kv is not granted" }
+  }
+}

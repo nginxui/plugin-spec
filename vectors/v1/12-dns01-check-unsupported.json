@@ -1,0 +1,25 @@
+{
+  "description": "dns01.check is optional (DNS01-11 table): a plugin that only implements present/cleanup/validate replies Unsupported, and the host falls back to its own propagation check.",
+  "requirement": "DNS01-11",
+  "method": "dns01.check",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 15,
+    "method": "dns01.check",
+    "params": {
+      "provider": "mydns",
+      "config": { "MYDNS_API_TOKEN": "tok_live_xxx" },
+      "domain": "example.com",
+      "fqdn": "_acme-challenge.example.com.",
+      "value": "gfj9Xq...Rg85nM",
+      "key_auth": "evaGxfADs...62jcerQ.9jg46WB3...GKl3Z7"
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 15,
+    "error": { "code": -32002, "message": "dns01.check is not implemented by this plugin" }
+  }
+}

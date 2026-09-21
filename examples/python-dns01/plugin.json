@@ -1,0 +1,33 @@
+{
+  "id": "io.github.example.mydns",
+  "name": "MyDNS Challenge (Example)",
+  "version": "0.1.0",
+  "description": "Reference DNS-01 plugin for the fictional MyDNS API, in about 60 lines of pure Python standard library.",
+  "homepage_url": "https://github.com/0xJacky/nginx-ui-plugin-spec",
+  "api_version": 1,
+  "server": {
+    "command": ["python3", "server/main.py"],
+    "lifecycle": "resident"
+  },
+  "capabilities": ["dns01"],
+  "permissions": ["network"],
+  "dns01": {
+    "providers": [
+      {
+        "name": "MyDNS",
+        "code": "mydns",
+        "configuration": {
+          "credentials": {
+            "MYDNS_API_TOKEN": "API token for the MyDNS account"
+          },
+          "additional": {
+            "MYDNS_TTL": "TXT record TTL in seconds (default: 120)"
+          }
+        },
+        "links": {
+          "api": "https://mydns.example/docs/api"
+        }
+      }
+    ]
+  }
+}

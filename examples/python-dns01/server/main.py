@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""Reference dns01 plugin for the fictional MyDNS API.
+
+Standard library only. Speaks JSON-RPC 2.0 as newline-delimited JSON on
+stdin/stdout; stdout carries protocol frames only, everything else goes to
+stderr. See ../../spec/03-wire-protocol.md and 05-capabilities-dns01.md.
+"""
+import json
+import sys
+
+API_VERSION = 1
+settings = {}
+
+
+def log(message):
+    print(f"[mydns] {message}", file=sys.stderr, flush=True)
+
+
+def reply(msg_id, result=None, error=None):
+    frame = {"jsonrpc": "2.0", "id": msg_id}
+    frame["error" if error else "result"] = error or (result or {})
+    sys.stdout.write(json.dumps(frame) + "\n")
+    sys.stdout.flush()
+
+
+def invalid_config(field, message):
+    return {"code": -32003, "message": message, "data": {"field": field}}
+
+
+def handle_initialize(_params):
+    return {"api_version": API_VERSION, "capabilities": ["dns01"]}, None
+
+
+def handle_configure(params):
+    global settings
+    settings = params.get("settings") or {}
+    return {}, None
+
+
+def handle_present(params):
+    config = params.get("config") or {}
+    if not config.get("MYDNS_API_TOKEN"):
+        return None, invalid_config("MYDNS_API_TOKEN", "MYDNS_API_TOKEN is required")
+    log(f"present {params.get('effective_fqdn')} = {params.get('value')}")
+    return {}, None
+
+
+def handle_cleanup(params):
+    log(f"cleanup {params.get('effective_fqdn')}")
+    return {}, None
+
+
+HANDLERS = {
+    "plugin.initialize": handle_initialize,
+    "plugin.configure": handle_configure,
+    "plugin.ping": lambda _p: ({}, None),
+    "plugin.shutdown": lambda _p: ({}, None),
+    "dns01.present": handle_present,
+    "dns01.cleanup": handle_cleanup,
+}
+
+
+def main():
+    for line in sys.stdin:
+        line = line.strip()
+        if not line:
+            continue
+        message = json.loads(line)
+        method = message.get("method")
+        msg_id = message.get("id")
+        if method == "plugin.exit":
+            break
+        if msg_id is None:
+            continue  # other notifications (plugin.initialized) need no reply
+        handler = HANDLERS.get(method)
+        if handler is None:
+            reply(msg_id, error={"code": -32601, "message": f"method not found: {method}"})
+            continue
+        result, error = handler(message.get("params") or {})
+        reply(msg_id, result=result, error=error)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,27 @@
+{
+  "description": "The handler ran and failed for a reason that is not the caller's fault and not one of the more specific codes (e.g. the vendor API returned a 500). Any error not otherwise classified MUST surface as -32000.",
+  "requirement": "WIRE-6",
+  "method": "dns01.present",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 20,
+    "method": "dns01.present",
+    "params": {
+      "provider": "mydns",
+      "config": { "MYDNS_API_TOKEN": "tok_live_xxx" },
+      "domain": "example.com",
+      "fqdn": "_acme-challenge.example.com.",
+      "effective_fqdn": "_acme-challenge.example.com.",
+      "value": "gfj9Xq...Rg85nM",
+      "token": "evaGxfADs...62jcerQ",
+      "key_auth": "evaGxfADs...62jcerQ.9jg46WB3...GKl3Z7"
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 20,
+    "error": { "code": -32000, "message": "MyDNS API: 503 Service Unavailable" }
+  }
+}

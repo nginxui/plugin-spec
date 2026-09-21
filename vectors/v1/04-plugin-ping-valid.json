@@ -1,0 +1,9 @@
+{
+  "description": "Liveness probe sent on the host's ping interval. The plugin MUST reply promptly.",
+  "requirement": "LIFE-8",
+  "method": "plugin.ping",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": { "jsonrpc": "2.0", "id": 3, "method": "plugin.ping" },
+  "response": { "jsonrpc": "2.0", "id": 3, "result": {} }
+}

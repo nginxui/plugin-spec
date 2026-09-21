@@ -1,0 +1,14 @@
+{
+  "description": "Credentials build a working provider client without contacting the vendor API.",
+  "requirement": "DNS01-9",
+  "method": "dns01.validate",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 16,
+    "method": "dns01.validate",
+    "params": { "provider": "mydns", "config": { "MYDNS_API_TOKEN": "tok_live_xxx" } }
+  },
+  "response": { "jsonrpc": "2.0", "id": 16, "result": {} }
+}

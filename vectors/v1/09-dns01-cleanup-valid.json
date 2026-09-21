@@ -1,0 +1,24 @@
+{
+  "description": "Remove the record dns01.present published. Same params shape as present.",
+  "requirement": "DNS01-7",
+  "method": "dns01.cleanup",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 12,
+    "method": "dns01.cleanup",
+    "params": {
+      "provider": "mydns",
+      "config": { "MYDNS_API_TOKEN": "tok_live_xxx" },
+      "options": { "credential_id": "7" },
+      "domain": "example.com",
+      "fqdn": "_acme-challenge.example.com.",
+      "effective_fqdn": "_acme-challenge.example.com.",
+      "value": "gfj9Xq...Rg85nM",
+      "token": "evaGxfADs...62jcerQ",
+      "key_auth": "evaGxfADs...62jcerQ.9jg46WB3...GKl3Z7"
+    }
+  },
+  "response": { "jsonrpc": "2.0", "id": 12, "result": {} }
+}

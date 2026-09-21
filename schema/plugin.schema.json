@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/0xJacky/nginx-ui-plugin-spec/schema/plugin.schema.json",
+  "title": "NGINX UI plugin manifest",
+  "description": "plugin.json, as defined by spec/01-manifest.md. Derived from internal/plugin/protocol/manifest.go and validated by internal/plugin/manifest.go in the reference host.",
+  "type": "object",
+  "required": ["id", "name", "version", "api_version"],
+  "additionalProperties": true,
+  "anyOf": [
+    { "required": ["server"] },
+    { "required": ["webapp"] },
+    { "required": ["content"] }
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "dns01" } } },
+        "required": ["capabilities"]
+      },
+      "then": { "required": ["dns01"] }
+    },
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "http" } } },
+        "required": ["capabilities"]
+      },
+      "then": { "required": ["http"] }
+    }
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
+      "description": "MAN-2. See spec/11-naming.md for the namespace rules."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "description": "MAN-4, Semantic Versioning 2.0.0."
+    },
+    "description": { "type": "string" },
+    "homepage_url": { "type": "string", "format": "uri" },
+    "icon_path": { "$ref": "#/$defs/safeRelativePath" },
+    "api_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "MAN-5. Spec 1.x requires exactly 1."
+    },
+    "min_nginx_ui_version": { "type": "string" },
+    "server": { "$ref": "#/$defs/manifestServer" },
+    "webapp": { "$ref": "#/$defs/manifestWebapp" },
+    "content": { "$ref": "#/$defs/manifestContent" },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["dns01", "http"] },
+      "uniqueItems": true,
+      "description": "MAN-19, MAN-20."
+    },
+    "permissions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/permission" },
+      "description": "MAN-23."
+    },
+    "requires": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/manifestRequirement" }
+    },
+    "requires_capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "events": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "spec/06-host-api.md HOST-16."
+    },
+    "cron": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/manifestCron" }
+    },
+    "network_hosts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "dns01": { "$ref": "#/$defs/manifestDns01" },
+    "http": { "$ref": "#/$defs/manifestHttp" },
+    "settings_schema": {
+      "oneOf": [
+        { "$ref": "#/$defs/settingsSchema" },
+        { "type": "null" }
+      ]
+    }
+  },
+  "$defs": {
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": { "pattern": "(^/|^[A-Za-z]:|\\\\|(^|/)\\.\\.(/|$)|//)" },
+      "description": "PKG-3: forward slashes only, not absolute, no .. segment."
+    },
+    "permission": {
+      "type": "string",
+      "anyOf": [
+        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api"] },
+        { "pattern": "^credentials\\.read:.+$" }
+      ]
+    },
+    "manifestRequirement": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$"
+        },
+        "version": { "type": "string" }
+      }
+    },
+    "manifestCron": {
+      "type": "object",
+      "required": ["id", "schedule", "method"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "schedule": { "type": "string", "minLength": 1 },
+        "method": { "type": "string", "minLength": 1 }
+      }
+    },
+    "manifestServer": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        { "required": ["executables"] },
+        { "required": ["command"] }
+      ],
+      "properties": {
+        "executables": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z0-9]+-[a-z0-9]+$" },
+          "additionalProperties": { "$ref": "#/$defs/safeRelativePath" }
+        },
+        "command": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "lifecycle": {
+          "type": "string",
+          "enum": ["resident", "on_demand"]
+        },
+        "idle_timeout_seconds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "manifestWebapp": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bundle_path": { "$ref": "#/$defs/safeRelativePath" },
+        "style_path": { "$ref": "#/$defs/safeRelativePath" },
+        "shared": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "pages": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/manifestPage" }
+        }
+      }
+    },
+    "manifestPage": {
+      "type": "object",
+      "required": ["path", "title", "file"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "title": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "icon": { "type": "string" },
+        "file": { "$ref": "#/$defs/safeRelativePath" }
+      }
+    },
+    "manifestContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "templates": { "$ref": "#/$defs/safeRelativePath" },
+        "locales": { "$ref": "#/$defs/safeRelativePath" }
+      }
+    },
+    "manifestDns01": {
+      "type": "object",
+      "required": ["providers"],
+      "additionalProperties": false,
+      "properties": {
+        "providers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/dns01Provider" }
+        }
+      }
+    },
+    "dns01Provider": {
+      "type": "object",
+      "required": ["name", "code"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{2,32}$",
+          "description": "DNS01-2. NAME-4: shared namespace across every installed dns01 plugin."
+        },
+        "configuration": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "credentials": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "additional": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            }
+          }
+        },
+        "links": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "api": { "type": "string" },
+            "go_client": { "type": "string" }
+          }
+        },
+        "propagation_timeout_seconds": { "type": "integer", "minimum": 0 },
+        "polling_interval_seconds": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "manifestHttp": {
+      "type": "object",
+      "required": ["listen"],
+      "additionalProperties": false,
+      "properties": {
+        "listen": {
+          "type": "string",
+          "enum": ["unix", "rpc"]
+        }
+      }
+    },
+    "settingsSchema": {
+      "type": "object",
+      "required": ["settings"],
+      "additionalProperties": false,
+      "properties": {
+        "header": { "type": "string" },
+        "footer": { "type": "string" },
+        "settings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/settingsField" }
+        }
+      }
+    },
+    "settingsField": {
+      "type": "object",
+      "required": ["key", "type", "display_name"],
+      "additionalProperties": false,
+      "if": {
+        "properties": { "type": { "const": "select" } }
+      },
+      "then": {
+        "required": ["key", "type", "display_name", "options"],
+        "properties": {
+          "options": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/$defs/settingsOption" }
+          }
+        }
+      },
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "type": {
+          "type": "string",
+          "enum": ["text", "bool", "number", "select", "secret", "textarea"]
+        },
+        "display_name": { "type": "string", "minLength": 1 },
+        "help_text": { "type": "string" },
+        "default": {},
+        "options": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/settingsOption" }
+        },
+        "required": { "type": "boolean" }
+      }
+    },
+    "settingsOption": {
+      "type": "object",
+      "required": ["value", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "string" },
+        "label": { "type": "string" }
+      }
+    }
+  }
+}

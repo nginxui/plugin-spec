@@ -1,0 +1,18 @@
+{
+  "description": "params is present but does not decode into the shape dns01.present expects (config must be an object, not a string).",
+  "requirement": "WIRE-6",
+  "method": "dns01.present",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 19,
+    "method": "dns01.present",
+    "params": { "provider": "mydns", "config": "not-an-object" }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 19,
+    "error": { "code": -32602, "message": "invalid params: json: cannot unmarshal string into Go struct field .config of type map[string]string" }
+  }
+}

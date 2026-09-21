@@ -1,0 +1,14 @@
+{
+  "description": "The host pushes a new settings map after a person saves the plugin's settings form.",
+  "requirement": "LIFE-7",
+  "method": "plugin.configure",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "plugin.configure",
+    "params": { "settings": { "default_propagation_timeout_seconds": 90 } }
+  },
+  "response": { "jsonrpc": "2.0", "id": 2, "result": {} }
+}

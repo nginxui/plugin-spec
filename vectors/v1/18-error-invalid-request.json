@@ -1,0 +1,13 @@
+{
+  "description": "Valid JSON, but not a valid JSON-RPC 2.0 message: the jsonrpc member is missing/wrong.",
+  "requirement": "WIRE-6",
+  "method": null,
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request_raw": "{\"id\": 1, \"method\": \"plugin.ping\"}",
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": { "code": -32600, "message": "invalid request: jsonrpc must be \"2.0\"" }
+  }
+}

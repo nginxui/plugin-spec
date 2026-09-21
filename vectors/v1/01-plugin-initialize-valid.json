@@ -1,0 +1,22 @@
+{
+  "description": "Successful handshake: the plugin reports a matching api_version and a capability set identical to its manifest.",
+  "requirement": "LIFE-2",
+  "method": "plugin.initialize",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "plugin.initialize",
+    "params": {
+      "host": { "version": "2.7.0", "os": "linux", "arch": "amd64", "locale": "en" },
+      "settings": {},
+      "permissions": ["network"]
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": { "api_version": 1, "capabilities": ["dns01"] }
+  }
+}

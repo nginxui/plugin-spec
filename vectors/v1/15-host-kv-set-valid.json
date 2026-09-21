@@ -1,0 +1,14 @@
+{
+  "description": "The plugin persists a small value in its own key-value store. The caller has the kv permission.",
+  "requirement": "HOST-4",
+  "method": "host.kv.set",
+  "direction": "plugin_to_host",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 100,
+    "method": "host.kv.set",
+    "params": { "key": "last_sync", "value": { "at": 1732000000 } }
+  },
+  "response": { "jsonrpc": "2.0", "id": 100, "result": {} }
+}

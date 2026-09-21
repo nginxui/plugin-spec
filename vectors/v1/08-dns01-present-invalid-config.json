@@ -1,0 +1,27 @@
+{
+  "description": "The required credential field is missing: the plugin MUST report CodeInvalidConfig naming the field, not attempt the call.",
+  "requirement": "DNS01-5",
+  "method": "dns01.present",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 11,
+    "method": "dns01.present",
+    "params": {
+      "provider": "mydns",
+      "config": {},
+      "domain": "example.com",
+      "fqdn": "_acme-challenge.example.com.",
+      "effective_fqdn": "_acme-challenge.example.com.",
+      "value": "gfj9Xq...Rg85nM",
+      "token": "evaGxfADs...62jcerQ",
+      "key_auth": "evaGxfADs...62jcerQ.9jg46WB3...GKl3Z7"
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 11,
+    "error": { "code": -32003, "message": "MYDNS_API_TOKEN is required", "data": { "field": "MYDNS_API_TOKEN" } }
+  }
+}

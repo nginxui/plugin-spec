@@ -1,0 +1,13 @@
+{
+  "description": "A line that is not valid JSON at all. The receiver replies CodeParseError with a null id, since it cannot know which request this was.",
+  "requirement": "WIRE-6",
+  "method": null,
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request_raw": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"plugin.ping\"",
+  "response": {
+    "jsonrpc": "2.0",
+    "id": null,
+    "error": { "code": -32700, "message": "parse error: unexpected end of JSON input" }
+  }
+}

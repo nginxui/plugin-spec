@@ -1,0 +1,26 @@
+{
+  "description": "The record has not propagated everywhere yet; ready is false with a human readable detail.",
+  "requirement": "DNS01-11",
+  "method": "dns01.check",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 14,
+    "method": "dns01.check",
+    "params": {
+      "provider": "mydns",
+      "config": { "MYDNS_API_TOKEN": "tok_live_xxx" },
+      "options": {},
+      "domain": "example.com",
+      "fqdn": "_acme-challenge.example.com.",
+      "value": "gfj9Xq...Rg85nM",
+      "key_auth": "evaGxfADs...62jcerQ.9jg46WB3...GKl3Z7"
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 14,
+    "result": { "ready": false, "effective_fqdn": "_acme-challenge.example.com.", "detail": "NXDOMAIN from ns1.example.com" }
+  }
+}

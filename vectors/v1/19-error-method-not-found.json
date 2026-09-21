@@ -1,0 +1,13 @@
+{
+  "description": "No handler exists for this method at all, as opposed to CodeUnsupported (a recognized but unimplemented capability method, see vector 12).",
+  "requirement": "WIRE-6",
+  "method": "dns01.rotate_keys",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": { "jsonrpc": "2.0", "id": 18, "method": "dns01.rotate_keys" },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 18,
+    "error": { "code": -32601, "message": "method not found: dns01.rotate_keys" }
+  }
+}

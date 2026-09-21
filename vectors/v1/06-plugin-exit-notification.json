@@ -1,0 +1,8 @@
+{
+  "description": "Sent after plugin.shutdown's reply (or its timeout). The plugin MUST exit without waiting for further input.",
+  "requirement": "LIFE-11",
+  "method": "plugin.exit",
+  "direction": "host_to_plugin",
+  "kind": "notification",
+  "request": { "jsonrpc": "2.0", "method": "plugin.exit" }
+}

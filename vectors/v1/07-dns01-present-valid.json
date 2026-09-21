@@ -1,0 +1,25 @@
+{
+  "description": "Publish the challenge TXT record for a certificate whose challenge form supplied per-certificate options.",
+  "requirement": "DNS01-4",
+  "method": "dns01.present",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 10,
+    "method": "dns01.present",
+    "params": {
+      "provider": "mydns",
+      "config": { "MYDNS_API_TOKEN": "tok_live_xxx", "MYDNS_TTL": "120" },
+      "options": { "credential_id": "7", "disable_cname": false, "disable_authoritative_ns_propagation": false, "disable_recursive_ns_propagation": false },
+      "domain": "example.com",
+      "fqdn": "_acme-challenge.example.com.",
+      "effective_fqdn": "_acme-challenge.example.com.",
+      "value": "gfj9Xq...Rg85nM",
+      "token": "evaGxfADs...62jcerQ",
+      "key_auth": "evaGxfADs...62jcerQ.9jg46WB3...GKl3Z7",
+      "dry_run": false
+    }
+  },
+  "response": { "jsonrpc": "2.0", "id": 10, "result": {} }
+}

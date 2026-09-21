@@ -1,0 +1,18 @@
+{
+  "description": "Report the propagation timing this provider needs, overriding the host's generic default.",
+  "requirement": "DNS01-10",
+  "method": "dns01.options",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 13,
+    "method": "dns01.options",
+    "params": { "provider": "mydns", "config": { "MYDNS_API_TOKEN": "tok_live_xxx" }, "options": {} }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 13,
+    "result": { "propagation_timeout_seconds": 120, "polling_interval_seconds": 2 }
+  }
+}
