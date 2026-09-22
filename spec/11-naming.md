@@ -3,7 +3,9 @@
 Two identifier namespaces exist in this system: plugin ids, and `dns01`
 provider codes. Both are effectively global — installing two plugins that
 collide in either namespace produces undefined behavior — so both are
-specified here rather than left to convention alone.
+specified here rather than left to convention alone. Package file names and
+the platform keys they share with `server.executables` and catalog
+`downloads` close the document.
 
 ## Plugin ids
 
@@ -81,3 +83,28 @@ consumes itself SHOULD be prefixed with that plugin's id or a short unique
 tag, e.g. `com.example.myplugin:extra-panel`, to avoid an accidental
 collision with a slot name a future spec revision or another plugin
 introduces.
+
+## Package file names and platform keys
+
+## NAME-9
+
+A platform key is `<goos>-<goarch>`, where `<goos>` and `<goarch>` are the
+`GOOS` and `GOARCH` values of the Go toolchain, lowercase, exactly as
+`go tool dist list` prints them joined by a hyphen instead of a slash: for
+example `linux-amd64`, `linux-arm64`, `darwin-arm64`, `windows-amd64`. The
+same keys are used by `server.executables` (MAN-14), by a catalog release's
+`platforms` and `downloads` (PKG-14), and by per-platform package file names
+(PKG-1). The key `any` is reserved for "every platform": it MAY appear in
+`platforms` and as a `downloads` key, and MUST NOT be used as a file name
+suffix, a portable package already covers it.
+
+A package file is named `<id>-<version>.tar.gz` when portable and
+`<id>-<version>-<goos>-<goarch>.tar.gz` when built for one platform, e.g.
+`com.nginxui.dns01-1.0.0.tar.gz` and
+`com.nginxui.dns01-1.0.0-linux-arm64.tar.gz`. A tool reading a file name
+treats it as per-platform only when its last two hyphen-separated tokens are
+a known `GOOS` and a known `GOARCH`, and splits the rest at the first hyphen
+that leaves a valid plugin id (NAME-1) on the left and a semantic version on
+the right. A plugin author SHOULD NOT publish a version whose prerelease part
+ends in such a pair (`1.0.0-linux-amd64`), since its portable package name
+would read as a per-platform one.

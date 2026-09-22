@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/0xJacky/nginx-ui-plugin-spec/schema/catalog.schema.json",
+  "title": "NGINX UI plugin catalog",
+  "description": "The static catalog document a host fetches from a marketplace source, schema_version 1, including the per-platform downloads of RFC 0001 (spec/02-packaging.md PKG-14 through PKG-17). The reference host reads it in internal/plugin/marketplace.go. Unknown members are ignored by a host, so the schema allows them.",
+  "type": "object",
+  "required": ["schema_version", "plugins"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "description": "The only catalog layout spec 1.x defines. Adding downloads did not change it: a host that does not know downloads still reads download_url."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "plugins": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "$defs": {
+    "pluginId": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
+      "description": "NAME-1."
+    },
+    "platformKey": {
+      "type": "string",
+      "pattern": "^([a-z0-9]+-[a-z0-9]+|any)$",
+      "description": "NAME-9: <goos>-<goarch> as Go spells them, or any."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1
+    },
+    "localized": {
+      "type": "object",
+      "description": "Locale code to text, en is the fallback.",
+      "additionalProperties": { "type": "string" }
+    },
+    "entry": {
+      "type": "object",
+      "required": ["id", "releases"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "$ref": "#/$defs/pluginId" },
+        "name": { "$ref": "#/$defs/localized" },
+        "description": { "$ref": "#/$defs/localized" },
+        "author": { "type": "string" },
+        "author_public_key": {
+          "type": "string",
+          "description": "Minisign public key a community release signed_by author is verified with."
+        },
+        "homepage_url": { "$ref": "#/$defs/url" },
+        "repository_url": { "$ref": "#/$defs/url" },
+        "readme_url": { "$ref": "#/$defs/url" },
+        "icon_url": { "$ref": "#/$defs/url" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "capabilities": { "type": "array", "items": { "type": "string" } },
+        "license": { "type": "string" },
+        "trust": { "enum": ["official", "verified", "community"] },
+        "stage": {
+          "type": "string",
+          "description": "Maturity shown next to the plugin, e.g. production or beta."
+        },
+        "releases": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/release" }
+        }
+      }
+    },
+    "download": {
+      "type": "object",
+      "required": ["url"],
+      "additionalProperties": true,
+      "description": "PKG-14: one package of a release.",
+      "properties": {
+        "url": { "$ref": "#/$defs/url" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "signature_url": {
+          "$ref": "#/$defs/url",
+          "description": "Detached minisign signature, defaults to url + .minisig."
+        }
+      }
+    },
+    "release": {
+      "type": "object",
+      "required": ["version", "api_version"],
+      "additionalProperties": true,
+      "anyOf": [
+        {
+          "required": ["download_url"],
+          "properties": { "download_url": { "minLength": 1 } }
+        },
+        {
+          "required": ["downloads"],
+          "properties": { "downloads": { "minProperties": 1 } }
+        }
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Semantic version, equal to the version of every package of the release."
+        },
+        "released_at": { "type": "string", "format": "date-time" },
+        "api_version": { "type": "integer", "minimum": 1 },
+        "min_nginx_ui_version": { "type": "string" },
+        "platforms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/platformKey" },
+          "description": "Summary of where the release installs: every key of downloads plus the platforms the portable package serves. Empty or absent means the portable package runs everywhere."
+        },
+        "downloads": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/platformKey" },
+          "additionalProperties": { "$ref": "#/$defs/download" },
+          "description": "PKG-14: per-platform packages, keyed by <goos>-<goarch> or any. A host picks downloads[platform], then downloads[any], then the portable package (PKG-15)."
+        },
+        "download_url": {
+          "type": "string",
+          "description": "The portable package, the fallback for every platform downloads does not name. May be empty when downloads is present."
+        },
+        "sha256": {
+          "description": "SHA-256 of the portable package.",
+          "anyOf": [{ "$ref": "#/$defs/sha256" }, { "const": "" }]
+        },
+        "signature_url": {
+          "type": "string",
+          "description": "Signature of the portable package, defaults to download_url + .minisig."
+        },
+        "signed_by": {
+          "enum": ["official", "author"],
+          "description": "author: signed with the entry's author_public_key instead of the nginx-ui release key."
+        },
+        "release_notes_url": { "$ref": "#/$defs/url" },
+        "yanked": { "type": "boolean" },
+        "manifest": {
+          "$ref": "plugin.schema.json",
+          "description": "PKG-17: snapshot of the release manifest, whose server.executables names every platform the release ships."
+        }
+      }
+    }
+  }
+}
