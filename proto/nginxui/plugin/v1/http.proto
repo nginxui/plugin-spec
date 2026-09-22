@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "google/protobuf/struct.proto";
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// HTTP is the RPC fallback of the http capability, used when the manifest
+// declares "listen": "rpc". The plugin serves it and the host is the caller.
+service HTTP {
+  // Handles one proxied HTTP request. Streaming is not supported.
+  rpc Handle(HTTPHandleRequest) returns (HTTPHandleResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "http.handle";
+  }
+}
+
+// HTTPHandleRequest is the params of http.handle.
+message HTTPHandleRequest {
+  string method = 1;
+  // Path below /api/plugins/{id}/http.
+  string path = 2;
+  // Raw query string without the leading "?".
+  string query = 3;
+  // Request headers. Every value is a JSON array of strings, the shape of
+  // Go's http.Header.
+  map<string, google.protobuf.ListValue> headers = 4;
+  // Request body. The JSON mapping of bytes is standard base64, which the
+  // field name refers to; gRPC carries the raw bytes.
+  bytes body_base64 = 5;
+  // The nginx-ui user behind the request.
+  HTTPUser user = 6;
+}
+
+// HTTPUser identifies the nginx-ui user behind a proxied request.
+message HTTPUser {
+  string id = 1;
+  string name = 2;
+}
+
+// HTTPHandleResponse is the result of http.handle.
+message HTTPHandleResponse {
+  int32 status = 1;
+  // Response headers. Every value is a JSON array of strings.
+  map<string, google.protobuf.ListValue> headers = 2;
+  // Response body, standard base64 in JSON.
+  bytes body_base64 = 3;
+}

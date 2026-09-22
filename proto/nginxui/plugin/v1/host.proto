@@ -1,0 +1,209 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "google/protobuf/struct.proto";
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Host is the API the host serves to its plugins. The plugin is the caller,
+// and only after plugin.initialized. Each method needs the permission listed
+// in spec/06-host-api.md; without it the host replies
+// ERROR_CODE_PERMISSION_DENIED.
+service Host {
+  // Writes a structured log line into the host logger. A caller MAY send it
+  // as a notification when it does not need the reply.
+  rpc Log(HostLogRequest) returns (HostLogResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.log";
+  }
+
+  // Reads one key of the plugin's private key-value store. Permission "kv".
+  rpc KVGet(HostKVGetRequest) returns (HostKVGetResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.kv.get";
+  }
+
+  // Writes one key. Permission "kv".
+  rpc KVSet(HostKVSetRequest) returns (HostKVSetResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.kv.set";
+  }
+
+  // Deletes one key. Permission "kv".
+  rpc KVDelete(HostKVDeleteRequest) returns (HostKVDeleteResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.kv.delete";
+  }
+
+  // Lists keys by prefix. Permission "kv".
+  rpc KVList(HostKVListRequest) returns (HostKVListResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.kv.list";
+  }
+
+  // Reads the plugin's own current settings values.
+  rpc SettingsGet(HostSettingsGetRequest) returns (HostSettingsGetResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.settings.get";
+  }
+
+  // Reads the host's current UI locale.
+  rpc I18nLocale(HostI18nLocaleRequest) returns (HostI18nLocaleResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.i18n.locale";
+  }
+
+  // Reads one stored credential. Permission "credentials.read:<kind>".
+  rpc CredentialsGet(HostCredentialsGetRequest) returns (HostCredentialsGetResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.credentials.get";
+  }
+
+  // Registers a cron entry at runtime. Permission "cron".
+  rpc CronRegister(HostCronRegisterRequest) returns (HostCronRegisterResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.cron.register";
+  }
+
+  // Removes a cron entry registered earlier. Permission "cron".
+  rpc CronUnregister(HostCronUnregisterRequest) returns (HostCronUnregisterResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.cron.unregister";
+  }
+
+  // Creates a notification in the host UI. Permission "notify".
+  rpc Notify(HostNotifyRequest) returns (HostNotifyResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.notify";
+  }
+
+  // Reads the host's current metrics snapshot. Permission "metrics.read".
+  rpc MetricsSnapshot(HostMetricsSnapshotRequest) returns (HostMetricsSnapshotResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.metrics.snapshot";
+  }
+}
+
+// HostLogRequest is the params of host.log.
+message HostLogRequest {
+  // One of "debug", "info", "warn", "error".
+  string level = 1;
+  string message = 2;
+  // Structured context. Free-form JSON object.
+  google.protobuf.Struct fields = 3;
+}
+
+// HostLogResponse is the result of host.log. It is empty.
+message HostLogResponse {}
+
+// HostKVGetRequest is the params of host.kv.get.
+message HostKVGetRequest {
+  string key = 1;
+}
+
+// HostKVGetResponse is the result of host.kv.get.
+message HostKVGetResponse {
+  // Stored value. Any JSON value, null when the key does not exist.
+  google.protobuf.Value value = 1;
+  bool found = 2;
+}
+
+// HostKVSetRequest is the params of host.kv.set.
+message HostKVSetRequest {
+  string key = 1;
+  // Any JSON value, at most 64 KiB encoded.
+  google.protobuf.Value value = 2;
+}
+
+// HostKVSetResponse is the result of host.kv.set. It is empty.
+message HostKVSetResponse {}
+
+// HostKVDeleteRequest is the params of host.kv.delete. It has the same shape
+// as HostKVGetRequest.
+message HostKVDeleteRequest {
+  string key = 1;
+}
+
+// HostKVDeleteResponse is the result of host.kv.delete. It is empty.
+message HostKVDeleteResponse {}
+
+// HostKVListRequest is the params of host.kv.list.
+message HostKVListRequest {
+  // Only keys starting with this prefix are listed. Empty lists every key.
+  string prefix = 1;
+}
+
+// HostKVListResponse is the result of host.kv.list.
+message HostKVListResponse {
+  repeated string keys = 1;
+}
+
+// HostSettingsGetRequest is the params of host.settings.get. It is empty.
+message HostSettingsGetRequest {}
+
+// HostSettingsGetResponse is the result of host.settings.get.
+message HostSettingsGetResponse {
+  // Current settings values. Free-form JSON object keyed by setting key.
+  google.protobuf.Struct settings = 1;
+}
+
+// HostI18nLocaleRequest is the params of host.i18n.locale. It is empty.
+message HostI18nLocaleRequest {}
+
+// HostI18nLocaleResponse is the result of host.i18n.locale.
+message HostI18nLocaleResponse {
+  // Current UI locale, e.g. "en".
+  string locale = 1;
+}
+
+// HostCredentialsGetRequest is the params of host.credentials.get.
+message HostCredentialsGetRequest {
+  // Credential kind. "dns" is the only kind in api_version 1.
+  string kind = 1;
+  string id = 2;
+}
+
+// HostCredentialsGetResponse is the result of host.credentials.get.
+message HostCredentialsGetResponse {
+  string id = 1;
+  string name = 2;
+  // Provider code the credential belongs to.
+  string provider_code = 3;
+  // Credential fields keyed by their lego style environment variable name.
+  map<string, string> config = 4;
+}
+
+// HostCronRegisterRequest is the params of host.cron.register.
+message HostCronRegisterRequest {
+  string id = 1;
+  // Five-field cron expression or "@every <duration>".
+  string schedule = 2;
+  // Plugin method the host invokes when the schedule fires.
+  string method = 3;
+}
+
+// HostCronRegisterResponse is the result of host.cron.register. It is empty.
+message HostCronRegisterResponse {}
+
+// HostCronUnregisterRequest is the params of host.cron.unregister.
+message HostCronUnregisterRequest {
+  string id = 1;
+}
+
+// HostCronUnregisterResponse is the result of host.cron.unregister. It is
+// empty.
+message HostCronUnregisterResponse {}
+
+// HostNotifyRequest is the params of host.notify.
+message HostNotifyRequest {
+  // One of "info", "success", "warning", "error".
+  string level = 1;
+  string title = 2;
+  string content = 3;
+  // Structured context the host MAY show on demand. Any JSON value.
+  google.protobuf.Value details = 4;
+}
+
+// HostNotifyResponse is the result of host.notify. It is empty.
+message HostNotifyResponse {}
+
+// HostMetricsSnapshotRequest is the params of host.metrics.snapshot. It is
+// empty.
+message HostMetricsSnapshotRequest {}
+
+// HostMetricsSnapshotResponse is the result of host.metrics.snapshot.
+message HostMetricsSnapshotResponse {
+  // Host defined metrics. Any JSON value; its shape is not part of the
+  // contract.
+  google.protobuf.Value snapshot = 1;
+}

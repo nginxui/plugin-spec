@@ -14,7 +14,7 @@ satisfy `core` to run any plugin at all.
 | --- | --- |
 | Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`) |
 | Packaging | PKG-1 through PKG-11 |
-| Wire protocol | WIRE-1 through WIRE-8 |
+| Wire protocol | WIRE-1 through WIRE-10; WIRE-11 only for a plugin that lists `grpc` in `transports` |
 | Lifecycle | LIFE-1 through LIFE-15 |
 | Host API | HOST-1 through HOST-16, limited to the methods the plugin actually calls or subscribes to — a plugin that never calls `host.cron.register` is not tested against HOST-10, but MUST still handle `host.log`/`host.settings.get`/`host.i18n.locale` correctly if it uses them |
 | Security | SEC-1 through SEC-12 |

@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// ErrorCode lists the error codes this contract defines. PluginError.code is a
+// plain int32 so that a code outside this list stays representable; the enum
+// exists to give every defined code one canonical name.
+enum ErrorCode {
+  // Not an error code. proto3 requires a zero value.
+  ERROR_CODE_UNSPECIFIED = 0;
+  // The frame was not valid JSON.
+  ERROR_CODE_PARSE_ERROR = -32700;
+  // The frame was valid JSON but not a valid JSON-RPC 2.0 message.
+  ERROR_CODE_INVALID_REQUEST = -32600;
+  // No handler is registered for the method.
+  ERROR_CODE_METHOD_NOT_FOUND = -32601;
+  // The params failed to decode into the request message.
+  ERROR_CODE_INVALID_PARAMS = -32602;
+  // The handler ran and failed for a reason no other code covers.
+  ERROR_CODE_INTERNAL_ERROR = -32000;
+  // A host.* call is not covered by the permissions granted to the plugin.
+  ERROR_CODE_PERMISSION_DENIED = -32001;
+  // The plugin does not implement this optional capability method.
+  ERROR_CODE_UNSUPPORTED = -32002;
+  // A credential or setting failed validation. data carries InvalidConfigData.
+  ERROR_CODE_INVALID_CONFIG = -32003;
+}
+
+// PluginError is the JSON-RPC error object. On gRPC the same message travels
+// as a google.rpc.Status detail next to the mapped status code, see
+// spec/03-wire-protocol.md WIRE-11.
+message PluginError {
+  // One of ErrorCode, or a method specific negative integer.
+  int32 code = 1;
+  // Short human readable text. It MUST NOT contain a credential or other secret.
+  string message = 2;
+  // Structured detail. A free-form JSON object; for ERROR_CODE_INVALID_CONFIG
+  // it has the shape of InvalidConfigData.
+  google.protobuf.Struct data = 3;
+}
+
+// InvalidConfigData is the conventional shape of PluginError.data for
+// ERROR_CODE_INVALID_CONFIG.
+message InvalidConfigData {
+  // Name of the offending credential or setting field.
+  string field = 1;
+}

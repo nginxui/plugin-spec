@@ -1,0 +1,15 @@
+# Buf module configuration for the plugin contract.
+version: v2
+modules:
+  - path: proto
+lint:
+  use:
+    - STANDARD
+  except:
+    # Service names are part of the gRPC full method names published in
+    # spec/methods.json (e.g. /nginxui.plugin.v1.DNS01/Present), so they stay
+    # short instead of carrying a "Service" suffix.
+    - SERVICE_SUFFIX
+breaking:
+  use:
+    - FILE

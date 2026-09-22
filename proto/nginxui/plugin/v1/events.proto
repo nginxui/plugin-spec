@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "google/protobuf/struct.proto";
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Events delivers subscribed host events to the plugin. The plugin serves it
+// and the host is the caller. See spec/06-host-api.md.
+service Events {
+  // Delivers one event. At most once, never answered.
+  rpc On(EventsOnRequest) returns (EventsOnResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "events.on";
+    option (nginxui.plugin.v1.notification) = true;
+  }
+}
+
+// EventsOnRequest is the params of events.on. The host also uses this message
+// for cron invocations, with type naming the cron entry and no data.
+message EventsOnRequest {
+  // Event type such as "cert.renewed".
+  string type = 1;
+  // Event payload. Any JSON value, absent for a cron invocation.
+  google.protobuf.Value data = 2;
+  // Unix seconds when the host sent the event. uint32 instead of int32 so the
+  // value does not overflow in 2038 while the JSON stays a number.
+  uint32 ts = 3;
+}
+
+// EventsOnResponse is never sent on stdio; events.on is a notification.
+message EventsOnResponse {}

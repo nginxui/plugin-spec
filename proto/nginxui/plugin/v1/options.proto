@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Method options that bind every rpc of this package to the stdio JSON-RPC
+// transport. The numbers sit in the 50000-99999 range protobuf reserves for
+// organization-internal extensions.
+extend google.protobuf.MethodOptions {
+  // JSON-RPC method name of the rpc on the stdio transport, e.g.
+  // "dns01.present". Every rpc of this package MUST set it and the names MUST
+  // be unique across the package.
+  string rpc_name = 52101;
+
+  // Marks a one-way message. On the stdio transport it is sent as a JSON-RPC
+  // notification (no id) and MUST NOT be answered. On gRPC it stays a unary
+  // call whose empty response the caller ignores.
+  bool notification = 52102;
+}

@@ -1,13 +1,16 @@
 # 01. Manifest
 
-Every plugin package carries a `plugin.json` at its root: the parsed form of
-`internal/plugin/protocol.Manifest` in the reference host. This document
+Every plugin package carries a `plugin.json` at its root: the protobuf JSON
+mapping of the `Manifest` message in
+[`proto/nginxui/plugin/v1/manifest.proto`](../proto/nginxui/plugin/v1/manifest.proto),
+parsed into `internal/plugin/protocol.Manifest` in the reference host. This document
 lists every field and the validation the reference host applies
 (`internal/plugin/manifest.go`, `ValidateManifest`). A conformant host MUST
 apply at least the validation described here before enabling a plugin; a
 conformant plugin package MUST satisfy it.
 
 The full JSON Schema is at [`schema/plugin.schema.json`](../schema/plugin.schema.json).
+It is tested against `manifest.proto`, see [`schema/README.md`](../schema/README.md).
 
 ## Top level fields
 

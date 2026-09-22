@@ -39,7 +39,11 @@ plugins written with the reference SDKs.
 | `spec/09-conformance.md` | Conformance levels: `core`, `dns01`, `webapp` (`CONF-n`) |
 | `spec/10-versioning.md` | Spec versioning, `api_version`, upgrade compatibility (`VER-n`) |
 | `spec/11-naming.md` | Plugin id and provider code namespaces (`NAME-n`) |
-| `schema/plugin.schema.json` | JSON Schema (draft 2020-12) for `plugin.json` |
+| `spec/methods.json` | Generated table of every JSON-RPC method and its proto rpc (WIRE-9) |
+| `proto/nginxui/plugin/v1/` | The proto contract, source of truth for methods and message shapes (WIRE-9) |
+| `gen/go/` | Generated Go package `pluginv1`, a Go module of its own |
+| `tools/` | Generator of `spec/methods.json` and the consistency tests, a Go module of its own |
+| `schema/plugin.schema.json` | JSON Schema (draft 2020-12) for `plugin.json`, checked against `manifest.proto` |
 | `examples/python-dns01/` | Zero-dependency Python 3 reference plugin |
 | `vectors/v1/` | Request/response test vectors for SDK authors |
 
@@ -58,15 +62,55 @@ relate, and what changes are permitted within spec 1.x without incrementing
 
 ## Source of truth
 
-Every field, method name, error code and limit in this spec is derived from
-the reference host implementation
-([`internal/plugin/protocol`](https://github.com/0xJacky/nginx-ui/tree/main/internal/plugin/protocol)
-and [`internal/plugin`](https://github.com/0xJacky/nginx-ui/tree/main/internal/plugin))
+Method names, message shapes, error codes and the manifest structure are
+defined once, in the proto contract under `proto/nginxui/plugin/v1/`
+(`spec/03-wire-protocol.md` WIRE-9). The JSON on the wire is the protobuf
+JSON mapping of those messages with proto field names (WIRE-10), so a plugin
+author can keep working from the JSON examples alone.
+
+Everything else follows from the proto and is checked against it:
+
+* `spec/methods.json` and `gen/go/` are generated from it.
+* `schema/plugin.schema.json` is written by hand and tested against
+  `manifest.proto` (`schema/README.md`).
+* The vectors under `vectors/v1/` are tested to decode into the proto
+  messages of their methods.
+* The reference host ([`internal/plugin/protocol`](https://github.com/0xJacky/nginx-ui/tree/main/internal/plugin/protocol))
+  and the Go SDK keep a verbatim copy of `gen/go` in a `pb` package and test
+  their hand-written wire types against it.
+
+Behavior that the proto cannot express, such as ordering, timeouts and
+permissions, is specified by the chapters and follows the reference host
+([`internal/plugin`](https://github.com/0xJacky/nginx-ui/tree/main/internal/plugin))
 and the reference browser runtime
 ([`app/src/plugin`](https://github.com/0xJacky/nginx-ui/tree/main/app/src/plugin)).
 Where the reference host's own implementation choice is not itself part of
 the wire contract (for example, a specific timeout value), this spec says so
 and marks the behavior as a recommendation rather than a hard requirement.
+
+## Toolchain
+
+The contract is built with [buf](https://buf.build) and the Go protobuf
+plugins. buf compiles the proto itself, `protoc` is not needed.
+
+```bash
+make tools      # go install buf, protoc-gen-go and protoc-gen-go-grpc (pinned)
+make generate   # regenerate gen/go and spec/methods.json
+make lint       # buf lint (STANDARD rules) and buf format
+make check      # lint, fail on stale generated files, run the Go tests
+```
+
+The tools land in `$(go env GOPATH)/bin`, which the Makefile puts on `PATH`.
+Lint uses the `STANDARD` rule set with one exception, `SERVICE_SUFFIX`: the
+service names (`Plugin`, `Host`, `DNS01`, `HTTP`, `Events`) are part of the
+published gRPC paths and stay short. The generated files are committed, since
+they are published with the spec; run `make generate` after every change
+under `proto/` and commit its output together with the change.
+
+`gen/go` is the Go module `github.com/0xJacky/nginx-ui-plugin-spec/gen/go`
+(package `pluginv1`, import path `.../gen/go/nginxui/plugin/v1`). `tools/` is a
+separate module that uses it through a `replace` directive and is not meant
+to be imported.
 
 ## Change process (RFC process summary)
 
@@ -77,10 +121,11 @@ This spec changes by pull request against this repository:
    is one.
 2. **Draft.** Write the change as a diff to the relevant `spec/*.md` file(s),
    using the next free requirement number in that file's series (never
-   reuse or renumber an existing id — see `spec/10-versioning.md`). Update
-   `schema/plugin.schema.json` and add or update a vector under `vectors/v1/`
-   (or a new `vectors/v2/` once `api_version` actually changes) when the
-   change affects the wire format.
+   reuse or renumber an existing id — see `spec/10-versioning.md`). When the
+   change affects the wire format, change the proto under `proto/` first and
+   run `make generate`, then update `schema/plugin.schema.json` and add or
+   update a vector under `vectors/v1/` (or a new `vectors/v2/` once
+   `api_version` actually changes). `make check` MUST pass.
 3. **Reference check.** A change MUST match what at least one real
    implementation does, or MUST be implemented in the reference host and the
    reference SDKs before merge. This spec does not accept speculative fields.

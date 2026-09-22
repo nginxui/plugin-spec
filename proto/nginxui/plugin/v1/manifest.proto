@@ -1,0 +1,175 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Manifest is plugin.json, see spec/01-manifest.md. Its protobuf JSON mapping
+// with proto field names is the file format. schema/plugin.schema.json adds
+// the validation rules on top and is checked against this message.
+message Manifest {
+  // Reverse domain plugin id, e.g. "com.nginxui.dns01".
+  string id = 1;
+  string name = 2;
+  // Semantic version of the plugin.
+  string version = 3;
+  string description = 4;
+  string homepage_url = 5;
+  // Package relative path of the icon.
+  string icon_path = 6;
+  // Protocol major version the plugin targets.
+  int32 api_version = 7;
+  // Lowest host version the plugin supports.
+  string min_nginx_ui_version = 8;
+
+  // How to start the plugin process. Absent for process-less plugins.
+  ManifestServer server = 9;
+  // Optional browser bundle.
+  ManifestWebapp webapp = 10;
+  // Process-less contributions.
+  ManifestContent content = 11;
+
+  // Capabilities the plugin implements, e.g. "dns01".
+  repeated string capabilities = 12;
+  // Permissions the plugin requests, e.g. "kv" or "credentials.read:dns".
+  repeated string permissions = 13;
+  // Hard dependencies on other plugins.
+  repeated ManifestRequirement requires = 14;
+  // Capabilities some installed plugin must provide.
+  repeated string requires_capabilities = 15;
+  // Event types delivered through events.on.
+  repeated string events = 16;
+  // Host scheduled tasks.
+  repeated ManifestCron cron = 17;
+  // Hosts the plugin talks to, shown to the person before install.
+  repeated string network_hosts = 18;
+
+  // Metadata of the dns01 capability.
+  ManifestDNS01 dns01 = 19;
+  // Metadata of the http capability.
+  ManifestHTTP http = 20;
+  // Drives the auto-rendered settings form.
+  SettingsSchema settings_schema = 21;
+}
+
+// ManifestServer describes how to start the plugin process.
+message ManifestServer {
+  // Maps "<goos>-<goarch>" to a package relative executable path.
+  map<string, string> executables = 1;
+  // Fallback argv for interpreted plugins.
+  repeated string command = 2;
+  // "resident" (default) or "on_demand".
+  string lifecycle = 3;
+  // Idle time after which an on_demand process is stopped.
+  int32 idle_timeout_seconds = 4;
+}
+
+// ManifestWebapp describes the optional browser bundle.
+message ManifestWebapp {
+  string bundle_path = 1;
+  string style_path = 2;
+  // Maps a shared runtime library to the semver range the bundle was built
+  // against.
+  map<string, string> shared = 3;
+  // Zero-build iframe pages.
+  repeated ManifestPage pages = 4;
+}
+
+// ManifestPage is a zero-build iframe page.
+message ManifestPage {
+  string path = 1;
+  // Page title keyed by locale.
+  map<string, string> title = 2;
+  string icon = 3;
+  // Package relative HTML file.
+  string file = 4;
+}
+
+// ManifestContent declares process-less contributions.
+message ManifestContent {
+  string templates = 1;
+  string locales = 2;
+}
+
+// ManifestRequirement is a hard dependency on another plugin.
+message ManifestRequirement {
+  string id = 1;
+  // Semver range. Empty accepts any version.
+  string version = 2;
+}
+
+// ManifestCron is a host scheduled task.
+message ManifestCron {
+  string id = 1;
+  // Five-field cron expression or "@every <duration>".
+  string schedule = 2;
+  // Plugin method the host invokes when the schedule fires.
+  string method = 3;
+}
+
+// ManifestDNS01 is the metadata block of the dns01 capability.
+message ManifestDNS01 {
+  repeated DNS01Provider providers = 1;
+}
+
+// DNS01Provider describes one vendor a plugin can solve DNS-01 for.
+message DNS01Provider {
+  string name = 1;
+  // Vendor code, shared across every installed dns01 plugin.
+  string code = 2;
+  DNS01ProviderConfig configuration = 3;
+  DNS01ProviderLinks links = 4;
+  // Default used when the plugin does not implement dns01.options.
+  int32 propagation_timeout_seconds = 5;
+  // Default used when the plugin does not implement dns01.options.
+  int32 polling_interval_seconds = 6;
+}
+
+// DNS01ProviderConfig lists credential and additional fields with help text.
+message DNS01ProviderConfig {
+  // Credential field name to help text.
+  map<string, string> credentials = 1;
+  // Additional field name to help text.
+  map<string, string> additional = 2;
+}
+
+// DNS01ProviderLinks points at vendor documentation.
+message DNS01ProviderLinks {
+  string api = 1;
+  string go_client = 2;
+}
+
+// ManifestHTTP is the metadata block of the http capability.
+message ManifestHTTP {
+  // "unix" (reverse proxy to a socket) or "rpc" (http.handle fallback).
+  string listen = 1;
+}
+
+// SettingsSchema drives the auto-rendered settings form.
+message SettingsSchema {
+  string header = 1;
+  string footer = 2;
+  repeated SettingsField settings = 3;
+}
+
+// SettingsField is one entry of SettingsSchema.
+message SettingsField {
+  string key = 1;
+  // One of "text", "bool", "number", "select", "secret", "textarea".
+  string type = 2;
+  string display_name = 3;
+  string help_text = 4;
+  // Default value. Any JSON value matching type.
+  google.protobuf.Value default = 5;
+  // Choices of a select field.
+  repeated SettingsOption options = 6;
+  bool required = 7;
+}
+
+// SettingsOption is a choice of a select field.
+message SettingsOption {
+  string value = 1;
+  string label = 2;
+}

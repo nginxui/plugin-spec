@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/0xJacky/nginx-ui-plugin-spec/schema/plugin.schema.json",
   "title": "NGINX UI plugin manifest",
-  "description": "plugin.json, as defined by spec/01-manifest.md. Derived from internal/plugin/protocol/manifest.go and validated by internal/plugin/manifest.go in the reference host.",
+  "description": "plugin.json, as defined by spec/01-manifest.md. The structure mirrors the Manifest message of proto/nginxui/plugin/v1/manifest.proto and is tested against it (schema/README.md); the reference host validates it in internal/plugin/manifest.go.",
   "type": "object",
   "required": ["id", "name", "version", "api_version"],
   "additionalProperties": true,

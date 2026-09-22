@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "google/protobuf/struct.proto";
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// DNS01 is the dns01 capability. A plugin that declares the capability serves
+// it and the host is the caller. See spec/05-capabilities-dns01.md.
+service DNS01 {
+  // Publishes the challenge TXT record.
+  rpc Present(DNS01PresentRequest) returns (DNS01PresentResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "dns01.present";
+  }
+
+  // Removes what Present published. Called only after Present succeeded.
+  rpc Cleanup(DNS01CleanupRequest) returns (DNS01CleanupResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "dns01.cleanup";
+  }
+
+  // Reports propagation timings. They depend on the provider instance and
+  // the credential, so the host asks at runtime instead of trusting the
+  // manifest. Optional.
+  rpc Options(DNS01OptionsRequest) returns (DNS01OptionsResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "dns01.options";
+  }
+
+  // Checks whether the record has propagated. Optional.
+  rpc Check(DNS01CheckRequest) returns (DNS01CheckResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "dns01.check";
+  }
+
+  // Validates a credential without touching the vendor API. Optional.
+  rpc Validate(DNS01ValidateRequest) returns (DNS01ValidateResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "dns01.validate";
+  }
+}
+
+// DNS01PresentRequest is the params of dns01.present.
+message DNS01PresentRequest {
+  // Vendor code declared in the manifest, without the plugin id prefix.
+  string provider = 1;
+  // Credential and additional fields the person filled in, merged.
+  map<string, string> config = 2;
+  // Per-certificate DNS-01 options produced by the plugin's challenge form
+  // slot. Free-form JSON object, opaque to the host.
+  google.protobuf.Struct options = 3;
+  // Certificate identifier with any leading wildcard removed.
+  string domain = 4;
+  // The _acme-challenge name, without CNAME following.
+  string fqdn = 5;
+  // CNAME target when known, otherwise equal to fqdn.
+  string effective_fqdn = 6;
+  // TXT record value derived from key_auth.
+  string value = 7;
+  // Raw ACME challenge token.
+  string token = 8;
+  // ACME key authorization. lego providers derive fqdn and value from it.
+  string key_auth = 9;
+  // Validate shapes without touching the vendor API.
+  bool dry_run = 10;
+}
+
+// DNS01PresentResponse is the result of dns01.present. It is empty.
+message DNS01PresentResponse {}
+
+// DNS01CleanupRequest is the params of dns01.cleanup. It has the same shape
+// as DNS01PresentRequest.
+message DNS01CleanupRequest {
+  // Vendor code declared in the manifest, without the plugin id prefix.
+  string provider = 1;
+  // Credential and additional fields the person filled in, merged.
+  map<string, string> config = 2;
+  // Per-certificate DNS-01 options. Free-form JSON object.
+  google.protobuf.Struct options = 3;
+  // Certificate identifier with any leading wildcard removed.
+  string domain = 4;
+  // The _acme-challenge name, without CNAME following.
+  string fqdn = 5;
+  // CNAME target when known, otherwise equal to fqdn.
+  string effective_fqdn = 6;
+  // TXT record value derived from key_auth.
+  string value = 7;
+  // Raw ACME challenge token.
+  string token = 8;
+  // ACME key authorization.
+  string key_auth = 9;
+  // Validate shapes without touching the vendor API.
+  bool dry_run = 10;
+}
+
+// DNS01CleanupResponse is the result of dns01.cleanup. It is empty.
+message DNS01CleanupResponse {}
+
+// DNS01OptionsRequest is the params of dns01.options.
+message DNS01OptionsRequest {
+  string provider = 1;
+  map<string, string> config = 2;
+  // Per-certificate DNS-01 options. Free-form JSON object.
+  google.protobuf.Struct options = 3;
+}
+
+// DNS01OptionsResponse is the result of dns01.options.
+message DNS01OptionsResponse {
+  int32 propagation_timeout_seconds = 1;
+  int32 polling_interval_seconds = 2;
+  // Non-zero when the provider requires challenges to be solved one at a
+  // time.
+  int32 sequential_interval_seconds = 3;
+}
+
+// DNS01CheckRequest is the params of dns01.check.
+message DNS01CheckRequest {
+  string provider = 1;
+  map<string, string> config = 2;
+  // Per-certificate DNS-01 options. Free-form JSON object.
+  google.protobuf.Struct options = 3;
+  string domain = 4;
+  string fqdn = 5;
+  string value = 6;
+  string key_auth = 7;
+}
+
+// DNS01CheckResponse is the result of dns01.check.
+message DNS01CheckResponse {
+  bool ready = 1;
+  // CNAME target the plugin resolved, when it differs from fqdn.
+  string effective_fqdn = 2;
+  // Human readable progress. The host copies it into the issuance log.
+  string detail = 3;
+}
+
+// DNS01ValidateRequest is the params of dns01.validate.
+message DNS01ValidateRequest {
+  string provider = 1;
+  map<string, string> config = 2;
+}
+
+// DNS01ValidateResponse is the result of dns01.validate. It is empty.
+message DNS01ValidateResponse {}

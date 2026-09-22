@@ -30,6 +30,15 @@ this spec describes.
 | `response` | Present only for `kind: "request"`: the exact frame the callee MUST reply with. Field order does not matter; a vector's response is compared by value, not by byte-for-byte JSON text. |
 | `request_raw` | Used instead of `request` only for the two frames that are not valid JSON-RPC 2.0 objects at all (`17-error-parse-error.json`, `18-error-invalid-request.json`): the literal line sent, as a string. |
 
+## Checks
+
+`make check` runs the tests of `tools/methods`, which assert for every vector
+that `method` is an rpc of the proto contract with the same `direction` and
+`kind` (except the `-32601` vectors, whose method must be unknown), and that
+`params` and `result` decode strictly into the rpc's request and response
+messages and re-encode to the same values (`spec/03-wire-protocol.md`
+WIRE-9, WIRE-10). A vector that expects `-32602` must fail to decode.
+
 ## Numbering
 
 Files are numbered in the order a reader would want to see them (handshake

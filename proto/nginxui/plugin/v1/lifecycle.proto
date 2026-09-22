@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "google/protobuf/struct.proto";
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Plugin is the lifecycle service every plugin process serves. The host is
+// the caller. See spec/04-lifecycle.md.
+service Plugin {
+  // Handshake. It MUST complete before any other method is sent in either
+  // direction.
+  rpc Initialize(PluginInitializeRequest) returns (PluginInitializeResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "plugin.initialize";
+  }
+
+  // Sent once the handshake succeeded. host.* calls are allowed from here on.
+  rpc Initialized(PluginInitializedRequest) returns (PluginInitializedResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "plugin.initialized";
+    option (nginxui.plugin.v1.notification) = true;
+  }
+
+  // Pushes the latest settings values, e.g. after the person saved the
+  // settings form.
+  rpc Configure(PluginConfigureRequest) returns (PluginConfigureResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "plugin.configure";
+  }
+
+  // Liveness probe.
+  rpc Ping(PluginPingRequest) returns (PluginPingResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "plugin.ping";
+  }
+
+  // Asks the plugin to finish in-flight work. The host sends plugin.exit
+  // after the reply.
+  rpc Shutdown(PluginShutdownRequest) returns (PluginShutdownResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "plugin.shutdown";
+  }
+
+  // Asks the plugin to exit now.
+  rpc Exit(PluginExitRequest) returns (PluginExitResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "plugin.exit";
+    option (nginxui.plugin.v1.notification) = true;
+  }
+}
+
+// HostInfo describes the host to the plugin during the handshake.
+message HostInfo {
+  // Host version, e.g. "2.7.0".
+  string version = 1;
+  // Operating system in GOOS notation, e.g. "linux".
+  string os = 2;
+  // CPU architecture in GOARCH notation, e.g. "amd64".
+  string arch = 3;
+  // Current UI locale, e.g. "en".
+  string locale = 4;
+}
+
+// PluginInitializeRequest is the params of plugin.initialize.
+message PluginInitializeRequest {
+  HostInfo host = 1;
+  // Current settings values. Free-form JSON object keyed by setting key.
+  google.protobuf.Struct settings = 2;
+  // Permissions the person granted. It may be a subset of the manifest's.
+  repeated string permissions = 3;
+}
+
+// PluginInitializeResponse is the result of plugin.initialize.
+message PluginInitializeResponse {
+  // Protocol major version the plugin implements.
+  int32 api_version = 1;
+  // Capabilities the plugin implements. It MUST equal the manifest's list.
+  repeated string capabilities = 2;
+  // Transports the plugin can serve, e.g. ["stdio", "grpc"]. Empty means
+  // stdio only.
+  repeated string transports = 3;
+  // Loopback port of the http capability, reported by Windows plugins that
+  // cannot listen on a Unix socket.
+  int32 http_port = 4;
+  // Loopback port of the gRPC transport, reported by Windows plugins that
+  // cannot listen on a Unix socket.
+  int32 rpc_port = 5;
+  // One-time token the host presents on the loopback gRPC transport.
+  string rpc_token = 6;
+}
+
+// PluginInitializedRequest is the params of plugin.initialized. It is empty.
+message PluginInitializedRequest {}
+
+// PluginInitializedResponse is never sent on stdio; plugin.initialized is a
+// notification.
+message PluginInitializedResponse {}
+
+// PluginConfigureRequest is the params of plugin.configure.
+message PluginConfigureRequest {
+  // Latest settings values. Free-form JSON object keyed by setting key.
+  google.protobuf.Struct settings = 1;
+}
+
+// PluginConfigureResponse is the result of plugin.configure. It is empty.
+message PluginConfigureResponse {}
+
+// PluginPingRequest is the params of plugin.ping. It is empty.
+message PluginPingRequest {}
+
+// PluginPingResponse is the result of plugin.ping. It is empty.
+message PluginPingResponse {}
+
+// PluginShutdownRequest is the params of plugin.shutdown. It is empty.
+message PluginShutdownRequest {}
+
+// PluginShutdownResponse is the result of plugin.shutdown. It is empty.
+message PluginShutdownResponse {}
+
+// PluginExitRequest is the params of plugin.exit. It is empty.
+message PluginExitRequest {}
+
+// PluginExitResponse is never sent on stdio; plugin.exit is a notification.
+message PluginExitResponse {}

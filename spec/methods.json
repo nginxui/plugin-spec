@@ -1,0 +1,252 @@
+[
+  {
+    "rpc_name": "dns01.present",
+    "service": "nginxui.plugin.v1.DNS01",
+    "method": "Present",
+    "full_method": "/nginxui.plugin.v1.DNS01/Present",
+    "request": "nginxui.plugin.v1.DNS01PresentRequest",
+    "response": "nginxui.plugin.v1.DNS01PresentResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "dns01.cleanup",
+    "service": "nginxui.plugin.v1.DNS01",
+    "method": "Cleanup",
+    "full_method": "/nginxui.plugin.v1.DNS01/Cleanup",
+    "request": "nginxui.plugin.v1.DNS01CleanupRequest",
+    "response": "nginxui.plugin.v1.DNS01CleanupResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "dns01.options",
+    "service": "nginxui.plugin.v1.DNS01",
+    "method": "Options",
+    "full_method": "/nginxui.plugin.v1.DNS01/Options",
+    "request": "nginxui.plugin.v1.DNS01OptionsRequest",
+    "response": "nginxui.plugin.v1.DNS01OptionsResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "dns01.check",
+    "service": "nginxui.plugin.v1.DNS01",
+    "method": "Check",
+    "full_method": "/nginxui.plugin.v1.DNS01/Check",
+    "request": "nginxui.plugin.v1.DNS01CheckRequest",
+    "response": "nginxui.plugin.v1.DNS01CheckResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "dns01.validate",
+    "service": "nginxui.plugin.v1.DNS01",
+    "method": "Validate",
+    "full_method": "/nginxui.plugin.v1.DNS01/Validate",
+    "request": "nginxui.plugin.v1.DNS01ValidateRequest",
+    "response": "nginxui.plugin.v1.DNS01ValidateResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "events.on",
+    "service": "nginxui.plugin.v1.Events",
+    "method": "On",
+    "full_method": "/nginxui.plugin.v1.Events/On",
+    "request": "nginxui.plugin.v1.EventsOnRequest",
+    "response": "nginxui.plugin.v1.EventsOnResponse",
+    "notification": true,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "host.log",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "Log",
+    "full_method": "/nginxui.plugin.v1.Host/Log",
+    "request": "nginxui.plugin.v1.HostLogRequest",
+    "response": "nginxui.plugin.v1.HostLogResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.kv.get",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "KVGet",
+    "full_method": "/nginxui.plugin.v1.Host/KVGet",
+    "request": "nginxui.plugin.v1.HostKVGetRequest",
+    "response": "nginxui.plugin.v1.HostKVGetResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.kv.set",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "KVSet",
+    "full_method": "/nginxui.plugin.v1.Host/KVSet",
+    "request": "nginxui.plugin.v1.HostKVSetRequest",
+    "response": "nginxui.plugin.v1.HostKVSetResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.kv.delete",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "KVDelete",
+    "full_method": "/nginxui.plugin.v1.Host/KVDelete",
+    "request": "nginxui.plugin.v1.HostKVDeleteRequest",
+    "response": "nginxui.plugin.v1.HostKVDeleteResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.kv.list",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "KVList",
+    "full_method": "/nginxui.plugin.v1.Host/KVList",
+    "request": "nginxui.plugin.v1.HostKVListRequest",
+    "response": "nginxui.plugin.v1.HostKVListResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.settings.get",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "SettingsGet",
+    "full_method": "/nginxui.plugin.v1.Host/SettingsGet",
+    "request": "nginxui.plugin.v1.HostSettingsGetRequest",
+    "response": "nginxui.plugin.v1.HostSettingsGetResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.i18n.locale",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "I18nLocale",
+    "full_method": "/nginxui.plugin.v1.Host/I18nLocale",
+    "request": "nginxui.plugin.v1.HostI18nLocaleRequest",
+    "response": "nginxui.plugin.v1.HostI18nLocaleResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.credentials.get",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "CredentialsGet",
+    "full_method": "/nginxui.plugin.v1.Host/CredentialsGet",
+    "request": "nginxui.plugin.v1.HostCredentialsGetRequest",
+    "response": "nginxui.plugin.v1.HostCredentialsGetResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.cron.register",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "CronRegister",
+    "full_method": "/nginxui.plugin.v1.Host/CronRegister",
+    "request": "nginxui.plugin.v1.HostCronRegisterRequest",
+    "response": "nginxui.plugin.v1.HostCronRegisterResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.cron.unregister",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "CronUnregister",
+    "full_method": "/nginxui.plugin.v1.Host/CronUnregister",
+    "request": "nginxui.plugin.v1.HostCronUnregisterRequest",
+    "response": "nginxui.plugin.v1.HostCronUnregisterResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.notify",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "Notify",
+    "full_method": "/nginxui.plugin.v1.Host/Notify",
+    "request": "nginxui.plugin.v1.HostNotifyRequest",
+    "response": "nginxui.plugin.v1.HostNotifyResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.metrics.snapshot",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "MetricsSnapshot",
+    "full_method": "/nginxui.plugin.v1.Host/MetricsSnapshot",
+    "request": "nginxui.plugin.v1.HostMetricsSnapshotRequest",
+    "response": "nginxui.plugin.v1.HostMetricsSnapshotResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "http.handle",
+    "service": "nginxui.plugin.v1.HTTP",
+    "method": "Handle",
+    "full_method": "/nginxui.plugin.v1.HTTP/Handle",
+    "request": "nginxui.plugin.v1.HTTPHandleRequest",
+    "response": "nginxui.plugin.v1.HTTPHandleResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "plugin.initialize",
+    "service": "nginxui.plugin.v1.Plugin",
+    "method": "Initialize",
+    "full_method": "/nginxui.plugin.v1.Plugin/Initialize",
+    "request": "nginxui.plugin.v1.PluginInitializeRequest",
+    "response": "nginxui.plugin.v1.PluginInitializeResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "plugin.initialized",
+    "service": "nginxui.plugin.v1.Plugin",
+    "method": "Initialized",
+    "full_method": "/nginxui.plugin.v1.Plugin/Initialized",
+    "request": "nginxui.plugin.v1.PluginInitializedRequest",
+    "response": "nginxui.plugin.v1.PluginInitializedResponse",
+    "notification": true,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "plugin.configure",
+    "service": "nginxui.plugin.v1.Plugin",
+    "method": "Configure",
+    "full_method": "/nginxui.plugin.v1.Plugin/Configure",
+    "request": "nginxui.plugin.v1.PluginConfigureRequest",
+    "response": "nginxui.plugin.v1.PluginConfigureResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "plugin.ping",
+    "service": "nginxui.plugin.v1.Plugin",
+    "method": "Ping",
+    "full_method": "/nginxui.plugin.v1.Plugin/Ping",
+    "request": "nginxui.plugin.v1.PluginPingRequest",
+    "response": "nginxui.plugin.v1.PluginPingResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "plugin.shutdown",
+    "service": "nginxui.plugin.v1.Plugin",
+    "method": "Shutdown",
+    "full_method": "/nginxui.plugin.v1.Plugin/Shutdown",
+    "request": "nginxui.plugin.v1.PluginShutdownRequest",
+    "response": "nginxui.plugin.v1.PluginShutdownResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "plugin.exit",
+    "service": "nginxui.plugin.v1.Plugin",
+    "method": "Exit",
+    "full_method": "/nginxui.plugin.v1.Plugin/Exit",
+    "request": "nginxui.plugin.v1.PluginExitRequest",
+    "response": "nginxui.plugin.v1.PluginExitResponse",
+    "notification": true,
+    "direction": "host_to_plugin"
+  }
+]
