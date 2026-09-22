@@ -1,0 +1,25 @@
+{
+  "description": "The host fetches the current list of a source; the plugin replies with every address and network to deny and how long the list stays fresh.",
+  "requirement": "BLOCKLIST-5",
+  "method": "blocklist.fetch",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 48,
+    "method": "blocklist.fetch",
+    "params": { "source": "threatfeed", "config": { "api_key": "key_live_xxx", "min_score": "80" } }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 48,
+    "result": {
+      "entries": [
+        { "cidr": "198.51.100.23", "reason": "SSH brute force" },
+        { "cidr": "203.0.113.0/24", "reason": "Botnet command and control" },
+        { "cidr": "2001:db8:bad::/48" }
+      ],
+      "ttl_seconds": 900
+    }
+  }
+}

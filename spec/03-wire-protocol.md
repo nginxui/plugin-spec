@@ -142,6 +142,8 @@ proto wins and the chapter is wrong.
 | `mcp.proto` | Service `MCP`: `mcp.call` (`spec/14-capabilities-mcp.md`) |
 | `storage.proto` | Service `Storage`: `storage.*` (`spec/15-capabilities-storage.md`) |
 | `deploy.proto` | Service `Deploy`: `deploy.*` (`spec/16-capabilities-deploy.md`) |
+| `blocklist.proto` | Service `Blocklist`: `blocklist.fetch` (`spec/18-capabilities-blocklist.md`) |
+| `discovery.proto` | Service `Discovery`: `discovery.resolve` (`spec/19-capabilities-discovery.md`) |
 | `events.proto` | Service `Events`: `events.on` |
 | `errors.proto` | `PluginError`, `InvalidConfigData` and the `ErrorCode` enum (WIRE-5, WIRE-6) |
 | `manifest.proto` | `Manifest`, the shape of `plugin.json` (`spec/01-manifest.md`) |
@@ -271,7 +273,7 @@ logs the reason once as a warning.
 | `plugin.configure` and the liveness `plugin.ping` (LIFE-8) | stdio |
 | `host.*` calls, including `host.log`, and their replies | stdio |
 | Notifications (`events.on`) and cron invocations (HOST-10) | stdio |
-| Capability requests: every request rpc the host calls on the plugin outside the `Plugin` service, today `dns01.*`, `http.handle`, `notify.*`, `probe.check`, `mcp.call`, `storage.*` and `deploy.*` | gRPC while the channel is up, stdio otherwise |
+| Capability requests: every request rpc the host calls on the plugin outside the `Plugin` service, today `dns01.*`, `http.handle`, `notify.*`, `probe.check`, `mcp.call`, `storage.*`, `deploy.*`, `blocklist.fetch` and `discovery.resolve` | gRPC while the channel is up, stdio otherwise |
 
 The last row is defined by the contract, not by a list: a capability rpc
 added to the proto later travels over gRPC without a change to this rule.

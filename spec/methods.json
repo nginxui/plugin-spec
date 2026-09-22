@@ -1,5 +1,15 @@
 [
   {
+    "rpc_name": "blocklist.fetch",
+    "service": "nginxui.plugin.v1.Blocklist",
+    "method": "Fetch",
+    "full_method": "/nginxui.plugin.v1.Blocklist/Fetch",
+    "request": "nginxui.plugin.v1.BlocklistFetchRequest",
+    "response": "nginxui.plugin.v1.BlocklistFetchResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
     "rpc_name": "deploy.validate",
     "service": "nginxui.plugin.v1.Deploy",
     "method": "Validate",
@@ -16,6 +26,16 @@
     "full_method": "/nginxui.plugin.v1.Deploy/Push",
     "request": "nginxui.plugin.v1.DeployPushRequest",
     "response": "nginxui.plugin.v1.DeployPushResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "discovery.resolve",
+    "service": "nginxui.plugin.v1.Discovery",
+    "method": "Resolve",
+    "full_method": "/nginxui.plugin.v1.Discovery/Resolve",
+    "request": "nginxui.plugin.v1.DiscoveryResolveRequest",
+    "response": "nginxui.plugin.v1.DiscoveryResolveResponse",
     "notification": false,
     "direction": "host_to_plugin"
   },

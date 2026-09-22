@@ -1,8 +1,9 @@
 # 09. Conformance
 
-This spec defines eight conformance levels: `core`, `dns01`, `webapp`,
-`notify`, `probe`, `mcp`, `storage` and `cert.deploy`. A plugin or a host
-declares which level(s) it
+This spec defines eleven conformance levels: `core`, `dns01`, `webapp`,
+`notify`, `probe`, `mcp`, `storage`, `cert.deploy`, `content`,
+`security.blocklist` and `upstream.discovery`. A plugin or a host declares
+which level(s) it
 targets; a level is satisfied only when every requirement it lists holds,
 not merely most of them. Levels are additive: every level other than `core`
 includes everything `core` requires.
@@ -14,7 +15,7 @@ satisfy `core` to run any plugin at all.
 
 | Section | Requirements |
 | --- | --- |
-| Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`) |
+| Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`, and the capability blocks MAN-31 through MAN-37, which belong to their levels) |
 | Packaging | PKG-1 through PKG-13 for every package; PKG-14 through PKG-17 for a catalog publisher and for a host that installs from a catalog; PKG-18 only for a host that installs plugins on other hosts |
 | Wire protocol | WIRE-1 through WIRE-10; WIRE-11 and CONF-7 only for a plugin that lists `grpc` in `transports` |
 | Lifecycle | LIFE-1 through LIFE-15 |
@@ -53,11 +54,14 @@ WEB-10 and WEB-11 (the iframe page contract).
 ## CONF-4: host conformance
 
 A host implementation claims a level the same way: `core` is mandatory, and
-`dns01`, `webapp`, `notify`, `probe`, `mcp`, `storage` and `cert.deploy`
-apply only if the host intends to run plugins of that kind at all. For the
-capability levels, the host side is the requirements a chapter marks as host
-behavior (NOTIFY-9 through NOTIFY-11, PROBE-7 and PROBE-8, MCP-7 and MCP-8,
-SEC-13, STORAGE-12 through STORAGE-14, DEPLOY-10 through DEPLOY-12, SEC-14).
+`dns01`, `webapp`, `notify`, `probe`, `mcp`, `storage`, `cert.deploy`,
+`content`, `security.blocklist` and `upstream.discovery` apply only if the
+host intends to run plugins of that kind at all. For the capability levels,
+the host side is the requirements a chapter marks as host behavior
+(NOTIFY-9 through NOTIFY-11, PROBE-7 and PROBE-8, MCP-7 and MCP-8, SEC-13,
+STORAGE-12 through STORAGE-14, DEPLOY-10 through DEPLOY-12, SEC-14,
+CONTENT-1, CONTENT-4, CONTENT-5, CONTENT-8, CONTENT-9, BLOCKLIST-8 through
+BLOCKLIST-11, DISCOVERY-8 through DISCOVERY-11, SEC-15).
 A host MAY legitimately support `core` and `dns01` but not `webapp`
 (e.g. a headless installation with no browser UI) or vice versa; it MUST NOT
 claim a level while silently skipping one of that level's MUST requirements.
@@ -69,7 +73,7 @@ specific requirement ids checked and their pass/fail outcome, not just a
 level name, so a reader can see exactly what was and was not verified. The
 `vectors/v1/` directory exists to make at least the wire-level requirements
 (WIRE-\*, LIFE-\*, DNS01-\*, NOTIFY-\*, PROBE-\*, MCP-\*, STORAGE-\*,
-DEPLOY-\*, and the `host.*` methods in HOST-\*)
+DEPLOY-\*, BLOCKLIST-\*, DISCOVERY-\*, and the `host.*` methods in HOST-\*)
 mechanically checkable without a live host or a live plugin on the other
 end.
 
@@ -98,7 +102,11 @@ addition:
   `notify.validate` with an empty `config` for a `notify` plugin, `mcp.call`
   of an unknown tool for an `mcp` plugin, `storage.validate` with an empty
   `config` for a `storage` plugin, `deploy.validate` with an empty `config`
-  for a `cert.deploy` plugin, and of a method outside the
+  for a `cert.deploy` plugin, `blocklist.fetch` and `discovery.resolve` with
+  an empty `config` for a `security.blocklist` or `upstream.discovery`
+  plugin whose first entry declares a required field (without one the call
+  may reach a live source whose answer changes between the two calls), and
+  of a method outside the
   contract, for which only `code` and `data` are compared because the
   message names the method as each transport spells it.
 
@@ -164,12 +172,46 @@ satisfy:
 `deploy.push`, including its dry run, MUST be implemented for a plugin to
 claim this level.
 
+## CONF-13: level `content`
+
+A plugin declaring a `content` block MUST additionally satisfy:
+
+| Section | Requirements |
+| --- | --- |
+| Manifest | MAN-18 (the `content` block rules) |
+| Content | CONTENT-1 through CONTENT-3, CONTENT-6 and CONTENT-7 |
+
+The level is checked statically, from the files of the package: a
+conformance run of a plugin without `server` starts no process and runs only
+these checks (and the webapp checks when the plugin declares a `webapp`).
+
+## CONF-14: level `security.blocklist`
+
+A plugin declaring `"security.blocklist"` in `capabilities` MUST
+additionally satisfy:
+
+| Section | Requirements |
+| --- | --- |
+| Manifest | MAN-19, MAN-23, MAN-36 (the `security.blocklist` capability declaration rules) |
+| Capability | BLOCKLIST-1 through BLOCKLIST-7 |
+
+## CONF-15: level `upstream.discovery`
+
+A plugin declaring `"upstream.discovery"` in `capabilities` MUST
+additionally satisfy:
+
+| Section | Requirements |
+| --- | --- |
+| Manifest | MAN-19, MAN-23, MAN-37 (the `upstream.discovery` capability declaration rules) |
+| Capability | DISCOVERY-1 through DISCOVERY-7 |
+
 ## Reference conformance runner
 
-`nginx-ui plugin conformance <path> [--capability dns01|notify|probe|mcp|storage|cert.deploy] [--transport stdio|grpc|both] [--timeout 90s]`
+`nginx-ui plugin conformance <path> [--capability dns01|notify|probe|mcp|storage|cert.deploy|security.blocklist|upstream.discovery] [--transport stdio|grpc|both] [--timeout 90s]`
 starts the plugin under the reference host's own supervisor and host API
 and reports every case with the requirement it maps to and the transport it
-ran over (CONF-5). `<path>` is a plugin directory or a package.
+ran over (CONF-5). `<path>` is a plugin directory or a package. A plugin
+without `server` is checked statically only (CONF-13).
 
 `--transport` picks the transports the protocol and capability cases run
 over. The default is `both` when the plugin lists `grpc` in `transports` and
@@ -194,6 +236,10 @@ list `grpc` fails the `WIRE-11` case.
 | STORAGE-8 | both | `storage.list` with an empty `config` and an empty `prefix` against the first backend answers within 30 seconds: `-32003` with `data.field` when the backend declares a required field, otherwise a result whose `objects` is an array (absent counts as empty). `storage.put`, `storage.get` and `storage.delete` are never called, since they change or fetch real data. |
 | DEPLOY-9 | both | `deploy.validate` with an empty `config` against the manifest's first target kind, as for NOTIFY-8. |
 | DEPLOY-6 | both | `deploy.push` with `dry_run: true`, an empty `config` and a throwaway self-signed certificate for `conformance.invalid` answers within 30 seconds: `-32003` with `data.field` when the kind declares a required field, otherwise a result. A real push is never made. |
+| BLOCKLIST-5, BLOCKLIST-6 | both | `blocklist.fetch` with an empty `config` against the manifest's first source kind answers within 60 seconds: `-32003` with `data.field` when the kind declares a required field; otherwise a result whose `entries` is an array (absent counts as empty) of entries whose `cidr` parses, or `-32003` naming a field. |
+| DISCOVERY-5, DISCOVERY-6 | both | `discovery.resolve` with an empty `config` and the service `nginx-ui-conformance` against the manifest's first provider answers within 30 seconds: `-32003` with `data.field` when the provider declares a required field; otherwise a result whose `targets` is an array (absent counts as empty) of targets with a port between 1 and 65535, or `-32003` naming a field (an unknown service names `service`). |
+| CONTENT-2, CONTENT-3 | — | Static checks of `content.templates`: the directory exists, holds a template, and every template parses and renders with its default values. |
+| CONTENT-6, CONTENT-7 | — | Static checks of `content.locales`: the directory exists, every `.po` file is named after a host language and parses. |
 | TRANSPORT-1 | — | Runs when both transports ran; see CONF-7. |
 | WEB-1, WEB-5 | — | Static checks of the webapp bundle. |
 | LIFE-10 | — | `plugin.shutdown` and `plugin.exit` stop the process in time. |
@@ -236,3 +282,11 @@ blocks of this spec version add these ids:
 | STORAGE-3, DEPLOY-3 | error | A backend or target kind has no `name`, or a configuration field breaks NOTIFY-4. |
 | SEC-3 | warning | A `storage` or `cert.deploy` plugin does not request `network`. |
 | SEC-5 | warning | The `cert.deploy` permission is requested without the `cert.deploy` capability. |
+| MAN-36, MAN-37 | error | A declared `security.blocklist` or `upstream.discovery` capability has no block or an empty list, or the manifest does not request `network`. |
+| BLOCKLIST-2, DISCOVERY-2 | error | A source kind or provider code does not match `^[a-z0-9-]{2,32}$` or is declared twice. |
+| BLOCKLIST-3, DISCOVERY-3 | error | A source kind or provider has no `name`, a configuration field breaks NOTIFY-4, or a source kind has a `refresh_seconds` between 1 and 59 or below 0. |
+| CONTENT-1 | error | A manifest without `server` declares `capabilities`, `cron` or `events`. |
+| CONTENT-2 | error or warning | `content.templates` is missing, is not a directory or holds no template in `conf/` or `block/` (error); an entry there is not a template (warning). |
+| CONTENT-3 | error or warning | A template does not parse or does not render with its default values (error); it has no `name` (warning). |
+| CONTENT-6 | error or warning | `content.locales` is missing, is not a directory or holds no `.po` file (error); a `.po` file is named after a language the host does not have (error); another entry is there (warning). |
+| CONTENT-7 | error | A `.po` file does not parse. |

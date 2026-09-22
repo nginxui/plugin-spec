@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Discovery is the upstream.discovery capability. A plugin that declares the
+// capability resolves a service name into the servers that currently back it,
+// through the providers its manifest lists (a service registry, a container
+// orchestrator, a cloud API), and the host is the caller: it turns every
+// answer into an nginx upstream block. See spec/19-capabilities-discovery.md.
+service Discovery {
+  // Resolves one service into its current targets.
+  rpc Resolve(DiscoveryResolveRequest) returns (DiscoveryResolveResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "discovery.resolve";
+  }
+}
+
+// DiscoveryResolveRequest is the params of discovery.resolve.
+message DiscoveryResolveRequest {
+  // Provider code declared in the manifest, without any host prefix.
+  string provider = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+  // Name of the service to resolve, in the terms of the provider.
+  string service = 3;
+}
+
+// DiscoveryResolveResponse is the result of discovery.resolve.
+message DiscoveryResolveResponse {
+  // Every server that backs the service right now.
+  repeated DiscoveryTarget targets = 1;
+  // How long the answer stays fresh, in seconds. 0 leaves the refresh
+  // interval to the host.
+  int32 ttl_seconds = 2;
+}
+
+// DiscoveryTarget is one server of a service.
+message DiscoveryTarget {
+  // An IPv4 or IPv6 address or a host name, without a port.
+  string address = 1;
+  // TCP port, 1 to 65535.
+  int32 port = 2;
+  // Relative weight of the server. 0 means 1.
+  int32 weight = 3;
+  // Labels the provider attaches to the server, for display.
+  repeated string tags = 4;
+}

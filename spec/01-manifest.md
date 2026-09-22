@@ -26,7 +26,7 @@ It is tested against `manifest.proto`, see [`schema/README.md`](../schema/README
 | `min_nginx_ui_version` | string | no | Advisory minimum host application version. |
 | `server` | object | no\* | Declares a server process. See below. |
 | `webapp` | object | no\* | Declares a browser bundle or zero-build pages. See `spec/07-webapp.md`. |
-| `content` | object | no\* | Declares process-less contributions (templates, locale files). |
+| `content` | object | no\* | Declares process-less contributions (templates, locale files). See `spec/17-content-plugins.md`. |
 | `capabilities` | string[] | no | Capability names this plugin implements. |
 | `permissions` | string[] | no | Host API permissions this plugin requests. See `spec/08-security.md`. |
 | `requires` | object[] | no | Other plugin ids (with an optional version range) this plugin depends on. |
@@ -42,9 +42,11 @@ It is tested against `manifest.proto`, see [`schema/README.md`](../schema/README
 | `mcp` | object | no\*\* | Required when `capabilities` includes `mcp`. See `spec/14-capabilities-mcp.md`. |
 | `storage` | object | no\*\* | Required when `capabilities` includes `storage`. See `spec/15-capabilities-storage.md`. |
 | `deploy` | object | no\*\* | Required when `capabilities` includes `cert.deploy`. See `spec/16-capabilities-deploy.md`. |
+| `blocklist` | object | no\*\* | Required when `capabilities` includes `security.blocklist`. See `spec/18-capabilities-blocklist.md`. |
+| `discovery` | object | no\*\* | Required when `capabilities` includes `upstream.discovery`. See `spec/19-capabilities-discovery.md`. |
 
 \* At least one of `server`, `webapp` or `content` MUST be present.
-\*\* See MAN-21, MAN-22 and MAN-31 through MAN-35 below.
+\*\* See MAN-21, MAN-22 and MAN-31 through MAN-37 below.
 
 ### MAN-1
 
@@ -87,7 +89,9 @@ installing the plugin either way.
 ### MAN-7
 
 A manifest MUST declare at least one of `server`, `webapp` or `content`. A
-manifest with none of the three is invalid: it would install to nothing.
+manifest with none of the three is invalid: it would install to nothing. A
+manifest without `server` has no process and declares no capability
+(CONTENT-1).
 
 ### MAN-8
 
@@ -176,7 +180,8 @@ contain at least an `"en"` key.
 ### MAN-18
 
 `content.templates` and `content.locales`, when present, MUST be safe
-relative paths (PKG-3).
+relative paths (PKG-3). The layout and format of the files they point at are
+specified in `spec/17-content-plugins.md` (CONTENT-2 through CONTENT-7).
 
 ## `capabilities` and their blocks
 
@@ -184,11 +189,14 @@ relative paths (PKG-3).
 
 Each entry of `capabilities` MUST be one of the capability names this spec
 defines (currently `"dns01"`, `"http"`, `"notify"`, `"probe"`, `"mcp"`,
-`"storage"`, `"cert.deploy"`; see `spec/05-capabilities-dns01.md`,
+`"storage"`, `"cert.deploy"`, `"security.blocklist"`,
+`"upstream.discovery"`; see `spec/05-capabilities-dns01.md`,
 `spec/06-host-api.md`, `spec/12-capabilities-notify.md`,
 `spec/13-capabilities-probe.md`, `spec/14-capabilities-mcp.md`,
-`spec/15-capabilities-storage.md` and `spec/16-capabilities-deploy.md`). An
-unknown capability name MUST cause the host to reject the manifest.
+`spec/15-capabilities-storage.md`, `spec/16-capabilities-deploy.md`,
+`spec/18-capabilities-blocklist.md` and
+`spec/19-capabilities-discovery.md`). An unknown capability name MUST cause
+the host to reject the manifest.
 
 ### MAN-20
 
@@ -234,6 +242,20 @@ When `capabilities` includes `"cert.deploy"`, the manifest MUST include a
 `deploy` block with at least one entry in `deploy.targets`, and
 `permissions` MUST include `"cert.deploy"`. See
 `spec/16-capabilities-deploy.md` and SEC-14.
+
+### MAN-36
+
+When `capabilities` includes `"security.blocklist"`, the manifest MUST
+include a `blocklist` block with at least one entry in `blocklist.sources`,
+and `permissions` MUST include `"network"`. See
+`spec/18-capabilities-blocklist.md`.
+
+### MAN-37
+
+When `capabilities` includes `"upstream.discovery"`, the manifest MUST
+include a `discovery` block with at least one entry in
+`discovery.providers`, and `permissions` MUST include `"network"`. See
+`spec/19-capabilities-discovery.md`.
 
 ## `permissions`
 

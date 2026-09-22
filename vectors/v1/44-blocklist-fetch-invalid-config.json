@@ -1,0 +1,18 @@
+{
+  "description": "A required source field is missing: the plugin reports CodeInvalidConfig naming the field instead of an empty list.",
+  "requirement": "BLOCKLIST-6",
+  "method": "blocklist.fetch",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 49,
+    "method": "blocklist.fetch",
+    "params": { "source": "threatfeed", "config": {} }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 49,
+    "error": { "code": -32003, "message": "api_key is required", "data": { "field": "api_key" } }
+  }
+}

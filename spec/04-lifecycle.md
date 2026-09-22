@@ -3,7 +3,8 @@
 This document describes the sequence of calls that take a plugin process from
 "just spawned" to "gone", and the liveness contract in between. All six
 methods here are host → plugin (the host calls, the plugin replies or is
-notified).
+notified). A plugin without a `server` block has no process, and nothing in
+this chapter applies to it (CONTENT-1).
 
 | Method | Kind | Meaning |
 | --- | --- | --- |
@@ -149,9 +150,9 @@ plugin going idle, or host shutdown), the host MUST:
 1. Send `plugin.shutdown` as a request and wait for its reply, up to a bounded
    timeout (5 seconds in the reference host). The plugin SHOULD use this step
    to finish in-flight capability calls (`dns01.*`, `http.handle`,
-   `notify.send`, `probe.check`, `mcp.call`, `storage.*`, `deploy.push`),
-   on stdio and on gRPC alike (WIRE-11), and stop accepting new ones, then
-   reply with `{}`.
+   `notify.send`, `probe.check`, `mcp.call`, `storage.*`, `deploy.push`,
+   `blocklist.fetch`, `discovery.resolve`), on stdio and on gRPC alike
+   (WIRE-11), and stop accepting new ones, then reply with `{}`.
 2. Send `plugin.exit` as a notification, regardless of whether step 1's
    reply arrived in time.
 3. Wait for the process to exit on its own, up to a second bounded timeout

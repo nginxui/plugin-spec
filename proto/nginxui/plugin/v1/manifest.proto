@@ -62,6 +62,10 @@ message Manifest {
   ManifestStorage storage = 25;
   // Metadata of the cert.deploy capability.
   ManifestDeploy deploy = 26;
+  // Metadata of the security.blocklist capability.
+  ManifestBlocklist blocklist = 27;
+  // Metadata of the upstream.discovery capability.
+  ManifestDiscovery discovery = 28;
 }
 
 // ManifestServer describes how to start the plugin process.
@@ -97,9 +101,12 @@ message ManifestPage {
   string file = 4;
 }
 
-// ManifestContent declares process-less contributions.
+// ManifestContent declares process-less contributions. See
+// spec/17-content-plugins.md.
 message ManifestContent {
+  // Package relative directory holding conf/ and block/ config templates.
   string templates = 1;
+  // Package relative directory holding <lang>.po translation files.
   string locales = 2;
 }
 
@@ -215,8 +222,44 @@ message DeployTarget {
   ConfigurationSchema configuration = 3;
 }
 
+// ManifestBlocklist is the metadata block of the security.blocklist
+// capability.
+message ManifestBlocklist {
+  repeated BlocklistSource sources = 1;
+}
+
+// BlocklistSource describes one kind of source a plugin can fetch a list of
+// addresses to deny from.
+message BlocklistSource {
+  // Source kind code, shared across every installed security.blocklist
+  // plugin.
+  string code = 1;
+  string name = 2;
+  // Fields of the source form.
+  ConfigurationSchema configuration = 3;
+  // Default refresh interval of a source of this kind. 0 means 3600, a
+  // value below 60 is invalid.
+  int32 refresh_seconds = 4;
+}
+
+// ManifestDiscovery is the metadata block of the upstream.discovery
+// capability.
+message ManifestDiscovery {
+  repeated DiscoveryProvider providers = 1;
+}
+
+// DiscoveryProvider describes one place a plugin can resolve services from.
+message DiscoveryProvider {
+  // Provider code, shared across every installed upstream.discovery plugin.
+  string code = 1;
+  string name = 2;
+  // Fields of the provider form.
+  ConfigurationSchema configuration = 3;
+}
+
 // ConfigurationSchema drives the form of a notify channel, a probe kind, a
-// storage backend or a deploy target. The values travel as a map of strings.
+// storage backend, a deploy target, a blocklist source or a discovery
+// provider. The values travel as a map of strings.
 message ConfigurationSchema {
   repeated ConfigurationField fields = 1;
 }

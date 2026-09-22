@@ -31,16 +31,18 @@ const (
 // serviceDirections says who calls each service. nginx-ui serves Host and the
 // plugin process serves everything else. A new service must be added here.
 var serviceDirections = map[protoreflect.Name]string{
-	"Plugin":  HostToPlugin,
-	"DNS01":   HostToPlugin,
-	"HTTP":    HostToPlugin,
-	"Notify":  HostToPlugin,
-	"Probe":   HostToPlugin,
-	"MCP":     HostToPlugin,
-	"Storage": HostToPlugin,
-	"Deploy":  HostToPlugin,
-	"Events":  HostToPlugin,
-	"Host":    PluginToHost,
+	"Plugin":    HostToPlugin,
+	"DNS01":     HostToPlugin,
+	"HTTP":      HostToPlugin,
+	"Notify":    HostToPlugin,
+	"Probe":     HostToPlugin,
+	"MCP":       HostToPlugin,
+	"Storage":   HostToPlugin,
+	"Deploy":    HostToPlugin,
+	"Blocklist": HostToPlugin,
+	"Discovery": HostToPlugin,
+	"Events":    HostToPlugin,
+	"Host":      PluginToHost,
 }
 
 // Method is one entry of spec/methods.json.

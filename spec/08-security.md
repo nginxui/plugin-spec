@@ -30,7 +30,7 @@ A plugin declares the `host.*` capabilities it needs in its manifest's
 | Permission | Gates |
 | --- | --- |
 | `kv` | `host.kv.get`/`set`/`delete`/`list` |
-| `network` | Nothing on the wire — it is declarative, telling the person installing the plugin that its own process (not the host) will make outbound network connections. A host MAY use it for an OS-level firewall policy where one exists, but the wire protocol does not enforce it. |
+| `network` | Nothing on the wire — it is declarative, telling the person installing the plugin that its own process (not the host) will make outbound network connections. A host MAY use it for an OS-level firewall policy where one exists, but the wire protocol does not enforce it. Required by the `security.blocklist` and `upstream.discovery` capabilities (MAN-36, MAN-37). |
 | `cron` | `host.cron.register`/`unregister` |
 | `notify` | `host.notify` |
 | `metrics.read` | `host.metrics.snapshot` |
@@ -135,6 +135,20 @@ the person approving the permission that the plugin receives certificates
 and their private keys in order to push them to external targets. A plugin
 MUST treat the key as a credential (SEC-7, DEPLOY-7) and MUST NOT keep it
 after the call (DEPLOY-8).
+
+## SEC-15
+
+The `security.blocklist` and `upstream.discovery` capabilities let a plugin
+decide what nginx serves: which clients it denies and which servers it
+proxies to. A host MUST NOT write text a plugin returned into the nginx
+configuration verbatim: it MUST parse every address, network, host name,
+port and weight first and drop what does not parse (BLOCKLIST-9,
+DISCOVERY-9), so an answer cannot add a directive of its own. A host MUST
+write the result only into files of its own that a person includes
+deliberately (BLOCKLIST-10, DISCOVERY-10), MUST test the configuration
+before every reload and MUST keep the previous file when the test fails. A
+person relying on a blocklist source trusts its plugin not to deny them, and
+a host SHOULD make it easy to see and disable what a source denies.
 
 ## Package integrity
 

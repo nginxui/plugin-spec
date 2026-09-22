@@ -66,6 +66,26 @@
         "required": ["deploy", "permissions"],
         "properties": { "permissions": { "contains": { "const": "cert.deploy" } } }
       }
+    },
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "security.blocklist" } } },
+        "required": ["capabilities"]
+      },
+      "then": {
+        "required": ["blocklist", "permissions"],
+        "properties": { "permissions": { "contains": { "const": "network" } } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "upstream.discovery" } } },
+        "required": ["capabilities"]
+      },
+      "then": {
+        "required": ["discovery", "permissions"],
+        "properties": { "permissions": { "contains": { "const": "network" } } }
+      }
     }
   ],
   "properties": {
@@ -98,7 +118,7 @@
     "content": { "$ref": "#/$defs/manifestContent" },
     "capabilities": {
       "type": "array",
-      "items": { "type": "string", "enum": ["dns01", "http", "notify", "probe", "mcp", "storage", "cert.deploy"] },
+      "items": { "type": "string", "enum": ["dns01", "http", "notify", "probe", "mcp", "storage", "cert.deploy", "security.blocklist", "upstream.discovery"] },
       "uniqueItems": true,
       "description": "MAN-19, MAN-20."
     },
@@ -140,7 +160,9 @@
     "probe": { "$ref": "#/$defs/manifestProbe" },
     "mcp": { "$ref": "#/$defs/manifestMcp" },
     "storage": { "$ref": "#/$defs/manifestStorage" },
-    "deploy": { "$ref": "#/$defs/manifestDeploy" }
+    "deploy": { "$ref": "#/$defs/manifestDeploy" },
+    "blocklist": { "$ref": "#/$defs/manifestBlocklist" },
+    "discovery": { "$ref": "#/$defs/manifestDiscovery" }
   },
   "$defs": {
     "safeRelativePath": {
@@ -240,9 +262,16 @@
     "manifestContent": {
       "type": "object",
       "additionalProperties": false,
+      "description": "MAN-18, spec/17-content-plugins.md.",
       "properties": {
-        "templates": { "$ref": "#/$defs/safeRelativePath" },
-        "locales": { "$ref": "#/$defs/safeRelativePath" }
+        "templates": {
+          "$ref": "#/$defs/safeRelativePath",
+          "description": "CONTENT-2: a directory holding conf/*.conf and block/*.conf templates."
+        },
+        "locales": {
+          "$ref": "#/$defs/safeRelativePath",
+          "description": "CONTENT-6: a directory holding one <lang>.po file per language."
+        }
       }
     },
     "manifestDns01": {
@@ -404,6 +433,63 @@
           "type": "string",
           "pattern": "^[a-z0-9-]{2,32}$",
           "description": "DEPLOY-2. NAME-10: shared namespace across every installed cert.deploy plugin."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "configuration": { "$ref": "#/$defs/configurationSchema" }
+      }
+    },
+    "manifestBlocklist": {
+      "type": "object",
+      "required": ["sources"],
+      "additionalProperties": false,
+      "properties": {
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/blocklistSource" }
+        }
+      }
+    },
+    "blocklistSource": {
+      "type": "object",
+      "required": ["code", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{2,32}$",
+          "description": "BLOCKLIST-2. NAME-10: shared namespace across every installed security.blocklist plugin."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "configuration": { "$ref": "#/$defs/configurationSchema" },
+        "refresh_seconds": {
+          "type": "integer",
+          "anyOf": [{ "const": 0 }, { "minimum": 60 }],
+          "description": "BLOCKLIST-3. 0 or absent means 3600."
+        }
+      }
+    },
+    "manifestDiscovery": {
+      "type": "object",
+      "required": ["providers"],
+      "additionalProperties": false,
+      "properties": {
+        "providers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/discoveryProvider" }
+        }
+      }
+    },
+    "discoveryProvider": {
+      "type": "object",
+      "required": ["code", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{2,32}$",
+          "description": "DISCOVERY-2. NAME-10: shared namespace across every installed upstream.discovery plugin."
         },
         "name": { "type": "string", "minLength": 1 },
         "configuration": { "$ref": "#/$defs/configurationSchema" }

@@ -1,0 +1,18 @@
+{
+  "description": "A required provider field is missing: the plugin reports CodeInvalidConfig naming the field without contacting the provider.",
+  "requirement": "DISCOVERY-6",
+  "method": "discovery.resolve",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 51,
+    "method": "discovery.resolve",
+    "params": { "provider": "registry", "config": {}, "service": "api" }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 51,
+    "error": { "code": -32003, "message": "address is required", "data": { "field": "address" } }
+  }
+}

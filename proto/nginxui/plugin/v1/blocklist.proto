@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Blocklist is the security.blocklist capability. A plugin that declares the
+// capability fetches lists of addresses to deny from the kinds of source its
+// manifest lists (a threat feed, a reputation service, a shared ban list),
+// and the host is the caller: it turns every list into nginx deny rules. See
+// spec/18-capabilities-blocklist.md.
+service Blocklist {
+  // Fetches the current entries of one source.
+  rpc Fetch(BlocklistFetchRequest) returns (BlocklistFetchResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "blocklist.fetch";
+  }
+}
+
+// BlocklistFetchRequest is the params of blocklist.fetch.
+message BlocklistFetchRequest {
+  // Source kind code declared in the manifest, without any host prefix.
+  string source = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+}
+
+// BlocklistFetchResponse is the result of blocklist.fetch.
+message BlocklistFetchResponse {
+  // The complete list of the source. An empty list denies nothing.
+  repeated BlocklistEntry entries = 1;
+  // How long the list stays fresh, in seconds. 0 leaves the refresh
+  // interval to the host.
+  int32 ttl_seconds = 2;
+}
+
+// BlocklistEntry is one address or network to deny.
+message BlocklistEntry {
+  // An IPv4 or IPv6 address, or a network in CIDR notation.
+  string cidr = 1;
+  // Why the source lists it, for display. Optional.
+  string reason = 2;
+}
