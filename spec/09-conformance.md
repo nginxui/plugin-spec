@@ -1,7 +1,8 @@
 # 09. Conformance
 
-This spec defines six conformance levels: `core`, `dns01`, `webapp`,
-`notify`, `probe` and `mcp`. A plugin or a host declares which level(s) it
+This spec defines eight conformance levels: `core`, `dns01`, `webapp`,
+`notify`, `probe`, `mcp`, `storage` and `cert.deploy`. A plugin or a host
+declares which level(s) it
 targets; a level is satisfied only when every requirement it lists holds,
 not merely most of them. Levels are additive: every level other than `core`
 includes everything `core` requires.
@@ -52,10 +53,12 @@ WEB-10 and WEB-11 (the iframe page contract).
 ## CONF-4: host conformance
 
 A host implementation claims a level the same way: `core` is mandatory, and
-`dns01`, `webapp`, `notify`, `probe` and `mcp` apply only if the host
-intends to run plugins of that kind at all. For the capability levels, the
-host side is the requirements a chapter marks as host behavior (NOTIFY-9
-through NOTIFY-11, PROBE-7 and PROBE-8, MCP-7 and MCP-8, SEC-13). A host MAY legitimately support `core` and `dns01` but not `webapp`
+`dns01`, `webapp`, `notify`, `probe`, `mcp`, `storage` and `cert.deploy`
+apply only if the host intends to run plugins of that kind at all. For the
+capability levels, the host side is the requirements a chapter marks as host
+behavior (NOTIFY-9 through NOTIFY-11, PROBE-7 and PROBE-8, MCP-7 and MCP-8,
+SEC-13, STORAGE-12 through STORAGE-14, DEPLOY-10 through DEPLOY-12, SEC-14).
+A host MAY legitimately support `core` and `dns01` but not `webapp`
 (e.g. a headless installation with no browser UI) or vice versa; it MUST NOT
 claim a level while silently skipping one of that level's MUST requirements.
 
@@ -65,8 +68,8 @@ A conformance report (for a plugin, an SDK, or a host) SHOULD list the
 specific requirement ids checked and their pass/fail outcome, not just a
 level name, so a reader can see exactly what was and was not verified. The
 `vectors/v1/` directory exists to make at least the wire-level requirements
-(WIRE-\*, LIFE-\*, DNS01-\*, NOTIFY-\*, PROBE-\*, MCP-\*, and the
-`host.*` methods in HOST-\*)
+(WIRE-\*, LIFE-\*, DNS01-\*, NOTIFY-\*, PROBE-\*, MCP-\*, STORAGE-\*,
+DEPLOY-\*, and the `host.*` methods in HOST-\*)
 mechanically checkable without a live host or a live plugin on the other
 end.
 
@@ -93,7 +96,9 @@ addition:
   error as its `code`, `message` and `data`) of at least `dns01.options` and
   `dns01.validate` with an empty `config` for a `dns01` plugin,
   `notify.validate` with an empty `config` for a `notify` plugin, `mcp.call`
-  of an unknown tool for an `mcp` plugin, and of a method outside the
+  of an unknown tool for an `mcp` plugin, `storage.validate` with an empty
+  `config` for a `storage` plugin, `deploy.validate` with an empty `config`
+  for a `cert.deploy` plugin, and of a method outside the
   contract, for which only `code` and `data` are compared because the
   message names the method as each transport spells it.
 
@@ -131,9 +136,37 @@ A plugin declaring `"mcp"` in `capabilities` MUST additionally satisfy:
 | Capability | MCP-1 through MCP-6 |
 | Security | SEC-13 |
 
+## CONF-11: level `storage`
+
+A plugin declaring `"storage"` in `capabilities` MUST additionally satisfy:
+
+| Section | Requirements |
+| --- | --- |
+| Manifest | MAN-19, MAN-34 (the `storage` capability declaration rules) |
+| Capability | STORAGE-1 through STORAGE-11 |
+
+`storage.validate` is optional (a plugin MAY reply `-32002`), but
+`storage.put`, `storage.get`, `storage.list` and `storage.delete` MUST all
+be implemented for a plugin to claim this level.
+
+## CONF-12: level `cert.deploy`
+
+A plugin declaring `"cert.deploy"` in `capabilities` MUST additionally
+satisfy:
+
+| Section | Requirements |
+| --- | --- |
+| Manifest | MAN-19, MAN-23, MAN-35 (the `cert.deploy` capability declaration rules) |
+| Capability | DEPLOY-1 through DEPLOY-9 |
+| Security | SEC-7, SEC-14 |
+
+`deploy.validate` is optional (a plugin MAY reply `-32002`), but
+`deploy.push`, including its dry run, MUST be implemented for a plugin to
+claim this level.
+
 ## Reference conformance runner
 
-`nginx-ui plugin conformance <path> [--capability dns01|notify|probe|mcp] [--transport stdio|grpc|both] [--timeout 90s]`
+`nginx-ui plugin conformance <path> [--capability dns01|notify|probe|mcp|storage|cert.deploy] [--transport stdio|grpc|both] [--timeout 90s]`
 starts the plugin under the reference host's own supervisor and host API
 and reports every case with the requirement it maps to and the transport it
 ran over (CONF-5). `<path>` is a plugin directory or a package.
@@ -157,6 +190,10 @@ list `grpc` fails the `WIRE-11` case.
 | NOTIFY-8 | both | `notify.validate` with an empty `config` against the manifest's first channel answers `-32003` with `data.field` when the channel declares a required field and `{}` otherwise; `-32002` or `-32601` is reported as skipped. `notify.send` is never called, since it would reach the vendor. |
 | PROBE-4, PROBE-5 | both | `probe.check` of the manifest's first kind, with an empty `config`, the unroutable target `http://conformance.invalid` and `timeout_seconds` 5, answers within 15 seconds with a known `status` and a non-negative `latency_ms`, or with `-32003` and `data.field`. |
 | MCP-6 | both | `mcp.call` of a tool the manifest does not declare answers `-32602`. No declared tool is called, since it may change state. |
+| STORAGE-10 | both | `storage.validate` with an empty `config` against the manifest's first backend answers `-32003` with `data.field` when the backend declares a required field and `{}` otherwise; `-32002` or `-32601` is reported as skipped. |
+| STORAGE-8 | both | `storage.list` with an empty `config` and an empty `prefix` against the first backend answers within 30 seconds: `-32003` with `data.field` when the backend declares a required field, otherwise a result whose `objects` is an array (absent counts as empty). `storage.put`, `storage.get` and `storage.delete` are never called, since they change or fetch real data. |
+| DEPLOY-9 | both | `deploy.validate` with an empty `config` against the manifest's first target kind, as for NOTIFY-8. |
+| DEPLOY-6 | both | `deploy.push` with `dry_run: true`, an empty `config` and a throwaway self-signed certificate for `conformance.invalid` answers within 30 seconds: `-32003` with `data.field` when the kind declares a required field, otherwise a result. A real push is never made. |
 | TRANSPORT-1 | — | Runs when both transports ran; see CONF-7. |
 | WEB-1, WEB-5 | — | Static checks of the webapp bundle. |
 | LIFE-10 | — | `plugin.shutdown` and `plugin.exit` stop the process in time. |
@@ -194,3 +231,8 @@ blocks of this spec version add these ids:
 | MCP-3 | error | An `input_schema` whose `type` is not `"object"`. |
 | SEC-3 | warning | A `notify` or `probe` plugin does not request `network`. |
 | SEC-5 | warning | The `mcp` permission is requested without the `mcp` capability. |
+| MAN-34, MAN-35 | error | A declared `storage` or `cert.deploy` capability has no block or an empty list; `cert.deploy` without the `cert.deploy` permission. |
+| STORAGE-2, DEPLOY-2 | error | A backend or target kind code does not match `^[a-z0-9-]{2,32}$` or is declared twice. |
+| STORAGE-3, DEPLOY-3 | error | A backend or target kind has no `name`, or a configuration field breaks NOTIFY-4. |
+| SEC-3 | warning | A `storage` or `cert.deploy` plugin does not request `network`. |
+| SEC-5 | warning | The `cert.deploy` permission is requested without the `cert.deploy` capability. |

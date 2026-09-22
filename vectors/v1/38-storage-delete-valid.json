@@ -1,0 +1,18 @@
+{
+  "description": "The plugin removes the object; deleting a key that does not exist succeeds as well.",
+  "requirement": "STORAGE-9",
+  "method": "storage.delete",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 45,
+    "method": "storage.delete",
+    "params": {
+      "backend": "webdav",
+      "config": { "url": "https://dav.example/remote.php/dav/files/alice", "username": "alice", "password": "app-password-xxx" },
+      "key": "nginx-ui/daily_1780000000.zip"
+    }
+  },
+  "response": { "jsonrpc": "2.0", "id": 45, "result": {} }
+}

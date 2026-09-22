@@ -94,10 +94,10 @@ as `{ "value": <data> }`.
 | `-32700` | Parse error | The frame was not valid JSON. |
 | `-32600` | Invalid request | The frame was valid JSON but not a valid JSON-RPC 2.0 message (WIRE-2). |
 | `-32601` | Method not found | No handler is registered for `method` at all. |
-| `-32602` | Invalid params | `params` failed to decode into the shape the method expects, or names something the method does not know where a capability chapter says so (an unknown MCP tool, MCP-6). |
+| `-32602` | Invalid params | `params` failed to decode into the shape the method expects, or names something the method does not know where a capability chapter says so (an unknown MCP tool, MCP-6; a malformed storage key, STORAGE-4). |
 | `-32000` | Internal error | The handler ran and failed for a reason not covered by a more specific code. Any error a handler returns that is not one of the codes below MUST be reported as `-32000`. |
 | `-32001` | Permission denied | The caller invoked a `host.*` method that its granted permissions do not cover. See `spec/08-security.md`. |
-| `-32002` | Unsupported | The method is a capability method (`spec/05-capabilities-dns01.md`, `http.handle`, `spec/12-capabilities-notify.md`) the plugin declares the capability for but has not implemented this particular optional method of. |
+| `-32002` | Unsupported | The method is a capability method (`spec/05-capabilities-dns01.md`, `http.handle`, `spec/12-capabilities-notify.md`, `spec/15-capabilities-storage.md`, `spec/16-capabilities-deploy.md`) the plugin declares the capability for but has not implemented this particular optional method of. |
 | `-32003` | Invalid config | A credential or setting failed validation. `data` SHOULD be `{ "field": "<name>" }` naming the offending field. |
 
 A conformant implementation MUST use `-32601`, `-32602` and `-32700` exactly
@@ -140,6 +140,8 @@ proto wins and the chapter is wrong.
 | `notify.proto` | Service `Notify`: `notify.*` (`spec/12-capabilities-notify.md`) |
 | `probe.proto` | Service `Probe`: `probe.check` (`spec/13-capabilities-probe.md`) |
 | `mcp.proto` | Service `MCP`: `mcp.call` (`spec/14-capabilities-mcp.md`) |
+| `storage.proto` | Service `Storage`: `storage.*` (`spec/15-capabilities-storage.md`) |
+| `deploy.proto` | Service `Deploy`: `deploy.*` (`spec/16-capabilities-deploy.md`) |
 | `events.proto` | Service `Events`: `events.on` |
 | `errors.proto` | `PluginError`, `InvalidConfigData` and the `ErrorCode` enum (WIRE-5, WIRE-6) |
 | `manifest.proto` | `Manifest`, the shape of `plugin.json` (`spec/01-manifest.md`) |
@@ -188,8 +190,11 @@ of its response message, under these rules:
   value; a receiver MUST treat an omitted member as its default.
 * No field is a 64-bit integer, because the mapping encodes those as JSON
   strings. Counts, ports and durations are `int32`. The event timestamp `ts`
-  is `uint32`, so it stays a JSON number past 2038. Every identifier is a
-  string.
+  is `uint32`, so it stays a JSON number past 2038. A byte size that may pass
+  4 GiB (the `size` of the `storage` capability) is a `double`, a JSON number
+  exact for integers up to 2^53; a receiver MUST accept a whole number
+  written with or without a zero fraction (`5242880` and `5242880.0`). Every
+  identifier is a string.
 * Free-form JSON uses the well-known types: `google.protobuf.Struct` for a
   JSON object (settings values, `options`, `fields`, error `data`),
   `google.protobuf.Value` for any JSON value (kv values, event `data`,
@@ -266,7 +271,7 @@ logs the reason once as a warning.
 | `plugin.configure` and the liveness `plugin.ping` (LIFE-8) | stdio |
 | `host.*` calls, including `host.log`, and their replies | stdio |
 | Notifications (`events.on`) and cron invocations (HOST-10) | stdio |
-| Capability requests: every request rpc the host calls on the plugin outside the `Plugin` service, today `dns01.*`, `http.handle`, `notify.*`, `probe.check` and `mcp.call` | gRPC while the channel is up, stdio otherwise |
+| Capability requests: every request rpc the host calls on the plugin outside the `Plugin` service, today `dns01.*`, `http.handle`, `notify.*`, `probe.check`, `mcp.call`, `storage.*` and `deploy.*` | gRPC while the channel is up, stdio otherwise |
 
 The last row is defined by the contract, not by a list: a capability rpc
 added to the proto later travels over gRPC without a change to this rule.

@@ -40,9 +40,11 @@ It is tested against `manifest.proto`, see [`schema/README.md`](../schema/README
 | `notify` | object | no\*\* | Required when `capabilities` includes `notify`. See `spec/12-capabilities-notify.md`. |
 | `probe` | object | no\*\* | Required when `capabilities` includes `probe`. See `spec/13-capabilities-probe.md`. |
 | `mcp` | object | no\*\* | Required when `capabilities` includes `mcp`. See `spec/14-capabilities-mcp.md`. |
+| `storage` | object | no\*\* | Required when `capabilities` includes `storage`. See `spec/15-capabilities-storage.md`. |
+| `deploy` | object | no\*\* | Required when `capabilities` includes `cert.deploy`. See `spec/16-capabilities-deploy.md`. |
 
 \* At least one of `server`, `webapp` or `content` MUST be present.
-\*\* See MAN-21, MAN-22 and MAN-31 through MAN-33 below.
+\*\* See MAN-21, MAN-22 and MAN-31 through MAN-35 below.
 
 ### MAN-1
 
@@ -181,11 +183,12 @@ relative paths (PKG-3).
 ### MAN-19
 
 Each entry of `capabilities` MUST be one of the capability names this spec
-defines (currently `"dns01"`, `"http"`, `"notify"`, `"probe"`, `"mcp"`; see
-`spec/05-capabilities-dns01.md`, `spec/06-host-api.md`,
-`spec/12-capabilities-notify.md`, `spec/13-capabilities-probe.md` and
-`spec/14-capabilities-mcp.md`). An unknown capability name MUST cause the
-host to reject the manifest.
+defines (currently `"dns01"`, `"http"`, `"notify"`, `"probe"`, `"mcp"`,
+`"storage"`, `"cert.deploy"`; see `spec/05-capabilities-dns01.md`,
+`spec/06-host-api.md`, `spec/12-capabilities-notify.md`,
+`spec/13-capabilities-probe.md`, `spec/14-capabilities-mcp.md`,
+`spec/15-capabilities-storage.md` and `spec/16-capabilities-deploy.md`). An
+unknown capability name MUST cause the host to reject the manifest.
 
 ### MAN-20
 
@@ -219,12 +222,26 @@ When `capabilities` includes `"mcp"`, the manifest MUST include an `mcp`
 block with at least one entry in `mcp.tools`, and `permissions` MUST include
 `"mcp"`. See `spec/14-capabilities-mcp.md` and SEC-13.
 
+### MAN-34
+
+When `capabilities` includes `"storage"`, the manifest MUST include a
+`storage` block with at least one entry in `storage.backends`. See
+`spec/15-capabilities-storage.md`.
+
+### MAN-35
+
+When `capabilities` includes `"cert.deploy"`, the manifest MUST include a
+`deploy` block with at least one entry in `deploy.targets`, and
+`permissions` MUST include `"cert.deploy"`. See
+`spec/16-capabilities-deploy.md` and SEC-14.
+
 ## `permissions`
 
 ### MAN-23
 
 Each entry of `permissions` MUST be one of the fixed permission names
-(`kv`, `network`, `cron`, `notify`, `metrics.read`, `core_api`, `mcp`) or MUST match
+(`kv`, `network`, `cron`, `notify`, `metrics.read`, `core_api`, `mcp`,
+`cert.deploy`) or MUST match
 `^credentials\.read:.+$` with a non-empty kind after the colon. See
 `spec/08-security.md` for what each permission gates.
 

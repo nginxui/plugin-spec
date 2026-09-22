@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Deploy is the cert.deploy capability. A plugin that declares the capability
+// pushes issued certificates to the kinds of external target its manifest
+// lists (a CDN, a cloud load balancer, another server), and the host is the
+// caller. See spec/16-capabilities-deploy.md.
+service Deploy {
+  // Validates a target configuration without contacting the target.
+  // Optional.
+  rpc Validate(DeployValidateRequest) returns (DeployValidateResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "deploy.validate";
+  }
+
+  // Pushes one certificate to one target.
+  rpc Push(DeployPushRequest) returns (DeployPushResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "deploy.push";
+  }
+}
+
+// DeployValidateRequest is the params of deploy.validate.
+message DeployValidateRequest {
+  // Target kind code declared in the manifest, without any host prefix.
+  string kind = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+}
+
+// DeployValidateResponse is the result of deploy.validate. It is empty.
+message DeployValidateResponse {}
+
+// DeployPushRequest is the params of deploy.push.
+message DeployPushRequest {
+  // Target kind code declared in the manifest, without any host prefix.
+  string kind = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+  // The certificate to push.
+  DeployCertificate certificate = 3;
+  // Check the target and the credentials without changing anything.
+  bool dry_run = 4;
+}
+
+// DeployCertificate is the certificate deploy.push carries.
+message DeployCertificate {
+  // Name of the certificate in the host.
+  string name = 1;
+  // Domains and IP addresses the certificate covers.
+  repeated string domains = 2;
+  // The leaf certificate, PEM encoded.
+  string certificate_pem = 3;
+  // The private key of the leaf certificate, PEM encoded.
+  string private_key_pem = 4;
+  // The intermediate certificates, PEM encoded, starting with the issuer of
+  // the leaf. Empty when the certificate has no chain.
+  string chain_pem = 5;
+  // Expiry of the leaf certificate as an RFC 3339 timestamp.
+  string not_after = 6;
+}
+
+// DeployPushResponse is the result of deploy.push.
+message DeployPushResponse {
+  // Human readable summary of what was done, or would be done on a dry run.
+  string message = 1;
+}

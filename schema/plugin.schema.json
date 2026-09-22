@@ -49,6 +49,23 @@
         "required": ["mcp", "permissions"],
         "properties": { "permissions": { "contains": { "const": "mcp" } } }
       }
+    },
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "storage" } } },
+        "required": ["capabilities"]
+      },
+      "then": { "required": ["storage"] }
+    },
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "cert.deploy" } } },
+        "required": ["capabilities"]
+      },
+      "then": {
+        "required": ["deploy", "permissions"],
+        "properties": { "permissions": { "contains": { "const": "cert.deploy" } } }
+      }
     }
   ],
   "properties": {
@@ -81,7 +98,7 @@
     "content": { "$ref": "#/$defs/manifestContent" },
     "capabilities": {
       "type": "array",
-      "items": { "type": "string", "enum": ["dns01", "http", "notify", "probe", "mcp"] },
+      "items": { "type": "string", "enum": ["dns01", "http", "notify", "probe", "mcp", "storage", "cert.deploy"] },
       "uniqueItems": true,
       "description": "MAN-19, MAN-20."
     },
@@ -121,7 +138,9 @@
     },
     "notify": { "$ref": "#/$defs/manifestNotify" },
     "probe": { "$ref": "#/$defs/manifestProbe" },
-    "mcp": { "$ref": "#/$defs/manifestMcp" }
+    "mcp": { "$ref": "#/$defs/manifestMcp" },
+    "storage": { "$ref": "#/$defs/manifestStorage" },
+    "deploy": { "$ref": "#/$defs/manifestDeploy" }
   },
   "$defs": {
     "safeRelativePath": {
@@ -133,7 +152,7 @@
     "permission": {
       "type": "string",
       "anyOf": [
-        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api", "mcp"] },
+        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api", "mcp", "cert.deploy"] },
         { "pattern": "^credentials\\.read:.+$" }
       ]
     },
@@ -333,6 +352,58 @@
           "type": "string",
           "pattern": "^[a-z0-9-]{2,32}$",
           "description": "PROBE-2. NAME-10: shared namespace across every installed probe plugin."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "configuration": { "$ref": "#/$defs/configurationSchema" }
+      }
+    },
+    "manifestStorage": {
+      "type": "object",
+      "required": ["backends"],
+      "additionalProperties": false,
+      "properties": {
+        "backends": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/storageBackend" }
+        }
+      }
+    },
+    "storageBackend": {
+      "type": "object",
+      "required": ["code", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{2,32}$",
+          "description": "STORAGE-2. NAME-10: shared namespace across every installed storage plugin."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "configuration": { "$ref": "#/$defs/configurationSchema" }
+      }
+    },
+    "manifestDeploy": {
+      "type": "object",
+      "required": ["targets"],
+      "additionalProperties": false,
+      "properties": {
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/deployTarget" }
+        }
+      }
+    },
+    "deployTarget": {
+      "type": "object",
+      "required": ["code", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{2,32}$",
+          "description": "DEPLOY-2. NAME-10: shared namespace across every installed cert.deploy plugin."
         },
         "name": { "type": "string", "minLength": 1 },
         "configuration": { "$ref": "#/$defs/configurationSchema" }

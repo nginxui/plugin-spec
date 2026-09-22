@@ -1,0 +1,18 @@
+{
+  "description": "A required target field is missing: the plugin reports CodeInvalidConfig naming the field without contacting the target.",
+  "requirement": "DEPLOY-9",
+  "method": "deploy.validate",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 46,
+    "method": "deploy.validate",
+    "params": { "kind": "mycdn", "config": { "api_token": "tok_live_xxx" } }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 46,
+    "error": { "code": -32003, "message": "zone_id is required", "data": { "field": "zone_id" } }
+  }
+}

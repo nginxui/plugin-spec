@@ -1,0 +1,27 @@
+{
+  "description": "The plugin lists the objects whose key starts with the prefix, with their size and modification time.",
+  "requirement": "STORAGE-8",
+  "method": "storage.list",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 44,
+    "method": "storage.list",
+    "params": {
+      "backend": "webdav",
+      "config": { "url": "https://dav.example/remote.php/dav/files/alice", "username": "alice", "password": "app-password-xxx" },
+      "prefix": "nginx-ui/daily_"
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 44,
+    "result": {
+      "objects": [
+        { "key": "nginx-ui/daily_1790000000.zip", "size": 5242880, "modified_at": "2026-09-21T03:00:05Z" },
+        { "key": "nginx-ui/daily_1790000000.zip.key", "size": 89, "modified_at": "2026-09-21T03:00:06Z" }
+      ]
+    }
+  }
+}

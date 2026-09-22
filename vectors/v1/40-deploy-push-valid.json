@@ -1,0 +1,29 @@
+{
+  "description": "The host pushes a renewed certificate with its private key and chain; the plugin replies with a summary once the target serves it.",
+  "requirement": "DEPLOY-5",
+  "method": "deploy.push",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 47,
+    "method": "deploy.push",
+    "params": {
+      "kind": "mycdn",
+      "config": { "api_token": "tok_live_xxx", "zone_id": "zone_123" },
+      "certificate": {
+        "name": "example.com",
+        "domains": ["example.com", "www.example.com"],
+        "certificate_pem": "-----BEGIN CERTIFICATE-----\nMIIBleaf\n-----END CERTIFICATE-----\n",
+        "private_key_pem": "-----BEGIN EC PRIVATE KEY-----\nMHckey\n-----END EC PRIVATE KEY-----\n",
+        "chain_pem": "-----BEGIN CERTIFICATE-----\nMIIBissuer\n-----END CERTIFICATE-----\n",
+        "not_after": "2026-12-20T08:15:00Z"
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 47,
+    "result": { "message": "Uploaded certificate cert_8f2 and bound it to zone zone_123." }
+  }
+}

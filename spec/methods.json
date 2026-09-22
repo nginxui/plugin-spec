@@ -1,5 +1,25 @@
 [
   {
+    "rpc_name": "deploy.validate",
+    "service": "nginxui.plugin.v1.Deploy",
+    "method": "Validate",
+    "full_method": "/nginxui.plugin.v1.Deploy/Validate",
+    "request": "nginxui.plugin.v1.DeployValidateRequest",
+    "response": "nginxui.plugin.v1.DeployValidateResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "deploy.push",
+    "service": "nginxui.plugin.v1.Deploy",
+    "method": "Push",
+    "full_method": "/nginxui.plugin.v1.Deploy/Push",
+    "request": "nginxui.plugin.v1.DeployPushRequest",
+    "response": "nginxui.plugin.v1.DeployPushResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
     "rpc_name": "dns01.present",
     "service": "nginxui.plugin.v1.DNS01",
     "method": "Present",
@@ -286,6 +306,56 @@
     "full_method": "/nginxui.plugin.v1.Probe/Check",
     "request": "nginxui.plugin.v1.ProbeCheckRequest",
     "response": "nginxui.plugin.v1.ProbeCheckResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "storage.validate",
+    "service": "nginxui.plugin.v1.Storage",
+    "method": "Validate",
+    "full_method": "/nginxui.plugin.v1.Storage/Validate",
+    "request": "nginxui.plugin.v1.StorageValidateRequest",
+    "response": "nginxui.plugin.v1.StorageValidateResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "storage.put",
+    "service": "nginxui.plugin.v1.Storage",
+    "method": "Put",
+    "full_method": "/nginxui.plugin.v1.Storage/Put",
+    "request": "nginxui.plugin.v1.StoragePutRequest",
+    "response": "nginxui.plugin.v1.StoragePutResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "storage.get",
+    "service": "nginxui.plugin.v1.Storage",
+    "method": "Get",
+    "full_method": "/nginxui.plugin.v1.Storage/Get",
+    "request": "nginxui.plugin.v1.StorageGetRequest",
+    "response": "nginxui.plugin.v1.StorageGetResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "storage.list",
+    "service": "nginxui.plugin.v1.Storage",
+    "method": "List",
+    "full_method": "/nginxui.plugin.v1.Storage/List",
+    "request": "nginxui.plugin.v1.StorageListRequest",
+    "response": "nginxui.plugin.v1.StorageListResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "storage.delete",
+    "service": "nginxui.plugin.v1.Storage",
+    "method": "Delete",
+    "full_method": "/nginxui.plugin.v1.Storage/Delete",
+    "request": "nginxui.plugin.v1.StorageDeleteRequest",
+    "response": "nginxui.plugin.v1.StorageDeleteResponse",
     "notification": false,
     "direction": "host_to_plugin"
   }

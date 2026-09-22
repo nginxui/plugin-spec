@@ -1,0 +1,29 @@
+{
+  "description": "A dry run checks the target and the credentials and changes nothing; the message says what a real push would do.",
+  "requirement": "DEPLOY-6",
+  "method": "deploy.push",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 48,
+    "method": "deploy.push",
+    "params": {
+      "kind": "mycdn",
+      "config": { "api_token": "tok_live_xxx", "zone_id": "zone_123" },
+      "certificate": {
+        "name": "example.com",
+        "domains": ["example.com"],
+        "certificate_pem": "-----BEGIN CERTIFICATE-----\nMIIBleaf\n-----END CERTIFICATE-----\n",
+        "private_key_pem": "-----BEGIN EC PRIVATE KEY-----\nMHckey\n-----END EC PRIVATE KEY-----\n",
+        "not_after": "2026-12-20T08:15:00Z"
+      },
+      "dry_run": true
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 48,
+    "result": { "message": "Zone zone_123 is reachable; a push would replace its current certificate." }
+  }
+}

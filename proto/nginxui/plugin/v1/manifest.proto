@@ -58,6 +58,10 @@ message Manifest {
   ManifestProbe probe = 23;
   // Metadata of the mcp capability.
   ManifestMCP mcp = 24;
+  // Metadata of the storage capability.
+  ManifestStorage storage = 25;
+  // Metadata of the cert.deploy capability.
+  ManifestDeploy deploy = 26;
 }
 
 // ManifestServer describes how to start the plugin process.
@@ -182,8 +186,37 @@ message ProbeKind {
   ConfigurationSchema configuration = 3;
 }
 
-// ConfigurationSchema drives the form of a notify channel or a probe kind.
-// The values travel as a map of strings.
+// ManifestStorage is the metadata block of the storage capability.
+message ManifestStorage {
+  repeated StorageBackend backends = 1;
+}
+
+// StorageBackend describes one place a plugin can keep host files.
+message StorageBackend {
+  // Backend code, shared across every installed storage plugin.
+  string code = 1;
+  string name = 2;
+  // Fields of the backend form.
+  ConfigurationSchema configuration = 3;
+}
+
+// ManifestDeploy is the metadata block of the cert.deploy capability.
+message ManifestDeploy {
+  repeated DeployTarget targets = 1;
+}
+
+// DeployTarget describes one kind of external target a plugin can push
+// certificates to.
+message DeployTarget {
+  // Target kind code, shared across every installed cert.deploy plugin.
+  string code = 1;
+  string name = 2;
+  // Fields of the target form.
+  ConfigurationSchema configuration = 3;
+}
+
+// ConfigurationSchema drives the form of a notify channel, a probe kind, a
+// storage backend or a deploy target. The values travel as a map of strings.
 message ConfigurationSchema {
   repeated ConfigurationField fields = 1;
 }

@@ -1,0 +1,18 @@
+{
+  "description": "A malformed field is reported as CodeInvalidConfig with data.field, so the host can highlight it in the backend form.",
+  "requirement": "STORAGE-10",
+  "method": "storage.validate",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 41,
+    "method": "storage.validate",
+    "params": { "backend": "webdav", "config": { "url": "ftp://dav.example", "username": "alice" } }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 41,
+    "error": { "code": -32003, "message": "url must be an http or https URL", "data": { "field": "url" } }
+  }
+}

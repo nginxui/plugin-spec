@@ -1,0 +1,17 @@
+{
+  "description": "A well-formed backend configuration is accepted without storing anything.",
+  "requirement": "STORAGE-10",
+  "method": "storage.validate",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 40,
+    "method": "storage.validate",
+    "params": {
+      "backend": "webdav",
+      "config": { "url": "https://dav.example/remote.php/dav/files/alice", "username": "alice", "password": "app-password-xxx" }
+    }
+  },
+  "response": { "jsonrpc": "2.0", "id": 40, "result": {} }
+}

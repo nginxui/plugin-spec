@@ -1,0 +1,19 @@
+{
+  "description": "The host placed the file in the exchange directory; the plugin stores it under the key and reports the stored size.",
+  "requirement": "STORAGE-6",
+  "method": "storage.put",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 42,
+    "method": "storage.put",
+    "params": {
+      "backend": "webdav",
+      "config": { "url": "https://dav.example/remote.php/dav/files/alice", "username": "alice", "password": "app-password-xxx" },
+      "key": "nginx-ui/daily_1790000000.zip",
+      "source_path": "/var/lib/nginx-ui/plugins/.data/io.github.example.webdav/exchange/5f0c2a9d/daily_1790000000.zip"
+    }
+  },
+  "response": { "jsonrpc": "2.0", "id": 42, "result": { "size": 5242880 } }
+}

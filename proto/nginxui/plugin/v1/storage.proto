@@ -1,0 +1,128 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Storage is the storage capability. A plugin that declares the capability
+// keeps host files, such as backups, in the storage backends its manifest
+// lists, and the host is the caller. File contents never travel in a message:
+// the host and the plugin exchange them through files in the plugin's data
+// directory. See spec/15-capabilities-storage.md.
+service Storage {
+  // Validates a backend configuration without storing anything. Optional.
+  rpc Validate(StorageValidateRequest) returns (StorageValidateResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "storage.validate";
+  }
+
+  // Stores the file at source_path under key.
+  rpc Put(StoragePutRequest) returns (StoragePutResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "storage.put";
+  }
+
+  // Writes the object stored under key to target_path.
+  rpc Get(StorageGetRequest) returns (StorageGetResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "storage.get";
+  }
+
+  // Lists the objects whose key starts with prefix.
+  rpc List(StorageListRequest) returns (StorageListResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "storage.list";
+  }
+
+  // Removes the object stored under key.
+  rpc Delete(StorageDeleteRequest) returns (StorageDeleteResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "storage.delete";
+  }
+}
+
+// StorageValidateRequest is the params of storage.validate.
+message StorageValidateRequest {
+  // Backend code declared in the manifest, without any host prefix.
+  string backend = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+}
+
+// StorageValidateResponse is the result of storage.validate. It is empty.
+message StorageValidateResponse {}
+
+// StoragePutRequest is the params of storage.put.
+message StoragePutRequest {
+  // Backend code declared in the manifest, without any host prefix.
+  string backend = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+  // Object key, a relative path with "/" separated segments.
+  string key = 3;
+  // Absolute path of the file to store, inside the exchange directory of the
+  // plugin's data directory. The plugin reads it and never changes it.
+  string source_path = 4;
+}
+
+// StoragePutResponse is the result of storage.put.
+message StoragePutResponse {
+  // Bytes stored. A double, so sizes past 4 GiB stay a JSON number; exact up
+  // to 2^53.
+  double size = 1;
+}
+
+// StorageGetRequest is the params of storage.get.
+message StorageGetRequest {
+  // Backend code declared in the manifest, without any host prefix.
+  string backend = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+  // Object key, a relative path with "/" separated segments.
+  string key = 3;
+  // Absolute path the plugin writes the object to, inside the exchange
+  // directory of the plugin's data directory. It does not exist yet.
+  string target_path = 4;
+}
+
+// StorageGetResponse is the result of storage.get.
+message StorageGetResponse {
+  // Bytes written to target_path.
+  double size = 1;
+}
+
+// StorageListRequest is the params of storage.list.
+message StorageListRequest {
+  // Backend code declared in the manifest, without any host prefix.
+  string backend = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+  // Plain string prefix of the keys to list. Empty lists every object.
+  string prefix = 3;
+}
+
+// StorageListResponse is the result of storage.list.
+message StorageListResponse {
+  // The objects whose key starts with prefix, in any order.
+  repeated StorageObject objects = 1;
+}
+
+// StorageObject is one stored object.
+message StorageObject {
+  // Object key, as storage.put received it.
+  string key = 1;
+  // Size of the object in bytes.
+  double size = 2;
+  // Last modification time as an RFC 3339 timestamp. Empty when unknown.
+  string modified_at = 3;
+}
+
+// StorageDeleteRequest is the params of storage.delete.
+message StorageDeleteRequest {
+  // Backend code declared in the manifest, without any host prefix.
+  string backend = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+  // Object key, a relative path with "/" separated segments.
+  string key = 3;
+}
+
+// StorageDeleteResponse is the result of storage.delete. It is empty.
+message StorageDeleteResponse {}

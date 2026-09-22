@@ -36,6 +36,7 @@ A plugin declares the `host.*` capabilities it needs in its manifest's
 | `metrics.read` | `host.metrics.snapshot` |
 | `core_api` | `registry.coreHttp` in the browser webapp contract (WEB-7) — unrelated to any `host.*` JSON-RPC method. |
 | `mcp` | Nothing the plugin calls — it gates the host publishing the plugin's `mcp` tools to MCP clients (SEC-13). Required by the `mcp` capability (MAN-33). |
+| `cert.deploy` | Nothing the plugin calls — it gates the host sending certificates and their private keys to the plugin in `deploy.push` (SEC-14). Required by the `cert.deploy` capability (MAN-35). |
 | `credentials.read:<kind>` | `host.credentials.get` for that specific `kind` only. |
 
 `host.log`, `host.settings.get` and `host.i18n.locale` require no
@@ -71,7 +72,8 @@ platform supports one, but this spec does not require enforcement.
 
 A value that is a credential (a `dns01` provider's `configuration.credentials`
 entry, a `type: "secret"` settings field, anything delivered through
-`host.credentials.get`) MUST NOT appear in:
+`host.credentials.get`, the private key `deploy.push` carries) MUST NOT
+appear in:
 
 * an error `message` (WIRE-5) — use `data.field` to name the offending field
   instead of quoting its value;
@@ -121,6 +123,18 @@ own MCP authorization to a call before forwarding it (MCP-8), and SHOULD
 show the person approving the permission that an AI assistant will be able
 to run the plugin's code on their behalf. A plugin MUST treat tool arguments
 as untrusted input (MCP-5).
+
+## SEC-14
+
+Granting `cert.deploy` lets the plugin receive the private key of every
+certificate a person binds to one of its targets
+(`spec/16-capabilities-deploy.md`). A host MUST NOT call `deploy.push`
+unless `cert.deploy` is in the granted permission set (SEC-4), MUST send a
+certificate only to targets a person bound to it (DEPLOY-11), and MUST tell
+the person approving the permission that the plugin receives certificates
+and their private keys in order to push them to external targets. A plugin
+MUST treat the key as a credential (SEC-7, DEPLOY-7) and MUST NOT keep it
+after the call (DEPLOY-8).
 
 ## Package integrity
 

@@ -1,7 +1,8 @@
 # 11. Naming
 
 The identifier namespaces of this system are plugin ids, `dns01` provider
-codes, `notify` channel codes and `probe` kind codes. All of them are
+codes, `notify` channel codes, `probe` kind codes, `storage` backend codes
+and `cert.deploy` target kind codes. All of them are
 effectively global — installing two plugins that collide in one namespace
 produces undefined behavior — so they are specified here rather than left to
 convention alone. MCP tool names are scoped to one plugin and made global by
@@ -70,21 +71,26 @@ renaming a shipped `code` breaks every certificate already configured to use
 it, since `provider_code` is stored per certificate, not re-derived from the
 manifest at issuance time.
 
-## `notify` channel codes and `probe` kind codes
+## Capability entry codes
 
 ## NAME-10
 
-A `notify` channel `code` (NOTIFY-2) and a `probe` kind `code` (PROBE-2) MUST
-match `^[a-z0-9-]{2,32}$`. Channel codes form one namespace shared across
-every installed `notify` plugin and kind codes form one shared across every
-installed `probe` plugin: a notification channel or a health check stores
-the code alone, and the owning plugin is resolved at the time of the call.
+A `notify` channel `code` (NOTIFY-2), a `probe` kind `code` (PROBE-2), a
+`storage` backend `code` (STORAGE-2) and a `cert.deploy` target kind `code`
+(DEPLOY-2) MUST match `^[a-z0-9-]{2,32}$`. Each of the four forms one
+namespace shared across every installed plugin of its capability: channel
+codes across `notify` plugins, kind codes across `probe` plugins, backend
+codes across `storage` plugins and target kind codes across `cert.deploy`
+plugins. A notification channel, a health check, a backup task or a deploy
+target stores the code alone, and the owning plugin is resolved at the time
+of the call.
 The rules NAME-5 and NAME-6 give for provider codes apply to them as well:
 choose a code that names the vendor or the technique, not the plugin, and
 never rename a shipped code. When several enabled plugins declare one code,
 a host MUST pick one of them deterministically; the reference host picks the
 lowest plugin id. A host keeps these codes apart from the names of its
-built-in channels and checks (NOTIFY-9, PROBE-7).
+built-in channels, checks and storage (NOTIFY-9, PROBE-7, STORAGE-12,
+DEPLOY-10).
 
 ## MCP tool names
 
