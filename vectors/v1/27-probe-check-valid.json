@@ -1,0 +1,19 @@
+{
+  "description": "The plugin checks the target once and reports it healthy with the time the check took.",
+  "requirement": "PROBE-5",
+  "method": "probe.check",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 34,
+    "method": "probe.check",
+    "params": {
+      "kind": "tcp-banner",
+      "target": "https://example.com",
+      "config": { "port": "22", "expect": "SSH-2.0" },
+      "timeout_seconds": 10
+    }
+  },
+  "response": { "jsonrpc": "2.0", "id": 34, "result": { "status": "up", "latency_ms": 42 } }
+}

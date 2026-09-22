@@ -34,6 +34,9 @@ var serviceDirections = map[protoreflect.Name]string{
 	"Plugin": HostToPlugin,
 	"DNS01":  HostToPlugin,
 	"HTTP":   HostToPlugin,
+	"Notify": HostToPlugin,
+	"Probe":  HostToPlugin,
+	"MCP":    HostToPlugin,
 	"Events": HostToPlugin,
 	"Host":   PluginToHost,
 }

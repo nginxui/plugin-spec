@@ -25,6 +25,30 @@
         "required": ["capabilities"]
       },
       "then": { "required": ["http"] }
+    },
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "notify" } } },
+        "required": ["capabilities"]
+      },
+      "then": { "required": ["notify"] }
+    },
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "probe" } } },
+        "required": ["capabilities"]
+      },
+      "then": { "required": ["probe"] }
+    },
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "mcp" } } },
+        "required": ["capabilities"]
+      },
+      "then": {
+        "required": ["mcp", "permissions"],
+        "properties": { "permissions": { "contains": { "const": "mcp" } } }
+      }
     }
   ],
   "properties": {
@@ -57,7 +81,7 @@
     "content": { "$ref": "#/$defs/manifestContent" },
     "capabilities": {
       "type": "array",
-      "items": { "type": "string", "enum": ["dns01", "http"] },
+      "items": { "type": "string", "enum": ["dns01", "http", "notify", "probe", "mcp"] },
       "uniqueItems": true,
       "description": "MAN-19, MAN-20."
     },
@@ -94,7 +118,10 @@
         { "$ref": "#/$defs/settingsSchema" },
         { "type": "null" }
       ]
-    }
+    },
+    "notify": { "$ref": "#/$defs/manifestNotify" },
+    "probe": { "$ref": "#/$defs/manifestProbe" },
+    "mcp": { "$ref": "#/$defs/manifestMcp" }
   },
   "$defs": {
     "safeRelativePath": {
@@ -106,7 +133,7 @@
     "permission": {
       "type": "string",
       "anyOf": [
-        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api"] },
+        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api", "mcp"] },
         { "pattern": "^credentials\\.read:.+$" }
       ]
     },
@@ -256,6 +283,114 @@
         "listen": {
           "type": "string",
           "enum": ["unix", "rpc"]
+        }
+      }
+    },
+    "manifestNotify": {
+      "type": "object",
+      "required": ["channels"],
+      "additionalProperties": false,
+      "properties": {
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/notifyChannel" }
+        }
+      }
+    },
+    "notifyChannel": {
+      "type": "object",
+      "required": ["code", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{2,32}$",
+          "description": "NOTIFY-2. NAME-10: shared namespace across every installed notify plugin."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "configuration": { "$ref": "#/$defs/configurationSchema" }
+      }
+    },
+    "manifestProbe": {
+      "type": "object",
+      "required": ["kinds"],
+      "additionalProperties": false,
+      "properties": {
+        "kinds": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/probeKind" }
+        }
+      }
+    },
+    "probeKind": {
+      "type": "object",
+      "required": ["code", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{2,32}$",
+          "description": "PROBE-2. NAME-10: shared namespace across every installed probe plugin."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "configuration": { "$ref": "#/$defs/configurationSchema" }
+      }
+    },
+    "configurationSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/configurationField" }
+        }
+      }
+    },
+    "configurationField": {
+      "type": "object",
+      "required": ["key", "display_name"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "type": {
+          "type": "string",
+          "enum": ["text", "textarea", "number", "bool"],
+          "description": "Absent means text."
+        },
+        "display_name": { "type": "string", "minLength": 1 },
+        "help_text": { "type": "string" },
+        "required": { "type": "boolean" },
+        "secret": { "type": "boolean" }
+      }
+    },
+    "manifestMcp": {
+      "type": "object",
+      "required": ["tools"],
+      "additionalProperties": false,
+      "properties": {
+        "tools": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/mcpTool" }
+        }
+      }
+    },
+    "mcpTool": {
+      "type": "object",
+      "required": ["name", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,47}$",
+          "description": "MCP-2. The host publishes it as <id with dots replaced by underscores>__<name>, NAME-11."
+        },
+        "description": { "type": "string", "minLength": 1 },
+        "input_schema": {
+          "type": "object",
+          "description": "MCP-3. A JSON Schema whose type is object."
         }
       }
     },

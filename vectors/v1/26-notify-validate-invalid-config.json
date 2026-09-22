@@ -1,0 +1,18 @@
+{
+  "description": "A malformed field is reported as CodeInvalidConfig with data.field, so the host can highlight it in the channel form.",
+  "requirement": "NOTIFY-8",
+  "method": "notify.validate",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 33,
+    "method": "notify.validate",
+    "params": { "channel": "mychat", "config": { "webhook_url": "not a url", "token": "tok_live_xxx" } }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 33,
+    "error": { "code": -32003, "message": "webhook_url must be an absolute https URL", "data": { "field": "webhook_url" } }
+  }
+}

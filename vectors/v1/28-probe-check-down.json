@@ -1,0 +1,23 @@
+{
+  "description": "An unreachable target is a result, not an error: the plugin reports status down with a message.",
+  "requirement": "PROBE-5",
+  "method": "probe.check",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 35,
+    "method": "probe.check",
+    "params": {
+      "kind": "tcp-banner",
+      "target": "https://example.com",
+      "config": { "port": "22", "expect": "SSH-2.0" },
+      "timeout_seconds": 10
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 35,
+    "result": { "status": "down", "latency_ms": 10000, "message": "no banner within 10s" }
+  }
+}

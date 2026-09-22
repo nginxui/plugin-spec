@@ -148,7 +148,8 @@ plugin going idle, or host shutdown), the host MUST:
 
 1. Send `plugin.shutdown` as a request and wait for its reply, up to a bounded
    timeout (5 seconds in the reference host). The plugin SHOULD use this step
-   to finish in-flight `dns01.*`/`http.handle` calls, on stdio and on gRPC
+   to finish in-flight capability calls (`dns01.*`, `http.handle`,
+   `notify.send`, `probe.check`, `mcp.call`), on stdio and on gRPC
    alike (WIRE-11), and stop accepting new ones, then reply with `{}`.
 2. Send `plugin.exit` as a notification, regardless of whether step 1's
    reply arrived in time.

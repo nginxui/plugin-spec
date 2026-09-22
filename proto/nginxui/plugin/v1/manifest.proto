@@ -52,6 +52,12 @@ message Manifest {
   ManifestHTTP http = 20;
   // Drives the auto-rendered settings form.
   SettingsSchema settings_schema = 21;
+  // Metadata of the notify capability.
+  ManifestNotify notify = 22;
+  // Metadata of the probe capability.
+  ManifestProbe probe = 23;
+  // Metadata of the mcp capability.
+  ManifestMCP mcp = 24;
 }
 
 // ManifestServer describes how to start the plugin process.
@@ -145,6 +151,69 @@ message DNS01ProviderLinks {
 message ManifestHTTP {
   // "unix" (reverse proxy to a socket) or "rpc" (http.handle fallback).
   string listen = 1;
+}
+
+// ManifestNotify is the metadata block of the notify capability.
+message ManifestNotify {
+  repeated NotifyChannel channels = 1;
+}
+
+// NotifyChannel describes one vendor channel a plugin delivers notifications
+// through.
+message NotifyChannel {
+  // Channel code, shared across every installed notify plugin.
+  string code = 1;
+  string name = 2;
+  // Fields of the channel form.
+  ConfigurationSchema configuration = 3;
+}
+
+// ManifestProbe is the metadata block of the probe capability.
+message ManifestProbe {
+  repeated ProbeKind kinds = 1;
+}
+
+// ProbeKind describes one way a plugin can check the health of a target.
+message ProbeKind {
+  // Kind code, shared across every installed probe plugin.
+  string code = 1;
+  string name = 2;
+  // Fields of the probe form.
+  ConfigurationSchema configuration = 3;
+}
+
+// ConfigurationSchema drives the form of a notify channel or a probe kind.
+// The values travel as a map of strings.
+message ConfigurationSchema {
+  repeated ConfigurationField fields = 1;
+}
+
+// ConfigurationField is one entry of ConfigurationSchema.
+message ConfigurationField {
+  // Key of the value in the config map.
+  string key = 1;
+  // One of "text" (default), "textarea", "number", "bool".
+  string type = 2;
+  string display_name = 3;
+  string help_text = 4;
+  bool required = 5;
+  // The value is a credential: masked in forms and never logged.
+  bool secret = 6;
+}
+
+// ManifestMCP is the metadata block of the mcp capability.
+message ManifestMCP {
+  repeated MCPTool tools = 1;
+}
+
+// MCPTool describes one Model Context Protocol tool a plugin serves.
+message MCPTool {
+  // Tool name, unique within the plugin. The host publishes it with a prefix
+  // derived from the plugin id.
+  string name = 1;
+  string description = 2;
+  // JSON Schema of the arguments object. Absent means no arguments.
+  google.protobuf.Struct input_schema = 3;
 }
 
 // SettingsSchema drives the auto-rendered settings form.

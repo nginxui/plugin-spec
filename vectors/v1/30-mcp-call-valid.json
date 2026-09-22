@@ -1,0 +1,18 @@
+{
+  "description": "The host forwards a tool call with the unprefixed tool name; the plugin answers with text content.",
+  "requirement": "MCP-6",
+  "method": "mcp.call",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 37,
+    "method": "mcp.call",
+    "params": { "tool": "purge_cache", "arguments": { "zone": "example.com", "paths": ["/index.html"] } }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 37,
+    "result": { "content": [{ "type": "text", "text": "Purged 1 path in zone example.com." }] }
+  }
+}

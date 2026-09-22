@@ -1,0 +1,14 @@
+{
+  "description": "A well-formed channel configuration is accepted without sending anything.",
+  "requirement": "NOTIFY-8",
+  "method": "notify.validate",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 32,
+    "method": "notify.validate",
+    "params": { "channel": "mychat", "config": { "webhook_url": "https://chat.example/hooks/xxx", "token": "tok_live_xxx" } }
+  },
+  "response": { "jsonrpc": "2.0", "id": 32, "result": {} }
+}

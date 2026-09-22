@@ -1,0 +1,24 @@
+{
+  "description": "A required channel field is missing: the plugin reports CodeInvalidConfig naming the field instead of calling the vendor.",
+  "requirement": "NOTIFY-5",
+  "method": "notify.send",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 31,
+    "method": "notify.send",
+    "params": {
+      "channel": "mychat",
+      "config": { "token": "tok_live_xxx" },
+      "title": "Certificate Expiring Soon",
+      "content": "Certificate example.com expires in 7 days.",
+      "severity": "warning"
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 31,
+    "error": { "code": -32003, "message": "webhook_url is required", "data": { "field": "webhook_url" } }
+  }
+}

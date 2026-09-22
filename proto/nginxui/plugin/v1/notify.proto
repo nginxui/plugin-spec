@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Notify is the notify capability. A plugin that declares the capability
+// delivers nginx-ui notifications through the vendor channels its manifest
+// lists, and the host is the caller. See spec/12-capabilities-notify.md.
+service Notify {
+  // Delivers one notification through a channel.
+  rpc Send(NotifySendRequest) returns (NotifySendResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "notify.send";
+  }
+
+  // Validates a channel configuration without sending anything. Optional.
+  rpc Validate(NotifyValidateRequest) returns (NotifyValidateResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "notify.validate";
+  }
+}
+
+// NotifySendRequest is the params of notify.send.
+message NotifySendRequest {
+  // Channel code declared in the manifest, without any host prefix.
+  string channel = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+  // Title, already translated into the language of the notifier.
+  string title = 3;
+  // Body text, already translated and rendered.
+  string content = 4;
+  // One of "info", "success", "warning", "error".
+  string severity = 5;
+}
+
+// NotifySendResponse is the result of notify.send. It is empty.
+message NotifySendResponse {}
+
+// NotifyValidateRequest is the params of notify.validate.
+message NotifyValidateRequest {
+  // Channel code declared in the manifest.
+  string channel = 1;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 2;
+}
+
+// NotifyValidateResponse is the result of notify.validate. It is empty.
+message NotifyValidateResponse {}

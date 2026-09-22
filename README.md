@@ -3,8 +3,8 @@
 This repository is the normative specification for the [NGINX UI](https://github.com/0xJacky/nginx-ui)
 plugin system: the on-disk package format, the manifest schema, the
 JSON-RPC 2.0 wire protocol between the host and a plugin process, the
-lifecycle a conformant plugin and host MUST follow, the `dns01` capability,
-the host API a plugin process may call, the browser webapp contract, security
+lifecycle a conformant plugin and host MUST follow, the `dns01`, `notify`,
+`probe` and `mcp` capabilities, the host API a plugin process may call, the browser webapp contract, security
 and packaging rules, and the naming conventions plugin authors MUST follow.
 
 It exists so that a plugin can be written in any language, against this
@@ -36,9 +36,12 @@ plugins written with the reference SDKs.
 | `spec/06-host-api.md` | `host.*` methods, events and cron delivery (`HOST-n`) |
 | `spec/07-webapp.md` | Browser bundle contract, slots, registry API (`WEB-n`) |
 | `spec/08-security.md` | Permission model, credential handling, trust boundary (`SEC-n`) |
-| `spec/09-conformance.md` | Conformance levels: `core`, `dns01`, `webapp`, and the transport checks (`CONF-n`, `TRANSPORT-1`) |
+| `spec/09-conformance.md` | Conformance levels: `core`, `dns01`, `webapp`, `notify`, `probe`, `mcp`, and the transport checks (`CONF-n`, `TRANSPORT-1`) |
 | `spec/10-versioning.md` | Spec versioning, `api_version`, upgrade compatibility (`VER-n`) |
-| `spec/11-naming.md` | Plugin id and provider code namespaces (`NAME-n`) |
+| `spec/11-naming.md` | Plugin id, provider, channel and probe kind code namespaces, MCP tool names (`NAME-n`) |
+| `spec/12-capabilities-notify.md` | The `notify` capability's methods (`NOTIFY-n`) |
+| `spec/13-capabilities-probe.md` | The `probe` capability's methods (`PROBE-n`) |
+| `spec/14-capabilities-mcp.md` | The `mcp` capability's methods (`MCP-n`) |
 | `spec/methods.json` | Generated table of every JSON-RPC method and its proto rpc (WIRE-9) |
 | `proto/nginxui/plugin/v1/` | The proto contract, source of truth for methods and message shapes (WIRE-9) |
 | `gen/go/` | Generated Go package `pluginv1`, a Go module of its own |
@@ -104,10 +107,11 @@ make check      # lint, fail on stale generated files, run the Go tests
 
 The tools land in `$(go env GOPATH)/bin`, which the Makefile puts on `PATH`.
 Lint uses the `STANDARD` rule set with one exception, `SERVICE_SUFFIX`: the
-service names (`Plugin`, `Host`, `DNS01`, `HTTP`, `Events`) are part of the
-published gRPC paths and stay short. The generated files are committed, since
-they are published with the spec; run `make generate` after every change
-under `proto/` and commit its output together with the change.
+service names (`Plugin`, `Host`, `DNS01`, `HTTP`, `Notify`, `Probe`, `MCP`,
+`Events`) are part of the published gRPC paths and stay short. The generated
+files are committed, since they are published with the spec; run
+`make generate` after every change under `proto/` and commit its output
+together with the change.
 
 `gen/go` is the Go module `github.com/0xJacky/nginx-ui-plugin-spec/gen/go`
 (package `pluginv1`, import path `.../gen/go/nginxui/plugin/v1`). `tools/` is a

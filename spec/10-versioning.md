@@ -13,11 +13,12 @@ the single most common mistake a new plugin author makes.
 ## VER-1
 
 This document describes **spec 1.0**, which defines `api_version = 1`. A
-future spec 1.x (1.1, 1.2, ...) MAY add optional fields, new event types, new
-`host.*` methods, or new well-known slot names, but MUST NOT change the
-meaning of an existing field, remove a field, or change an existing MUST
-requirement in a way that breaks a plugin or host conformant to an earlier
-1.x. `api_version` stays `1` across the whole 1.x series.
+future spec 1.x (1.1, 1.2, ...) MAY add optional fields, new capabilities,
+new event types, new `host.*` methods, or new well-known slot names, but
+MUST NOT change the meaning of an existing field, remove a field, or change
+an existing MUST requirement in a way that breaks a plugin or host
+conformant to an earlier 1.x. `api_version` stays `1` across the whole 1.x
+series.
 
 ## VER-2
 

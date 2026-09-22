@@ -248,5 +248,45 @@
     "response": "nginxui.plugin.v1.PluginExitResponse",
     "notification": true,
     "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "mcp.call",
+    "service": "nginxui.plugin.v1.MCP",
+    "method": "Call",
+    "full_method": "/nginxui.plugin.v1.MCP/Call",
+    "request": "nginxui.plugin.v1.MCPCallRequest",
+    "response": "nginxui.plugin.v1.MCPCallResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "notify.send",
+    "service": "nginxui.plugin.v1.Notify",
+    "method": "Send",
+    "full_method": "/nginxui.plugin.v1.Notify/Send",
+    "request": "nginxui.plugin.v1.NotifySendRequest",
+    "response": "nginxui.plugin.v1.NotifySendResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "notify.validate",
+    "service": "nginxui.plugin.v1.Notify",
+    "method": "Validate",
+    "full_method": "/nginxui.plugin.v1.Notify/Validate",
+    "request": "nginxui.plugin.v1.NotifyValidateRequest",
+    "response": "nginxui.plugin.v1.NotifyValidateResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
+  },
+  {
+    "rpc_name": "probe.check",
+    "service": "nginxui.plugin.v1.Probe",
+    "method": "Check",
+    "full_method": "/nginxui.plugin.v1.Probe/Check",
+    "request": "nginxui.plugin.v1.ProbeCheckRequest",
+    "response": "nginxui.plugin.v1.ProbeCheckResponse",
+    "notification": false,
+    "direction": "host_to_plugin"
   }
 ]

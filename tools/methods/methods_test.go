@@ -23,13 +23,19 @@ const (
 
 // vector is the subset of a vectors/v1 file these tests read.
 type vector struct {
-	Method    *string `json:"method"`
-	Direction string  `json:"direction"`
-	Kind      string  `json:"kind"`
-	Request   *frame  `json:"request"`
-	Response  *frame  `json:"response"`
-	file      string
+	Method      *string `json:"method"`
+	Requirement string  `json:"requirement"`
+	Direction   string  `json:"direction"`
+	Kind        string  `json:"kind"`
+	Request     *frame  `json:"request"`
+	Response    *frame  `json:"response"`
+	file        string
 }
+
+// malformedParamsRequirement is the requirement of the vectors whose params
+// do not decode. A capability may also answer -32602 for params that decode
+// but name something unknown, such as an MCP tool (MCP-6).
+const malformedParamsRequirement = "WIRE-6"
 
 // frame is a JSON-RPC message of a vector.
 type frame struct {
@@ -135,7 +141,8 @@ func TestVectorMethodsHaveRPCs(t *testing.T) {
 
 // TestVectorPayloadsDecode asserts that params and results of the vectors are
 // the protobuf JSON mapping of the rpc messages, and that re-encoding them
-// keeps every non-default value.
+// keeps every non-default value. A WIRE-6 vector that expects -32602 carries
+// params that must not decode.
 func TestVectorPayloadsDecode(t *testing.T) {
 	index := methodIndex(t)
 
@@ -150,7 +157,7 @@ func TestVectorPayloadsDecode(t *testing.T) {
 
 		if v.Request != nil && len(v.Request.Params) > 0 {
 			err := roundTrip(m.Request, v.Request.Params)
-			if errorCode(v.Response) == codeInvalidParams {
+			if errorCode(v.Response) == codeInvalidParams && v.Requirement == malformedParamsRequirement {
 				if err == nil {
 					t.Errorf("%s: params decoded although the vector expects invalid params", v.file)
 				}

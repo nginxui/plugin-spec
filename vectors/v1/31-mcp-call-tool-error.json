@@ -1,0 +1,18 @@
+{
+  "description": "The tool ran and failed: the plugin replies with a result whose is_error is true and whose content explains the failure.",
+  "requirement": "MCP-6",
+  "method": "mcp.call",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 38,
+    "method": "mcp.call",
+    "params": { "tool": "purge_cache", "arguments": { "zone": "unknown.example" } }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 38,
+    "result": { "content": [{ "type": "text", "text": "Zone unknown.example does not exist in this account." }], "is_error": true }
+  }
+}

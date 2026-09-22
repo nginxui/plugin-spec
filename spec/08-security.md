@@ -35,6 +35,7 @@ A plugin declares the `host.*` capabilities it needs in its manifest's
 | `notify` | `host.notify` |
 | `metrics.read` | `host.metrics.snapshot` |
 | `core_api` | `registry.coreHttp` in the browser webapp contract (WEB-7) — unrelated to any `host.*` JSON-RPC method. |
+| `mcp` | Nothing the plugin calls — it gates the host publishing the plugin's `mcp` tools to MCP clients (SEC-13). Required by the `mcp` capability (MAN-33). |
 | `credentials.read:<kind>` | `host.credentials.get` for that specific `kind` only. |
 
 `host.log`, `host.settings.get` and `host.i18n.locale` require no
@@ -110,6 +111,16 @@ from `os.Environ()`) MUST be restored to their prior state immediately after
 the call returns, so that two calls using different credentials of the same
 kind never observe each other's values, and MUST NOT be written to any
 persistent location by that mechanism.
+
+## SEC-13
+
+Granting `mcp` lets every MCP client the host authorizes run the plugin's
+tools (`spec/14-capabilities-mcp.md`). A host MUST NOT publish a plugin's
+tools unless `mcp` is in the granted permission set (SEC-4), MUST apply its
+own MCP authorization to a call before forwarding it (MCP-8), and SHOULD
+show the person approving the permission that an AI assistant will be able
+to run the plugin's code on their behalf. A plugin MUST treat tool arguments
+as untrusted input (MCP-5).
 
 ## Package integrity
 

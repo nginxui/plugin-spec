@@ -37,7 +37,9 @@ that `method` is an rpc of the proto contract with the same `direction` and
 `kind` (except the `-32601` vectors, whose method must be unknown), and that
 `params` and `result` decode strictly into the rpc's request and response
 messages and re-encode to the same values (`spec/03-wire-protocol.md`
-WIRE-9, WIRE-10). A vector that expects `-32602` must fail to decode.
+WIRE-9, WIRE-10). A WIRE-6 vector that expects `-32602` must fail to decode;
+a capability vector that expects `-32602` for params that decode, such as an
+unknown MCP tool (MCP-6), must decode like any other.
 
 ## Numbering
 

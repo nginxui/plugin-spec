@@ -1,0 +1,20 @@
+{
+  "description": "The host delivers one notification through a channel the plugin declares; the plugin replies with an empty result once the vendor accepted it.",
+  "requirement": "NOTIFY-5",
+  "method": "notify.send",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 30,
+    "method": "notify.send",
+    "params": {
+      "channel": "mychat",
+      "config": { "webhook_url": "https://chat.example/hooks/xxx", "token": "tok_live_xxx" },
+      "title": "Certificate Expiring Soon",
+      "content": "Certificate example.com expires in 7 days.",
+      "severity": "warning"
+    }
+  },
+  "response": { "jsonrpc": "2.0", "id": 30, "result": {} }
+}

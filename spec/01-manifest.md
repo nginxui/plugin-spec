@@ -37,9 +37,12 @@ It is tested against `manifest.proto`, see [`schema/README.md`](../schema/README
 | `dns01` | object | no\*\* | Required when `capabilities` includes `dns01`. See `spec/05-capabilities-dns01.md`. |
 | `http` | object | no\*\* | Required when `capabilities` includes `http`. |
 | `settings_schema` | object \| null | no | Drives the auto-generated settings form. |
+| `notify` | object | no\*\* | Required when `capabilities` includes `notify`. See `spec/12-capabilities-notify.md`. |
+| `probe` | object | no\*\* | Required when `capabilities` includes `probe`. See `spec/13-capabilities-probe.md`. |
+| `mcp` | object | no\*\* | Required when `capabilities` includes `mcp`. See `spec/14-capabilities-mcp.md`. |
 
 \* At least one of `server`, `webapp` or `content` MUST be present.
-\*\* See MAN-16/MAN-17 below.
+\*\* See MAN-21, MAN-22 and MAN-31 through MAN-33 below.
 
 ### MAN-1
 
@@ -178,9 +181,11 @@ relative paths (PKG-3).
 ### MAN-19
 
 Each entry of `capabilities` MUST be one of the capability names this spec
-defines (currently `"dns01"`, `"http"`; see `spec/05-capabilities-dns01.md`
-and `spec/06-host-api.md`). An unknown capability name MUST cause the host to
-reject the manifest.
+defines (currently `"dns01"`, `"http"`, `"notify"`, `"probe"`, `"mcp"`; see
+`spec/05-capabilities-dns01.md`, `spec/06-host-api.md`,
+`spec/12-capabilities-notify.md`, `spec/13-capabilities-probe.md` and
+`spec/14-capabilities-mcp.md`). An unknown capability name MUST cause the
+host to reject the manifest.
 
 ### MAN-20
 
@@ -196,12 +201,30 @@ block with at least one entry in `dns01.providers`. See `spec/05-capabilities-dn
 When `capabilities` includes `"http"`, the manifest MUST include an `http`
 block whose `listen` field is exactly `"unix"` or `"rpc"`.
 
+### MAN-31
+
+When `capabilities` includes `"notify"`, the manifest MUST include a `notify`
+block with at least one entry in `notify.channels`. See
+`spec/12-capabilities-notify.md`.
+
+### MAN-32
+
+When `capabilities` includes `"probe"`, the manifest MUST include a `probe`
+block with at least one entry in `probe.kinds`. See
+`spec/13-capabilities-probe.md`.
+
+### MAN-33
+
+When `capabilities` includes `"mcp"`, the manifest MUST include an `mcp`
+block with at least one entry in `mcp.tools`, and `permissions` MUST include
+`"mcp"`. See `spec/14-capabilities-mcp.md` and SEC-13.
+
 ## `permissions`
 
 ### MAN-23
 
 Each entry of `permissions` MUST be one of the fixed permission names
-(`kv`, `network`, `cron`, `notify`, `metrics.read`, `core_api`) or MUST match
+(`kv`, `network`, `cron`, `notify`, `metrics.read`, `core_api`, `mcp`) or MUST match
 `^credentials\.read:.+$` with a non-empty kind after the colon. See
 `spec/08-security.md` for what each permission gates.
 

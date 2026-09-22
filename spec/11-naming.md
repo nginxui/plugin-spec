@@ -1,9 +1,11 @@
 # 11. Naming
 
-Two identifier namespaces exist in this system: plugin ids, and `dns01`
-provider codes. Both are effectively global — installing two plugins that
-collide in either namespace produces undefined behavior — so both are
-specified here rather than left to convention alone. Package file names and
+The identifier namespaces of this system are plugin ids, `dns01` provider
+codes, `notify` channel codes and `probe` kind codes. All of them are
+effectively global — installing two plugins that collide in one namespace
+produces undefined behavior — so they are specified here rather than left to
+convention alone. MCP tool names are scoped to one plugin and made global by
+the host (NAME-11). Package file names and
 the platform keys they share with `server.executables` and catalog
 `downloads` close the document.
 
@@ -67,6 +69,39 @@ with the plugin id, and MUST be stable across the plugin's own releases —
 renaming a shipped `code` breaks every certificate already configured to use
 it, since `provider_code` is stored per certificate, not re-derived from the
 manifest at issuance time.
+
+## `notify` channel codes and `probe` kind codes
+
+## NAME-10
+
+A `notify` channel `code` (NOTIFY-2) and a `probe` kind `code` (PROBE-2) MUST
+match `^[a-z0-9-]{2,32}$`. Channel codes form one namespace shared across
+every installed `notify` plugin and kind codes form one shared across every
+installed `probe` plugin: a notification channel or a health check stores
+the code alone, and the owning plugin is resolved at the time of the call.
+The rules NAME-5 and NAME-6 give for provider codes apply to them as well:
+choose a code that names the vendor or the technique, not the plugin, and
+never rename a shipped code. When several enabled plugins declare one code,
+a host MUST pick one of them deterministically; the reference host picks the
+lowest plugin id. A host keeps these codes apart from the names of its
+built-in channels and checks (NOTIFY-9, PROBE-7).
+
+## MCP tool names
+
+## NAME-11
+
+An `mcp` tool `name` (MCP-2) is scoped to one plugin. The host publishes it
+as the plugin id with every `.` replaced by `_`, followed by `__` and the
+tool name: tool `purge_cache` of plugin `io.github.example.cdn` is published
+as `io_github_example_cdn__purge_cache`. The published name is stable across
+releases as long as the plugin id and the tool name are, and it cannot
+collide: a plugin id contains no `_` (NAME-1), so the first `__` of a
+published name ends the prefix and the prefix maps back to exactly one
+plugin id. It stays within the 128 characters the Model Context Protocol
+allows for a tool name (at most 64 + 2 + 48). Some model APIs accept only 64
+characters, so a plugin author SHOULD keep the published name within 64, and
+SHOULD NOT rename a shipped tool, since MCP clients and prompts refer to it
+by name.
 
 ## Settings keys and slot names
 

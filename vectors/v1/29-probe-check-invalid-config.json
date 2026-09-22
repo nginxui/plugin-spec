@@ -1,0 +1,23 @@
+{
+  "description": "The probe cannot run with the configuration it got: the plugin reports CodeInvalidConfig naming the field.",
+  "requirement": "PROBE-5",
+  "method": "probe.check",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 36,
+    "method": "probe.check",
+    "params": {
+      "kind": "tcp-banner",
+      "target": "https://example.com",
+      "config": { "port": "ssh" },
+      "timeout_seconds": 10
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 36,
+    "error": { "code": -32003, "message": "port must be a number between 1 and 65535", "data": { "field": "port" } }
+  }
+}

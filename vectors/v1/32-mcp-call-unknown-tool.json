@@ -1,0 +1,18 @@
+{
+  "description": "A tool the manifest does not declare is rejected with -32602, as the Model Context Protocol does for an unknown tool. The params themselves decode.",
+  "requirement": "MCP-6",
+  "method": "mcp.call",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 39,
+    "method": "mcp.call",
+    "params": { "tool": "drop_database", "arguments": {} }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 39,
+    "error": { "code": -32602, "message": "unknown tool: drop_database" }
+  }
+}

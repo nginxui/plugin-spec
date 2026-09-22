@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "google/protobuf/struct.proto";
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// MCP is the mcp capability. A plugin that declares the capability serves the
+// Model Context Protocol tools its manifest lists; the host publishes them on
+// its MCP server and forwards every call. See spec/14-capabilities-mcp.md.
+service MCP {
+  // Runs one tool.
+  rpc Call(MCPCallRequest) returns (MCPCallResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "mcp.call";
+  }
+}
+
+// MCPCallRequest is the params of mcp.call.
+message MCPCallRequest {
+  // Tool name declared in the manifest, without the host prefix.
+  string tool = 1;
+  // Arguments the MCP client sent. A JSON object meant to match the tool's
+  // input_schema.
+  google.protobuf.Struct arguments = 2;
+}
+
+// MCPCallResponse is the result of mcp.call.
+message MCPCallResponse {
+  // What the tool returns to the MCP client.
+  repeated MCPContent content = 1;
+  // The tool ran and failed. content explains why.
+  bool is_error = 2;
+}
+
+// MCPContent is one content block of a tool result.
+message MCPContent {
+  // Content type. Only "text" is defined.
+  string type = 1;
+  // Text of a "text" block.
+  string text = 2;
+}

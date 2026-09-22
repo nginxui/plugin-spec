@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// Probe is the probe capability. A plugin that declares the capability checks
+// the health of a target with the probe kinds its manifest lists, and the host
+// is the caller. See spec/13-capabilities-probe.md.
+service Probe {
+  // Checks one target once.
+  rpc Check(ProbeCheckRequest) returns (ProbeCheckResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "probe.check";
+  }
+}
+
+// ProbeCheckRequest is the params of probe.check.
+message ProbeCheckRequest {
+  // Probe kind code declared in the manifest, without any host prefix.
+  string kind = 1;
+  // What to probe, usually an absolute URL. Its meaning belongs to the kind.
+  string target = 2;
+  // Field values the person filled in, keyed by field key.
+  map<string, string> config = 3;
+  // How long the host waits for the answer. The plugin should finish the
+  // check within it.
+  int32 timeout_seconds = 4;
+}
+
+// ProbeCheckResponse is the result of probe.check.
+message ProbeCheckResponse {
+  // One of "up", "down", "degraded".
+  string status = 1;
+  // Time the check took, in milliseconds.
+  int32 latency_ms = 2;
+  // Human readable detail. Expected when status is not "up".
+  string message = 3;
+}
