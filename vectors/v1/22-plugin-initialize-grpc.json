@@ -1,0 +1,27 @@
+{
+  "description": "Handshake of a plugin that also serves gRPC: it lists grpc in transports and reports the Unix socket it listens on, so the host sends capability calls there.",
+  "requirement": "WIRE-11",
+  "method": "plugin.initialize",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "plugin.initialize",
+    "params": {
+      "host": { "version": "2.7.0", "os": "linux", "arch": "amd64", "locale": "en" },
+      "settings": {},
+      "permissions": ["network"]
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "api_version": 1,
+      "capabilities": ["dns01"],
+      "transports": ["stdio", "grpc"],
+      "rpc_socket": "/var/lib/nginx-ui/plugins/.data/com.example.mydns/rpc.sock"
+    }
+  }
+}

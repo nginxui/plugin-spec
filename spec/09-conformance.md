@@ -13,13 +13,13 @@ satisfy `core` to run any plugin at all.
 | Section | Requirements |
 | --- | --- |
 | Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`) |
-| Packaging | PKG-1 through PKG-11 |
-| Wire protocol | WIRE-1 through WIRE-10; WIRE-11 only for a plugin that lists `grpc` in `transports` |
+| Packaging | PKG-1 through PKG-13 for every package; PKG-14 through PKG-17 for a catalog publisher and for a host that installs from a catalog; PKG-18 only for a host that installs plugins on other hosts |
+| Wire protocol | WIRE-1 through WIRE-10; WIRE-11 and CONF-7 only for a plugin that lists `grpc` in `transports` |
 | Lifecycle | LIFE-1 through LIFE-15 |
 | Host API | HOST-1 through HOST-16, limited to the methods the plugin actually calls or subscribes to — a plugin that never calls `host.cron.register` is not tested against HOST-10, but MUST still handle `host.log`/`host.settings.get`/`host.i18n.locale` correctly if it uses them |
 | Security | SEC-1 through SEC-12 |
 | Versioning | VER-1 through VER-6 |
-| Naming | NAME-1 through NAME-6 |
+| Naming | NAME-1 through NAME-6, NAME-9 |
 
 ## CONF-2: level `dns01`
 
@@ -73,3 +73,70 @@ is not conformant to that level and MUST NOT claim to be. It MAY describe
 itself as "implements a subset of spec 1.0 `core`" or similar, naming which
 requirements it does not meet, rather than claiming a level it only mostly
 satisfies.
+
+## CONF-7: transports
+
+A plugin that lists `grpc` in `transports` MUST satisfy every requirement of
+the levels it claims on both transports, stdio and gRPC (WIRE-11), and in
+addition:
+
+* **WIRE-11** — the endpoint it reports accepts a connection and answers
+  `plugin.ping` over gRPC right after the handshake.
+* **TRANSPORT-1** — results are identical under both transports: the same
+  request produces the same result, or the same error `code`, `message` and
+  `data`, whether it travels on stdio or on gRPC. A conformance run compares
+  normalized JSON (a result decoded into its message and encoded again, an
+  error as its `code`, `message` and `data`) of at least `dns01.options` and
+  `dns01.validate` with an empty `config` for a `dns01` plugin, and of a
+  method outside the contract, for which only `code` and `data` are compared
+  because the message names the method as each transport spells it.
+
+A plugin that does not list `grpc` is checked on stdio only; a host is never
+required to use gRPC.
+
+## Reference conformance runner
+
+`nginx-ui plugin conformance <path> [--capability dns01] [--transport stdio|grpc|both] [--timeout 90s]`
+starts the plugin under the reference host's own supervisor and host API
+and reports every case with the requirement it maps to and the transport it
+ran over (CONF-5). `<path>` is a plugin directory or a package.
+
+`--transport` picks the transports the protocol and capability cases run
+over. The default is `both` when the plugin lists `grpc` in `transports` and
+`stdio` otherwise. Asking for `grpc` or `both` from a plugin that does not
+list `grpc` fails the `WIRE-11` case.
+
+| Id | Transport | Case |
+| --- | --- | --- |
+| LIFE-1, LIFE-3, LIFE-4 | — | The handshake completes in time with a matching `api_version` and capability set. |
+| LIFE-8 | both | `plugin.ping` answers. |
+| WIRE-6 | both | A method outside the contract answers `-32601`. On gRPC it is sent to a path outside the contract. |
+| WIRE-2 | stdio | A notification for an unknown method is not answered and the connection stays usable. |
+| WIRE-4 | both | 20 concurrent `plugin.ping` calls are all answered. |
+| WIRE-1 | stdio | The plugin logs to stderr. |
+| WIRE-6 | both | Malformed params answer `-32602` or `-32000` instead of hanging: a JSON string for an object on stdio, request bytes that are no valid message on gRPC. |
+| WIRE-11 | grpc | The reported endpoint accepts a connection and answers `plugin.ping`. |
+| DNS01-4, DNS01-9, DNS01-10, DNS01-11 | both | The `dns01` methods against the manifest's first provider, as in CONF-2. |
+| TRANSPORT-1 | — | Runs when both transports ran; see CONF-7. |
+| WEB-1, WEB-5 | — | Static checks of the webapp bundle. |
+| LIFE-10 | — | `plugin.shutdown` and `plugin.exit` stop the process in time. |
+
+## Reference linter
+
+`nginx-ui plugin lint <path>` checks a plugin directory or a package against
+this spec and tags every finding with the requirement it maps to, so its
+output reads as a partial conformance report (CONF-5). The package-level
+checks, and what each id means in its output:
+
+| Id | Level | Check |
+| --- | --- | --- |
+| PKG-1 | warning | A package file name that parses (NAME-9) carries another id or version than its manifest. |
+| PKG-2 through PKG-7 | error | Archive layout, entry types, safe paths and size limits. |
+| PKG-8 | error or warning | `README.md` is missing (error), `LICENSE` or `CHANGELOG.md` is missing (warning). |
+| PKG-9 | error | A file `server.executables` or a path-containing `server.command[0]` declares is missing from the package; a missing executable bit is only a warning. |
+| PKG-12 | error | A per-platform package (`<id>-<version>-<goos>-<goarch>.tar.gz`) does not declare exactly its own platform in `server.executables`. |
+| SEC-12 | warning | A sibling `.minisig` does not verify with the pinned release keys. |
+
+PKG-12 is only checked for an archive, since a plugin directory has no file
+name to compare against. The linter has no catalog to look at, so PKG-13
+through PKG-18 are left to the catalog tooling and the host.

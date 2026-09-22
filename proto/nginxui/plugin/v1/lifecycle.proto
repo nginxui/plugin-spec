@@ -84,6 +84,10 @@ message PluginInitializeResponse {
   int32 rpc_port = 5;
   // One-time token the host presents on the loopback gRPC transport.
   string rpc_token = 6;
+  // Absolute path of the Unix socket the gRPC transport listens on. Empty
+  // means <NGINX_UI_PLUGIN_DATA_DIR>/rpc.sock. A plugin reports it when the
+  // default path does not fit the platform's socket path limit.
+  string rpc_socket = 7;
 }
 
 // PluginInitializedRequest is the params of plugin.initialized. It is empty.

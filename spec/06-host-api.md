@@ -1,9 +1,10 @@
 # 06. Host API
 
 Once a plugin has received `plugin.initialized` (LIFE-6), it may call
-`host.*` methods: plugin → host requests. This document also covers
-`events.on`, the one host → plugin notification used for both event
-delivery and cron invocation.
+`host.*` methods: plugin → host requests. This document also covers the two
+ways the host calls back into a plugin on its own: event delivery through the
+`events.on` notification (HOST-14) and fired cron entries, which call the
+entry's own method (HOST-10).
 
 | Method | Permission required | Meaning |
 | --- | --- | --- |
@@ -140,8 +141,24 @@ call it.
 
 `id`, `schedule` and `method` MUST all be non-empty (else `-32602`).
 `schedule` is a five field cron expression or `"@every <duration>"`.
-`method` is delivered back to the plugin via `events.on` (HOST-13) when the
-schedule fires — it is not itself a JSON-RPC method the host calls directly.
+`method` names a method the plugin serves. When the schedule fires, the host
+calls that method directly, as an ordinary JSON-RPC **request** (not a
+notification and not `events.on`):
+
+```json
+{ "jsonrpc": "2.0", "id": 31, "method": "catalog.refresh", "params": { "type": "refresh-catalog", "ts": 1732000000 } }
+```
+
+`params` has the shape of the `events.on` params (`EventsOnRequest`, HOST-14):
+`type` is the cron entry's `id`, `ts` the Unix seconds when the host fired
+it, and `data` is absent. The plugin MUST answer the request; the host
+ignores the result (`{}` is conventional) and logs an error reply without
+retrying. The host bounds the call (10 minutes in the reference host),
+starts an `on_demand` plugin for it (LIFE-13), and does not start an entry
+again while its previous invocation is still running. `method` SHOULD be a
+name of the plugin's own, such as `catalog.refresh`, rather than an rpc of
+the contract; such a call travels on stdio (WIRE-11).
+
 A host MUST reject registering the same `id` twice for the same plugin by
 either replacing the previous entry or erroring consistently; it MUST NOT
 silently run both.
@@ -182,12 +199,13 @@ whatever the host's own metrics subsystem produces at the time of the call.
 A plugin MUST treat it as read-only, best-effort telemetry, not a stable
 schema to build alerting logic against across host versions.
 
-## Event and cron delivery: `events.on`
+## Event delivery: `events.on`
 
 ## HOST-14
 
-The host delivers both subscribed events and fired cron entries to a plugin
-with the same notification, host → plugin, never answered:
+The host delivers subscribed events to a plugin with this notification, host
+→ plugin, never answered. Fired cron entries do not use it; they call the
+entry's own method (HOST-10).
 
 ```json
 { "jsonrpc": "2.0", "method": "events.on", "params": { "type": "cert.renewed", "data": { "domain": "example.com" }, "ts": 1732000000 } }
@@ -195,16 +213,16 @@ with the same notification, host → plugin, never answered:
 
 | Field | Type | Meaning |
 | --- | --- | --- |
-| `type` | string | An event type from the table below, or a cron entry's `method` (HOST-10). |
-| `data` | any | Event payload; `null`/absent for a cron invocation. |
+| `type` | string | An event type from the table below. |
+| `data` | any | Event payload. |
 | `ts` | integer | Unix seconds when the host sent the notification. |
 
 ## HOST-15
 
 A host MUST deliver `events.on` only for event types listed in the plugin's
-manifest `events` array (MAN-1 table), and MUST deliver a cron invocation
-only for a `method` the plugin itself registered (via `cron` in the manifest,
-MAN-26, or via `host.cron.register`, HOST-10). A plugin MUST tolerate
+manifest `events` array (MAN-1 table), and MUST call a cron `method` only for
+an entry the plugin itself registered (via `cron` in the manifest, MAN-26, or
+via `host.cron.register`, HOST-10). A plugin MUST tolerate
 receiving a `type` it does not recognize (e.g. a spec revision added one) by
 ignoring it rather than treating it as an error — `events.on` is a
 notification and there is no error channel back to the host for it anyway.

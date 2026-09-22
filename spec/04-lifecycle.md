@@ -52,10 +52,11 @@ The plugin MUST reply with `InitializeResult`:
 | --- | --- | --- | --- |
 | `api_version` | integer | yes | The wire protocol version this process implements. |
 | `capabilities` | string[] | yes | Capability names this process actually implements at runtime. |
-| `transports` | string[] | no | Additional transports the plugin can serve besides stdio (e.g. `["grpc"]`). Empty/absent means stdio only. |
+| `transports` | string[] | no | Transports the plugin serves, e.g. `["stdio", "grpc"]`. stdio is always served, listed or not; empty/absent means stdio only. Listing `grpc` opts in to the gRPC transport (`spec/03-wire-protocol.md` WIRE-11). |
 | `http_port` | integer | no | Reported by a plugin serving the `http` capability on a loopback port instead of a Unix socket (Windows). |
 | `rpc_port` | integer | no | Reported by a plugin serving gRPC on a loopback port instead of a Unix socket (Windows). |
-| `rpc_token` | string | no | Bearer token for `rpc_port`. |
+| `rpc_token` | string | no | Bearer token the host sends as `authorization: Bearer <rpc_token>` on every call to `rpc_port`. |
+| `rpc_socket` | string | no | Absolute path of the Unix socket the plugin serves gRPC on. Absent means `<NGINX_UI_PLUGIN_DATA_DIR>/rpc.sock`; a plugin whose default path exceeds the platform's socket path limit reports the path it used instead (WIRE-11). |
 
 ## LIFE-3
 
@@ -147,8 +148,8 @@ plugin going idle, or host shutdown), the host MUST:
 
 1. Send `plugin.shutdown` as a request and wait for its reply, up to a bounded
    timeout (5 seconds in the reference host). The plugin SHOULD use this step
-   to finish in-flight `dns01.*`/`http.handle` calls and stop accepting new
-   ones, then reply with `{}`.
+   to finish in-flight `dns01.*`/`http.handle` calls, on stdio and on gRPC
+   alike (WIRE-11), and stop accepting new ones, then reply with `{}`.
 2. Send `plugin.exit` as a notification, regardless of whether step 1's
    reply arrived in time.
 3. Wait for the process to exit on its own, up to a second bounded timeout
@@ -160,7 +161,8 @@ plugin going idle, or host shutdown), the host MUST:
 
 On receiving `plugin.exit`, a plugin MUST exit as soon as it reasonably can
 and MUST NOT wait for further input on stdin — no reply is expected or
-possible, since it is a notification. A plugin SHOULD exit with status code
+possible, since it is a notification. A plugin serving gRPC closes its
+listener on the way out. A plugin SHOULD exit with status code
 `0` when it received `plugin.exit` after already replying to
 `plugin.shutdown`; any other exit code, or an exit not preceded by these
 messages, is treated by the host as a crash (LIFE-12).

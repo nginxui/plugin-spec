@@ -54,7 +54,8 @@ A single frame, including its trailing `\n`, MUST NOT exceed **4 MiB**
 (`4 * 1024 * 1024` = 4,194,304 bytes). An implementation MUST treat a larger
 incoming frame as fatal to the connection: it MUST stop processing further
 frames on that stream and MUST close the connection. This bounds memory use
-against a runaway peer on either side.
+against a runaway peer on either side. The limit applies to stdio only; the
+gRPC transport has its own (WIRE-11).
 
 ## WIRE-4: concurrency and ordering
 
@@ -117,7 +118,9 @@ The connection is exactly the plugin process's stdin/stdout pipes. It ends
 when the process exits, when either side closes its end, or when WIRE-3 is
 violated. There is no reconnection within a single process lifetime; a new
 connection means a newly spawned process and a fresh `plugin.initialize`
-handshake (`spec/04-lifecycle.md`).
+handshake (`spec/04-lifecycle.md`). The optional gRPC channel (WIRE-11) lives
+inside this lifetime: it never outlives the stdio connection and is
+negotiated again by every new process.
 
 ## WIRE-9: the proto contract
 
@@ -201,11 +204,111 @@ of its response message, under these rules:
 
 ## WIRE-11: gRPC transport and error mapping
 
-A plugin that lists `grpc` in `transports` (`spec/04-lifecycle.md`) serves the
-same services over gRPC. The gRPC paths are the `full_method` values of
-`spec/methods.json`, e.g. `/nginxui.plugin.v1.DNS01/Present`. Every rpc is
-unary; a notification rpc returns its empty response at once and the caller
-ignores it.
+stdio is the baseline every plugin and host implements. A plugin MAY in
+addition serve its services over [gRPC](https://grpc.io), which a host MAY
+then use for capability calls. Nothing else changes: the methods, the
+messages, the errors and the results are the ones of the proto contract, and
+a host that never uses gRPC talks to such a plugin exactly as to any other.
+
+### Negotiation
+
+A plugin that serves gRPC lists `grpc` in the `transports` member of its
+`plugin.initialize` result (LIFE-2) and reports where it listens:
+
+```json
+{
+  "jsonrpc": "2.0", "id": 1,
+  "result": {
+    "api_version": 1,
+    "capabilities": ["dns01"],
+    "transports": ["stdio", "grpc"],
+    "rpc_socket": "/var/lib/nginx-ui/plugins/.data/com.example.mydns/rpc.sock"
+  }
+}
+```
+
+* **Unix socket.** By default the plugin listens on the Unix socket
+  `<NGINX_UI_PLUGIN_DATA_DIR>/rpc.sock` (LIFE-14) and reports its absolute
+  path in `rpc_socket`; a host MUST use that default when `rpc_socket` is
+  absent. A socket path is limited by the platform's `sun_path`: 104 bytes on
+  macOS and the BSDs and 108 bytes on Linux, both including the terminating
+  NUL. A plugin whose default path does not fit, or whose data directory is
+  unusable, MUST listen in a private directory it creates (mode `0700`) under
+  the system temporary directory instead and MUST report that path in
+  `rpc_socket`. A plugin MUST remove a stale socket file left at its path
+  before listening, SHOULD create the socket with mode `0600`, and SHOULD
+  remove it (and a directory it created for it) when it exits.
+* **Loopback TCP.** A plugin that cannot listen on a Unix socket (Windows)
+  listens on `127.0.0.1` instead and reports `rpc_port` and `rpc_token`, a
+  random value of at least 128 bits generated for every process. The host
+  sends the metadata `authorization: Bearer <rpc_token>` on every call, and
+  the plugin MUST reject a call that does not carry exactly that value with
+  `UNAUTHENTICATED`. When `rpc_port` is set, the host uses it and ignores
+  `rpc_socket`.
+
+The channel carries no TLS: the socket's file permissions, or the token on
+the loopback port, keep other local users out. A plugin MUST accept
+connections on the reported endpoint before it sends the `plugin.initialize`
+reply. After the handshake the host connects and probes the channel with
+`plugin.ping` over gRPC, bounded in time (5 seconds in the reference host).
+When the plugin does not list `grpc`, or connecting or the probe fails, the
+host uses stdio for the whole lifetime of the process; the reference host
+logs the reason once as a warning.
+
+### What travels where
+
+| Traffic | Transport |
+| --- | --- |
+| The handshake and the stop sequence: `plugin.initialize`, `plugin.initialized`, `plugin.shutdown`, `plugin.exit` | stdio, always |
+| `plugin.configure` and the liveness `plugin.ping` (LIFE-8) | stdio |
+| `host.*` calls, including `host.log`, and their replies | stdio |
+| Notifications (`events.on`) and cron invocations (HOST-10) | stdio |
+| Capability requests: every request rpc the host calls on the plugin outside the `Plugin` service, today `dns01.*` and `http.handle` | gRPC while the channel is up, stdio otherwise |
+
+The last row is defined by the contract, not by a list: a capability rpc
+added to the proto later travels over gRPC without a change to this rule.
+
+* A plugin that lists `grpc` MUST serve over gRPC every capability rpc it
+  serves on stdio, and `plugin.ping`, which the host uses to probe the
+  channel. It MUST NOT act on `plugin.initialize`, `plugin.initialized`,
+  `plugin.shutdown` or `plugin.exit` received over gRPC and SHOULD answer
+  them with `UNIMPLEMENTED`. It MAY serve other rpcs of its services over
+  gRPC; the host does not send them there.
+* A plugin MUST keep serving every method on stdio as well: a host may not
+  use gRPC at all, and falls back to stdio whenever the channel fails.
+* The result or error of a call MUST NOT depend on the transport that
+  carried it. `spec/09-conformance.md` CONF-7 checks this as `TRANSPORT-1`.
+* A plugin's in-flight capability calls on gRPC count for `plugin.shutdown`
+  (LIFE-10) exactly like those on stdio.
+
+### Fallback
+
+When the channel breaks while the process keeps running, for example
+because the plugin closed its listener, the host switches the plugin back to
+stdio for the rest of the process lifetime and logs it once. A call that
+fails with `UNAVAILABLE` and no `PluginError` detail is taken as a broken
+channel and retried once on stdio, so a plugin SHOULD NOT answer
+`UNAVAILABLE` itself. A restarted process negotiates the transport again.
+
+### Messages
+
+The gRPC paths are the `full_method` values of `spec/methods.json`, e.g.
+`/nginxui.plugin.v1.DNS01/Present`. Every rpc is unary; a notification rpc
+returns its empty response at once and the caller ignores it. Requests and
+responses are the rpc's proto messages in standard protobuf encoding with the
+usual `application/grpc` content type, so a plugin may use generated stubs.
+How an implementation produces the bytes is not part of this contract: the
+reference host and the Go SDK pass the bytes through a raw codec and convert
+them to and from the same JSON the stdio transport carries (WIRE-10), which
+lets one handler serve both transports.
+
+WIRE-3 does not apply to gRPC. The reference host and the Go SDK accept
+messages of up to 64 MiB in either direction; an implementation SHOULD
+accept at least 4 MiB. The host sends the caller's deadline as the gRPC
+deadline, and a plugin SHOULD stop working on a call once its deadline or
+cancellation arrives.
+
+### Errors
 
 A failed gRPC call carries the status code from the table below, a status
 message equal to the error `message`, and a `nginxui.plugin.v1.PluginError`
@@ -225,9 +328,11 @@ none.
 | `-32002` | Unsupported | `UNIMPLEMENTED` |
 | `-32003` | Invalid config | `INVALID_ARGUMENT`, with `data.field` (`InvalidConfigData`) in the detail |
 
-`-32700` and `-32600` do not arise on gRPC itself, where the gRPC runtime
-rejects malformed messages; they are listed for bridges that relay a JSON-RPC
-error. Without a `PluginError` detail a receiver maps the status back:
+A method-specific code outside this table travels as `UNKNOWN` with its
+detail. `-32700` and `-32600` do not arise on gRPC itself, where the gRPC
+runtime rejects malformed messages; they are listed for bridges that relay a
+JSON-RPC error. A request message that fails to decode is answered with
+`-32602`. Without a `PluginError` detail a receiver maps the status back:
 
 | gRPC status | JSON-RPC code |
 | --- | --- |
@@ -235,4 +340,6 @@ error. Without a `PluginError` detail a receiver maps the status back:
 | `INVALID_ARGUMENT` | `-32602` |
 | `UNIMPLEMENTED` | `-32002` when the method is an rpc of the contract, `-32601` otherwise |
 | `PERMISSION_DENIED`, `UNAUTHENTICATED` | `-32001` |
+| `DEADLINE_EXCEEDED`, `CANCELLED` | no error object: the call timed out or was cancelled, as a stdio call whose caller gave up |
+| `UNAVAILABLE` | no error object: the channel failed, see Fallback |
 | any other status | `-32000` |

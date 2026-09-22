@@ -36,7 +36,7 @@ plugins written with the reference SDKs.
 | `spec/06-host-api.md` | `host.*` methods, events and cron delivery (`HOST-n`) |
 | `spec/07-webapp.md` | Browser bundle contract, slots, registry API (`WEB-n`) |
 | `spec/08-security.md` | Permission model, credential handling, trust boundary (`SEC-n`) |
-| `spec/09-conformance.md` | Conformance levels: `core`, `dns01`, `webapp` (`CONF-n`) |
+| `spec/09-conformance.md` | Conformance levels: `core`, `dns01`, `webapp`, and the transport checks (`CONF-n`, `TRANSPORT-1`) |
 | `spec/10-versioning.md` | Spec versioning, `api_version`, upgrade compatibility (`VER-n`) |
 | `spec/11-naming.md` | Plugin id and provider code namespaces (`NAME-n`) |
 | `spec/methods.json` | Generated table of every JSON-RPC method and its proto rpc (WIRE-9) |
@@ -44,6 +44,8 @@ plugins written with the reference SDKs.
 | `gen/go/` | Generated Go package `pluginv1`, a Go module of its own |
 | `tools/` | Generator of `spec/methods.json` and the consistency tests, a Go module of its own |
 | `schema/plugin.schema.json` | JSON Schema (draft 2020-12) for `plugin.json`, checked against `manifest.proto` |
+| `schema/catalog.schema.json` | JSON Schema (draft 2020-12) for a marketplace catalog document (PKG-14) |
+| `spec/rfcs/` | Accepted design changes, with the reasoning the numbered requirements leave out |
 | `examples/python-dns01/` | Zero-dependency Python 3 reference plugin |
 | `vectors/v1/` | Request/response test vectors for SDK authors |
 

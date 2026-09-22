@@ -234,7 +234,7 @@ Each entry of `cron` is an object `{ "id": string, "schedule": string, "method":
 all three non-empty. `schedule` is a five field cron expression or
 `"@every <duration>"`. A manifest-declared cron entry is registered by the
 host at plugin startup with the same semantics as a `host.cron.register`
-call (HOST-9); it does not additionally require the `cron` permission,
+call (HOST-10); it does not additionally require the `cron` permission,
 because the host — not the plugin — is registering it.
 
 ## Settings schema
