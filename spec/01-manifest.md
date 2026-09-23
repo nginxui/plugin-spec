@@ -44,9 +44,10 @@ It is tested against `manifest.proto`, see [`schema/README.md`](../schema/README
 | `deploy` | object | no\*\* | Required when `capabilities` includes `cert.deploy`. See `spec/16-capabilities-deploy.md`. |
 | `blocklist` | object | no\*\* | Required when `capabilities` includes `security.blocklist`. See `spec/18-capabilities-blocklist.md`. |
 | `discovery` | object | no\*\* | Required when `capabilities` includes `upstream.discovery`. See `spec/19-capabilities-discovery.md`. |
+| `log_sink` | object | no | Tunes the `log.sink` capability. See `spec/20-capabilities-logsink.md`. |
 
 \* At least one of `server`, `webapp` or `content` MUST be present.
-\*\* See MAN-21, MAN-22 and MAN-31 through MAN-37 below.
+\*\* See MAN-21, MAN-22 and MAN-31 through MAN-38 below.
 
 ### MAN-1
 
@@ -106,6 +107,7 @@ PKG-3.
 | `command` | string[] | no\* | Fallback argv for an interpreted plugin (e.g. `["python3", "server/main.py"]`). |
 | `lifecycle` | string | no | `"resident"` (default) or `"on_demand"`. |
 | `idle_timeout_seconds` | integer | no | For `on_demand`: seconds of no acquisition before the host stops the process. |
+| `resources` | object | no | Resource hints: `memory_mb` and `cpu_percent`, see MAN-39 and LIFE-16. |
 
 \* At least one of `executables` or `command` MUST be present when `server` is present.
 
@@ -141,6 +143,20 @@ A host MUST prefer `server.executables[<goos>-<goarch>]` for the platform it
 runs on when present, and MUST fall back to `server.command` otherwise. A
 host MUST fail to start the plugin (rather than silently skipping it) when
 neither is available for its platform.
+
+### MAN-39
+
+`server.resources`, when present, declares the most the process needs:
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `memory_mb` | integer | no | Memory in MiB. `0` or absent means no hint. |
+| `cpu_percent` | integer | no | CPU time in percent of one core, `100` being one core and `250` two and a half. `0` or absent means no hint. |
+
+Both MUST NOT be negative. They are hints: a host that confines plugin
+processes applies the smaller of a hint and its own limit, and a host that
+does not ignores them (LIFE-16). A plugin author SHOULD leave headroom, since
+a process that exceeds `memory_mb` under confinement is killed.
 
 ## `webapp`
 
@@ -190,12 +206,13 @@ specified in `spec/17-content-plugins.md` (CONTENT-2 through CONTENT-7).
 Each entry of `capabilities` MUST be one of the capability names this spec
 defines (currently `"dns01"`, `"http"`, `"notify"`, `"probe"`, `"mcp"`,
 `"storage"`, `"cert.deploy"`, `"security.blocklist"`,
-`"upstream.discovery"`; see `spec/05-capabilities-dns01.md`,
+`"upstream.discovery"`, `"log.sink"`; see `spec/05-capabilities-dns01.md`,
 `spec/06-host-api.md`, `spec/12-capabilities-notify.md`,
 `spec/13-capabilities-probe.md`, `spec/14-capabilities-mcp.md`,
 `spec/15-capabilities-storage.md`, `spec/16-capabilities-deploy.md`,
-`spec/18-capabilities-blocklist.md` and
-`spec/19-capabilities-discovery.md`). An unknown capability name MUST cause
+`spec/18-capabilities-blocklist.md`,
+`spec/19-capabilities-discovery.md` and
+`spec/20-capabilities-logsink.md`). An unknown capability name MUST cause
 the host to reject the manifest.
 
 ### MAN-20
@@ -257,13 +274,21 @@ include a `discovery` block with at least one entry in
 `discovery.providers`, and `permissions` MUST include `"network"`. See
 `spec/19-capabilities-discovery.md`.
 
+### MAN-38
+
+When `capabilities` includes `"log.sink"`, `permissions` MUST include
+`"log.read"`. The `log_sink` block is optional; when present, `batch_size`
+MUST be between `0` and `4096`, `flush_interval_ms` MUST be `0` or at least
+`50`, and every entry of `formats` MUST be a format name of LOGSINK-3 and
+MUST NOT appear twice. See `spec/20-capabilities-logsink.md` and SEC-16.
+
 ## `permissions`
 
 ### MAN-23
 
 Each entry of `permissions` MUST be one of the fixed permission names
 (`kv`, `network`, `cron`, `notify`, `metrics.read`, `core_api`, `mcp`,
-`cert.deploy`) or MUST match
+`cert.deploy`, `log.read`) or MUST match
 `^credentials\.read:.+$` with a non-empty kind after the colon. See
 `spec/08-security.md` for what each permission gates.
 

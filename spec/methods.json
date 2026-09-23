@@ -290,6 +290,17 @@
     "direction": "host_to_plugin"
   },
   {
+    "rpc_name": "log.push",
+    "service": "nginxui.plugin.v1.LogSink",
+    "method": "Push",
+    "full_method": "/nginxui.plugin.v1.LogSink/Push",
+    "request": "nginxui.plugin.v1.LogSinkPushRequest",
+    "response": "nginxui.plugin.v1.LogSinkPushResponse",
+    "notification": false,
+    "direction": "host_to_plugin",
+    "streaming": true
+  },
+  {
     "rpc_name": "mcp.call",
     "service": "nginxui.plugin.v1.MCP",
     "method": "Call",

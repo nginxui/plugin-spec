@@ -41,6 +41,7 @@ var serviceDirections = map[protoreflect.Name]string{
 	"Deploy":    HostToPlugin,
 	"Blocklist": HostToPlugin,
 	"Discovery": HostToPlugin,
+	"LogSink":   HostToPlugin,
 	"Events":    HostToPlugin,
 	"Host":      PluginToHost,
 }
@@ -55,6 +56,9 @@ type Method struct {
 	Response     string `json:"response"`
 	Notification bool   `json:"notification"`
 	Direction    string `json:"direction"`
+	// Streaming marks a client streaming rpc, which travels on gRPC only
+	// (WIRE-12). It is omitted for the unary rpcs.
+	Streaming bool `json:"streaming,omitempty"`
 }
 
 // Package is the proto package of the contract.
@@ -84,8 +88,12 @@ func Collect() ([]Method, error) {
 			rpcs := sd.Methods()
 			for j := range rpcs.Len() {
 				md := rpcs.Get(j)
-				if md.IsStreamingClient() || md.IsStreamingServer() {
-					return nil, fmt.Errorf("%s: streaming rpcs cannot be mapped onto JSON-RPC", md.FullName())
+				if md.IsStreamingServer() {
+					return nil, fmt.Errorf("%s: only client streaming rpcs are supported", md.FullName())
+				}
+				streaming := proto.GetExtension(md.Options(), pluginv1.E_Streaming).(bool)
+				if streaming != md.IsStreamingClient() {
+					return nil, fmt.Errorf("%s: a streamed request and the streaming option go together", md.FullName())
 				}
 
 				rpcName := proto.GetExtension(md.Options(), pluginv1.E_RpcName).(string)
@@ -101,6 +109,9 @@ func Collect() ([]Method, error) {
 				if notification && md.Output().Fields().Len() != 0 {
 					return nil, fmt.Errorf("%s: a notification must return an empty message", md.FullName())
 				}
+				if notification && streaming {
+					return nil, fmt.Errorf("%s: a streaming rpc cannot be a notification", md.FullName())
+				}
 
 				methods = append(methods, Method{
 					RPCName:      rpcName,
@@ -111,6 +122,7 @@ func Collect() ([]Method, error) {
 					Response:     string(md.Output().FullName()),
 					Notification: notification,
 					Direction:    direction,
+					Streaming:    streaming,
 				})
 			}
 		}

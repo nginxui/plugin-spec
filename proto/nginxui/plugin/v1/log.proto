@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package nginxui.plugin.v1;
+
+import "nginxui/plugin/v1/options.proto";
+
+option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+
+// LogSink is the log.sink capability. A plugin that declares the capability
+// receives the nginx access log lines of the host, parsed, while they are
+// written, and ships them wherever it likes (a log store, a SIEM, a metrics
+// pipeline). The host is the caller and streams the lines in batches over the
+// gRPC transport only. See spec/20-capabilities-logsink.md.
+service LogSink {
+  // Delivers one batch of access log entries. The host sends every entry of
+  // the batch as one message, closes the stream and the plugin answers once.
+  rpc Push(stream LogSinkPushRequest) returns (LogSinkPushResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "log.push";
+    option (nginxui.plugin.v1.streaming) = true;
+  }
+}
+
+// LogSinkPushRequest is one message of the log.push stream: one access log
+// line.
+message LogSinkPushRequest {
+  // Absolute path of the access log the line was read from.
+  string log_path = 1;
+  // The parsed line.
+  LogEntry entry = 2;
+}
+
+// LogEntry is one access log line. Fields the host could not extract from the
+// line are absent.
+message LogEntry {
+  // Time of the request in RFC 3339 form, e.g. "2026-09-23T08:15:02Z".
+  string timestamp = 1;
+  // Client address, $remote_addr.
+  string remote_addr = 2;
+  // Request method, e.g. "GET".
+  string request_method = 3;
+  // Request target as sent by the client, $request_uri.
+  string request_uri = 4;
+  // Protocol of the request, e.g. "HTTP/1.1".
+  string protocol = 5;
+  // Response status, $status.
+  int32 status = 6;
+  // Size of the response body in bytes, $body_bytes_sent. A double so that
+  // sizes past 4 GiB stay exact (WIRE-10).
+  double body_bytes_sent = 7;
+  // $http_referer.
+  string referer = 8;
+  // $http_user_agent.
+  string user_agent = 9;
+  // Upstream servers that handled the request, $upstream_addr.
+  string upstream_addr = 10;
+  // Request processing time in seconds, $request_time.
+  double request_time = 11;
+  // Time the upstream took in seconds, $upstream_response_time.
+  double upstream_response_time = 12;
+  // Host the request was served for, $host.
+  string host = 13;
+  // The line as nginx wrote it, without the line break.
+  string raw = 14;
+  // How the host read the line: "combined" when it parsed the nginx
+  // combined format, "raw" when it could not parse the line and only raw and
+  // timestamp are set.
+  string format = 15;
+}
+
+// LogSinkPushResponse is the answer to one log.push stream.
+message LogSinkPushResponse {
+  // Entries the plugin kept.
+  uint32 accepted = 1;
+  // Entries the plugin received and discarded.
+  uint32 rejected = 2;
+}

@@ -4,7 +4,7 @@ This repository is the normative specification for the [NGINX UI](https://github
 plugin system: the on-disk package format, the manifest schema, the
 JSON-RPC 2.0 wire protocol between the host and a plugin process, the
 lifecycle a conformant plugin and host MUST follow, the `dns01`, `notify`,
-`probe`, `mcp`, `storage`, `cert.deploy`, `security.blocklist` and `upstream.discovery` capabilities, content plugins, the host API a plugin process may call, the browser webapp contract, security
+`probe`, `mcp`, `storage`, `cert.deploy`, `security.blocklist`, `upstream.discovery` and `log.sink` capabilities, content plugins, the host API a plugin process may call, the browser webapp contract, security
 and packaging rules, and the naming conventions plugin authors MUST follow.
 
 It exists so that a plugin can be written in any language, against this
@@ -30,15 +30,15 @@ plugins written with the reference SDKs.
 | --- | --- |
 | `spec/01-manifest.md` | `plugin.json` schema and validation rules (`MAN-n`) |
 | `spec/02-packaging.md` | Archive format, layout, size limits, required files (`PKG-n`) |
-| `spec/03-wire-protocol.md` | JSON-RPC 2.0 framing, error codes, message limits (`WIRE-n`) |
-| `spec/04-lifecycle.md` | Handshake, liveness, configuration, shutdown (`LIFE-n`) |
+| `spec/03-wire-protocol.md` | JSON-RPC 2.0 framing, error codes, message limits, the gRPC transport and streaming rpcs (`WIRE-n`) |
+| `spec/04-lifecycle.md` | Handshake, liveness, configuration, shutdown, resource limits (`LIFE-n`) |
 | `spec/05-capabilities-dns01.md` | The `dns01` capability's methods (`DNS01-n`) |
 | `spec/06-host-api.md` | `host.*` methods, events and cron delivery (`HOST-n`) |
 | `spec/07-webapp.md` | Browser bundle contract, slots, registry API (`WEB-n`) |
 | `spec/08-security.md` | Permission model, credential handling, trust boundary (`SEC-n`) |
-| `spec/09-conformance.md` | Conformance levels: `core`, `dns01`, `webapp`, `notify`, `probe`, `mcp`, `storage`, `cert.deploy`, `content`, `security.blocklist`, `upstream.discovery`, and the transport checks (`CONF-n`, `TRANSPORT-1`) |
+| `spec/09-conformance.md` | Conformance levels: `core`, `dns01`, `webapp`, `notify`, `probe`, `mcp`, `storage`, `cert.deploy`, `content`, `security.blocklist`, `upstream.discovery`, `log.sink`, and the transport checks (`CONF-n`, `TRANSPORT-1`) |
 | `spec/10-versioning.md` | Spec versioning, `api_version`, upgrade compatibility (`VER-n`) |
-| `spec/11-naming.md` | Plugin id, provider, channel, probe kind, storage backend, deploy target kind, blocklist source kind and discovery provider code namespaces, MCP tool names (`NAME-n`) |
+| `spec/11-naming.md` | Plugin id, provider, channel, probe kind, storage backend, deploy target kind, blocklist source kind and discovery provider code namespaces, MCP tool names, resource groups (`NAME-n`) |
 | `spec/12-capabilities-notify.md` | The `notify` capability's methods (`NOTIFY-n`) |
 | `spec/13-capabilities-probe.md` | The `probe` capability's methods (`PROBE-n`) |
 | `spec/14-capabilities-mcp.md` | The `mcp` capability's methods (`MCP-n`) |
@@ -47,6 +47,7 @@ plugins written with the reference SDKs.
 | `spec/17-content-plugins.md` | Templates and translation files of the `content` block, process-less plugins (`CONTENT-n`) |
 | `spec/18-capabilities-blocklist.md` | The `security.blocklist` capability's methods (`BLOCKLIST-n`) |
 | `spec/19-capabilities-discovery.md` | The `upstream.discovery` capability's methods (`DISCOVERY-n`) |
+| `spec/20-capabilities-logsink.md` | The `log.sink` capability's stream (`LOGSINK-n`) |
 | `spec/methods.json` | Generated table of every JSON-RPC method and its proto rpc (WIRE-9) |
 | `proto/nginxui/plugin/v1/` | The proto contract, source of truth for methods and message shapes (WIRE-9) |
 | `gen/go/` | Generated Go package `pluginv1`, a Go module of its own |
@@ -113,7 +114,7 @@ make check      # lint, fail on stale generated files, run the Go tests
 The tools land in `$(go env GOPATH)/bin`, which the Makefile puts on `PATH`.
 Lint uses the `STANDARD` rule set with one exception, `SERVICE_SUFFIX`: the
 service names (`Plugin`, `Host`, `DNS01`, `HTTP`, `Notify`, `Probe`, `MCP`,
-`Storage`, `Deploy`, `Blocklist`, `Discovery`, `Events`) are part of the
+`Storage`, `Deploy`, `Blocklist`, `Discovery`, `LogSink`, `Events`) are part of the
 published gRPC paths and stay short. The generated
 files are committed, since they are published with the spec; run
 `make generate` after every change under `proto/` and commit its output

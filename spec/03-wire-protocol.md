@@ -9,7 +9,8 @@ plugin, and the plugin calls `host.*` methods back (`spec/06-host-api.md`).
 Method names and message shapes are defined once, in the proto contract under
 `proto/nginxui/plugin/v1/` (WIRE-9). Every `params` and `result` in this spec
 is the protobuf JSON mapping of a message from that contract (WIRE-10). The
-same services MAY also be served over gRPC (WIRE-11).
+same services MAY also be served over gRPC (WIRE-11), which also carries the
+streaming rpcs stdio cannot (WIRE-12).
 
 ## WIRE-1: transport and framing
 
@@ -132,7 +133,7 @@ proto wins and the chapter is wrong.
 
 | File | Contents |
 | --- | --- |
-| `options.proto` | The `rpc_name` and `notification` method options |
+| `options.proto` | The `rpc_name`, `notification` and `streaming` method options |
 | `lifecycle.proto` | Service `Plugin`: `plugin.*` (`spec/04-lifecycle.md`) |
 | `host.proto` | Service `Host`: `host.*` (`spec/06-host-api.md`) |
 | `dns01.proto` | Service `DNS01`: `dns01.*` (`spec/05-capabilities-dns01.md`) |
@@ -144,6 +145,7 @@ proto wins and the chapter is wrong.
 | `deploy.proto` | Service `Deploy`: `deploy.*` (`spec/16-capabilities-deploy.md`) |
 | `blocklist.proto` | Service `Blocklist`: `blocklist.fetch` (`spec/18-capabilities-blocklist.md`) |
 | `discovery.proto` | Service `Discovery`: `discovery.resolve` (`spec/19-capabilities-discovery.md`) |
+| `log.proto` | Service `LogSink`: the `log.push` stream (`spec/20-capabilities-logsink.md`) |
 | `events.proto` | Service `Events`: `events.on` |
 | `errors.proto` | `PluginError`, `InvalidConfigData` and the `ErrorCode` enum (WIRE-5, WIRE-6) |
 | `manifest.proto` | `Manifest`, the shape of `plugin.json` (`spec/01-manifest.md`) |
@@ -154,6 +156,8 @@ proto wins and the chapter is wrong.
 * An rpc with `(nginxui.plugin.v1.notification) = true` is sent as a
   notification (WIRE-2). Its response message is empty and never sent on
   stdio.
+* An rpc with `(nginxui.plugin.v1.streaming) = true` is a client stream that
+  travels on gRPC only (WIRE-12).
 * The host serves the `Host` service and the plugin calls it
   (`plugin_to_host`). The plugin serves every other service and the host calls
   it (`host_to_plugin`).
@@ -169,10 +173,11 @@ proto wins and the chapter is wrong.
 `spec/methods.json` is generated from the compiled descriptors by
 `tools/methods` (`make generate`). For every rpc it lists `rpc_name`,
 `service`, `method`, `full_method` (the gRPC path), `request`, `response`,
-`notification` and `direction`. `make check` fails when the file is stale,
-and the tests of `tools/methods` assert that every method used in
-`vectors/v1/` is an rpc with the same direction and kind, and that every
-vector payload decodes into its message.
+`notification` and `direction`, and `"streaming": true` for a streaming rpc
+(WIRE-12). `make check` fails when the file is stale, and the tests of
+`tools/methods` assert that every method used in `vectors/v1/` is an rpc
+with the same direction and kind, and that every vector payload decodes
+into its message.
 
 A plugin author does not need to read the proto: the JSON in these chapters
 and the vectors are complete. The proto serves SDK and host implementers and
@@ -273,10 +278,12 @@ logs the reason once as a warning.
 | `plugin.configure` and the liveness `plugin.ping` (LIFE-8) | stdio |
 | `host.*` calls, including `host.log`, and their replies | stdio |
 | Notifications (`events.on`) and cron invocations (HOST-10) | stdio |
-| Capability requests: every request rpc the host calls on the plugin outside the `Plugin` service, today `dns01.*`, `http.handle`, `notify.*`, `probe.check`, `mcp.call`, `storage.*`, `deploy.*`, `blocklist.fetch` and `discovery.resolve` | gRPC while the channel is up, stdio otherwise |
+| Capability requests: every unary request rpc the host calls on the plugin outside the `Plugin` service, today `dns01.*`, `http.handle`, `notify.*`, `probe.check`, `mcp.call`, `storage.*`, `deploy.*`, `blocklist.fetch` and `discovery.resolve` | gRPC while the channel is up, stdio otherwise |
+| Streaming rpcs (WIRE-12), today `log.push` | gRPC only, never stdio |
 
-The last row is defined by the contract, not by a list: a capability rpc
-added to the proto later travels over gRPC without a change to this rule.
+The last two rows are defined by the contract, not by a list: a capability
+rpc added to the proto later travels over gRPC without a change to this
+rule.
 
 * A plugin that lists `grpc` MUST serve over gRPC every capability rpc it
   serves on stdio, and `plugin.ping`, which the host uses to probe the
@@ -285,7 +292,8 @@ added to the proto later travels over gRPC without a change to this rule.
   them with `UNIMPLEMENTED`. It MAY serve other rpcs of its services over
   gRPC; the host does not send them there.
 * A plugin MUST keep serving every method on stdio as well: a host may not
-  use gRPC at all, and falls back to stdio whenever the channel fails.
+  use gRPC at all, and falls back to stdio whenever the channel fails. The
+  streaming rpcs are the exception, they have no stdio form (WIRE-12).
 * The result or error of a call MUST NOT depend on the transport that
   carried it. `spec/09-conformance.md` CONF-7 checks this as `TRANSPORT-1`.
 * A plugin's in-flight capability calls on gRPC count for `plugin.shutdown`
@@ -303,8 +311,9 @@ channel and retried once on stdio, so a plugin SHOULD NOT answer
 ### Messages
 
 The gRPC paths are the `full_method` values of `spec/methods.json`, e.g.
-`/nginxui.plugin.v1.DNS01/Present`. Every rpc is unary; a notification rpc
-returns its empty response at once and the caller ignores it. Requests and
+`/nginxui.plugin.v1.DNS01/Present`. Every rpc is unary except the streaming
+rpcs of WIRE-12; a notification rpc returns its empty response at once and
+the caller ignores it. Requests and
 responses are the rpc's proto messages in standard protobuf encoding with the
 usual `application/grpc` content type, so a plugin may use generated stubs.
 How an implementation produces the bytes is not part of this contract: the
@@ -353,3 +362,40 @@ JSON-RPC error. A request message that fails to decode is answered with
 | `DEADLINE_EXCEEDED`, `CANCELLED` | no error object: the call timed out or was cancelled, as a stdio call whose caller gave up |
 | `UNAVAILABLE` | no error object: the channel failed, see Fallback |
 | any other status | `-32000` |
+
+## WIRE-12: streaming rpcs
+
+Some traffic is a flow rather than a call: the `log.sink` capability hands a
+plugin every access log line (`spec/20-capabilities-logsink.md`). The
+contract carries such traffic as **client streaming** gRPC rpcs, marked with
+`(nginxui.plugin.v1.streaming) = true` next to a streamed request in the
+proto:
+
+```proto
+rpc Push(stream LogSinkPushRequest) returns (LogSinkPushResponse) {
+  option (nginxui.plugin.v1.rpc_name) = "log.push";
+  option (nginxui.plugin.v1.streaming) = true;
+}
+```
+
+* The caller opens the stream, sends zero or more request messages and
+  half-closes it. The callee reads until the end of the stream and answers
+  exactly once, with the response message or with an error status mapped as
+  in WIRE-11. The caller's deadline bounds the whole stream.
+* A streaming rpc has no JSON-RPC form. It MUST NOT be sent on stdio, and a
+  peer that receives its `rpc_name` on stdio MUST answer `-32601` exactly as
+  for a method it does not know (vector 47). A plugin that serves a
+  streaming rpc therefore MUST list `grpc` in `transports`.
+* Its messages still have a JSON mapping (WIRE-10), which the chapters use
+  to show them and which an implementation MAY use internally, as the
+  reference host and the Go SDK do for unary rpcs.
+* `spec/methods.json` marks a streaming rpc with `"streaming": true`.
+  `tools/methods` rejects a streamed request without the option, the option
+  without a streamed request, a streaming notification and any server
+  streaming or bidirectional rpc: only client streams are part of the
+  contract.
+* A host counts a stream still open during `plugin.shutdown` as an
+  in-flight capability call (LIFE-10) and does not open a new one once it
+  sent `plugin.shutdown`.
+
+Today the only streaming rpc is `log.push`, a host → plugin stream.

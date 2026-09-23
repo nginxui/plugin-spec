@@ -1,0 +1,32 @@
+{
+  "description": "log.push is a client streaming rpc that travels on gRPC only: sent on stdio it has no handler and answers method not found, like an unknown method.",
+  "requirement": "WIRE-12",
+  "method": "log.push",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 60,
+    "method": "log.push",
+    "params": {
+      "log_path": "/var/log/nginx/access.log",
+      "entry": {
+        "timestamp": "2026-09-23T08:15:02Z",
+        "remote_addr": "203.0.113.7",
+        "request_method": "GET",
+        "request_uri": "/index.html",
+        "protocol": "HTTP/1.1",
+        "status": 200,
+        "body_bytes_sent": 612,
+        "user_agent": "curl/8.9.1",
+        "raw": "203.0.113.7 - - [23/Sep/2026:08:15:02 +0000] \"GET /index.html HTTP/1.1\" 200 612 \"-\" \"curl/8.9.1\"",
+        "format": "combined"
+      }
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 60,
+    "error": { "code": -32601, "message": "method not found: log.push" }
+  }
+}

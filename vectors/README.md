@@ -34,7 +34,8 @@ this spec describes.
 
 `make check` runs the tests of `tools/methods`, which assert for every vector
 that `method` is an rpc of the proto contract with the same `direction` and
-`kind` (except the `-32601` vectors, whose method must be unknown), and that
+`kind` (except the `-32601` vectors, whose method must be unknown or a
+streaming rpc that stdio refuses, WIRE-12), and that
 `params` and `result` decode strictly into the rpc's request and response
 messages and re-encode to the same values (`spec/03-wire-protocol.md`
 WIRE-9, WIRE-10). A WIRE-6 vector that expects `-32602` must fail to decode;

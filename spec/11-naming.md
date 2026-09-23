@@ -7,9 +7,11 @@ codes, `notify` channel codes, `probe` kind codes, `storage` backend codes,
 effectively global — installing two plugins that collide in one namespace
 produces undefined behavior — so they are specified here rather than left to
 convention alone. MCP tool names are scoped to one plugin and made global by
-the host (NAME-11). Package file names and
-the platform keys they share with `server.executables` and catalog
-`downloads` close the document.
+the host (NAME-11). The `formats` of a `log.sink`
+plugin are a closed set of names this spec defines (LOGSINK-3), not a
+namespace a plugin extends. Package file names, the platform keys they
+share with `server.executables` and catalog `downloads`, and the resource
+groups of plugin processes close the document.
 
 ## Plugin ids
 
@@ -153,3 +155,16 @@ that leaves a valid plugin id (NAME-1) on the left and a semantic version on
 the right. A plugin author SHOULD NOT publish a version whose prerelease part
 ends in such a pair (`1.0.0-linux-amd64`), since its portable package name
 would read as a per-platform one.
+
+## Resource groups
+
+## NAME-12
+
+A host that confines plugin processes (LIFE-16) SHOULD name the resource
+group of a plugin after the plugin id and nothing else, so an operator
+finds it and two plugins never share one. A plugin id is a safe path segment
+(NAME-1: lowercase letters, digits, hyphens and dots, never `.` or `..`
+alone), so it can serve as a directory name unchanged; a host MUST still
+reject or escape an id that would leave the directory of the groups. The
+reference host uses `<cgroup root>/nginx-ui/plugins/<plugin id>` and
+replaces every character outside `[a-z0-9.-]` with `_`.

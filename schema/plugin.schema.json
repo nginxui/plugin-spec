@@ -86,6 +86,16 @@
         "required": ["discovery", "permissions"],
         "properties": { "permissions": { "contains": { "const": "network" } } }
       }
+    },
+    {
+      "if": {
+        "properties": { "capabilities": { "contains": { "const": "log.sink" } } },
+        "required": ["capabilities"]
+      },
+      "then": {
+        "required": ["permissions"],
+        "properties": { "permissions": { "contains": { "const": "log.read" } } }
+      }
     }
   ],
   "properties": {
@@ -118,7 +128,7 @@
     "content": { "$ref": "#/$defs/manifestContent" },
     "capabilities": {
       "type": "array",
-      "items": { "type": "string", "enum": ["dns01", "http", "notify", "probe", "mcp", "storage", "cert.deploy", "security.blocklist", "upstream.discovery"] },
+      "items": { "type": "string", "enum": ["dns01", "http", "notify", "probe", "mcp", "storage", "cert.deploy", "security.blocklist", "upstream.discovery", "log.sink"] },
       "uniqueItems": true,
       "description": "MAN-19, MAN-20."
     },
@@ -162,7 +172,8 @@
     "storage": { "$ref": "#/$defs/manifestStorage" },
     "deploy": { "$ref": "#/$defs/manifestDeploy" },
     "blocklist": { "$ref": "#/$defs/manifestBlocklist" },
-    "discovery": { "$ref": "#/$defs/manifestDiscovery" }
+    "discovery": { "$ref": "#/$defs/manifestDiscovery" },
+    "log_sink": { "$ref": "#/$defs/manifestLogSink" }
   },
   "$defs": {
     "safeRelativePath": {
@@ -174,7 +185,7 @@
     "permission": {
       "type": "string",
       "anyOf": [
-        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api", "mcp", "cert.deploy"] },
+        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api", "mcp", "cert.deploy", "log.read"] },
         { "pattern": "^credentials\\.read:.+$" }
       ]
     },
@@ -226,6 +237,24 @@
         "idle_timeout_seconds": {
           "type": "integer",
           "minimum": 0
+        },
+        "resources": { "$ref": "#/$defs/manifestResources" }
+      }
+    },
+    "manifestResources": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "MAN-39. Hints a host that confines plugin processes applies, capped by its own limits (LIFE-16).",
+      "properties": {
+        "memory_mb": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Memory in MiB. 0 or absent means no hint."
+        },
+        "cpu_percent": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "CPU time in percent of one core, 100 being one core. 0 or absent means no hint."
         }
       }
     },
@@ -493,6 +522,32 @@
         },
         "name": { "type": "string", "minLength": 1 },
         "configuration": { "$ref": "#/$defs/configurationSchema" }
+      }
+    },
+    "manifestLogSink": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "batch_size": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096,
+          "description": "LOGSINK-2. 0 or absent means 256."
+        },
+        "flush_interval_ms": {
+          "type": "integer",
+          "anyOf": [
+            { "const": 0 },
+            { "minimum": 50 }
+          ],
+          "description": "LOGSINK-2. 0 or absent means 500."
+        },
+        "formats": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["combined", "raw"] },
+          "uniqueItems": true,
+          "description": "LOGSINK-3. Empty or absent means every line."
+        }
       }
     },
     "configurationSchema": {

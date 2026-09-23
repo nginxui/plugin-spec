@@ -53,7 +53,7 @@ The plugin MUST reply with `InitializeResult`:
 | --- | --- | --- | --- |
 | `api_version` | integer | yes | The wire protocol version this process implements. |
 | `capabilities` | string[] | yes | Capability names this process actually implements at runtime. |
-| `transports` | string[] | no | Transports the plugin serves, e.g. `["stdio", "grpc"]`. stdio is always served, listed or not; empty/absent means stdio only. Listing `grpc` opts in to the gRPC transport (`spec/03-wire-protocol.md` WIRE-11). |
+| `transports` | string[] | no | Transports the plugin serves, e.g. `["stdio", "grpc"]`. stdio is always served, listed or not; empty/absent means stdio only. Listing `grpc` opts in to the gRPC transport (`spec/03-wire-protocol.md` WIRE-11). A `log.sink` plugin MUST list `grpc` (LOGSINK-4). |
 | `http_port` | integer | no | Reported by a plugin serving the `http` capability on a loopback port instead of a Unix socket (Windows). |
 | `rpc_port` | integer | no | Reported by a plugin serving gRPC on a loopback port instead of a Unix socket (Windows). |
 | `rpc_token` | string | no | Bearer token the host sends as `authorization: Bearer <rpc_token>` on every call to `rpc_port`. |
@@ -151,8 +151,10 @@ plugin going idle, or host shutdown), the host MUST:
    timeout (5 seconds in the reference host). The plugin SHOULD use this step
    to finish in-flight capability calls (`dns01.*`, `http.handle`,
    `notify.send`, `probe.check`, `mcp.call`, `storage.*`, `deploy.push`,
-   `blocklist.fetch`, `discovery.resolve`), on stdio and on gRPC alike
-   (WIRE-11), and stop accepting new ones, then reply with `{}`.
+   `blocklist.fetch`, `discovery.resolve`) and open `log.push` streams, on
+   stdio and on gRPC alike (WIRE-11, WIRE-12), and stop accepting new ones,
+   then reply with `{}`. The host opens no new stream once it sent
+   `plugin.shutdown`.
 2. Send `plugin.exit` as a notification, regardless of whether step 1's
    reply arrived in time.
 3. Wait for the process to exit on its own, up to a second bounded timeout
@@ -213,3 +215,37 @@ The host MUST NOT forward its own ACME-client-only environment variables
 environment: those variables belong to the host's built-in HTTP-01 path, and
 a `dns01` plugin has its own, explicit way to receive the equivalent setting
 per certificate (`spec/05-capabilities-dns01.md`).
+
+## Resource limits
+
+## LIFE-16
+
+A host MAY confine the resources of a plugin process: its memory, its CPU
+time or both, with an operating system mechanism such as a Linux cgroup. The
+manifest MAY declare what the process needs at most in
+`server.resources` (MAN-39); a host that confines processes applies the
+smaller of a hint and its own limit for each resource, so a hint can lower a
+limit but never raise it, and ignores the hints otherwise. A host that
+confines processes SHOULD show the limits in effect for every plugin and
+whether they are actually enforced.
+
+A plugin MUST tolerate being killed at any moment, without `plugin.shutdown`
+or `plugin.exit`: a process that exceeds its memory limit is killed with
+`SIGKILL` by the kernel's out-of-memory killer. It MUST NOT rely on the stop
+sequence (LIFE-10) to keep the files of its data directory consistent. The
+host handles such an exit as a crash (LIFE-12), so a plugin that keeps
+exceeding its limit ends in the error state.
+
+The reference host confines processes on Linux with cgroup v2 only. It
+creates `<cgroup root>/nginx-ui/plugins/<plugin id>` before starting a
+process, writes the limits that apply, `memory.max` together with
+`memory.swap.max` `0` so a limited process cannot swap, and `cpu.max` as a
+quota of `cpu_percent` × 1000 µs per 100 000 µs period (100 being one core),
+starts the process inside the group and removes the group once the process
+exited. Without any limit it creates no group. Its settings `MemoryLimitMB`
+and `CPUPercent` (`0` meaning unlimited) are the host limits, and
+`CgroupRoot` (`/sys/fs/cgroup` by default) names the mount point. Where
+cgroup v2 is missing or its files cannot be written (another operating
+system, a process without the privilege, a container without delegation)
+the processes run without limits and the plugin info reports the limits as
+not enforced.

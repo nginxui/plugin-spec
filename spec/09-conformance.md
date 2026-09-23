@@ -1,8 +1,8 @@
 # 09. Conformance
 
-This spec defines eleven conformance levels: `core`, `dns01`, `webapp`,
+This spec defines twelve conformance levels: `core`, `dns01`, `webapp`,
 `notify`, `probe`, `mcp`, `storage`, `cert.deploy`, `content`,
-`security.blocklist` and `upstream.discovery`. A plugin or a host declares
+`security.blocklist`, `upstream.discovery` and `log.sink`. A plugin or a host declares
 which level(s) it
 targets; a level is satisfied only when every requirement it lists holds,
 not merely most of them. Levels are additive: every level other than `core`
@@ -15,10 +15,10 @@ satisfy `core` to run any plugin at all.
 
 | Section | Requirements |
 | --- | --- |
-| Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`, and the capability blocks MAN-31 through MAN-37, which belong to their levels) |
+| Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30, MAN-39 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`, and the capability blocks MAN-31 through MAN-38, which belong to their levels) |
 | Packaging | PKG-1 through PKG-13 for every package; PKG-14 through PKG-17 for a catalog publisher and for a host that installs from a catalog; PKG-18 only for a host that installs plugins on other hosts |
-| Wire protocol | WIRE-1 through WIRE-10; WIRE-11 and CONF-7 only for a plugin that lists `grpc` in `transports` |
-| Lifecycle | LIFE-1 through LIFE-15 |
+| Wire protocol | WIRE-1 through WIRE-10; WIRE-11, WIRE-12 and CONF-7 only for a plugin that lists `grpc` in `transports` |
+| Lifecycle | LIFE-1 through LIFE-16 |
 | Host API | HOST-1 through HOST-16, limited to the methods the plugin actually calls or subscribes to — a plugin that never calls `host.cron.register` is not tested against HOST-10, but MUST still handle `host.log`/`host.settings.get`/`host.i18n.locale` correctly if it uses them |
 | Security | SEC-1 through SEC-12 |
 | Versioning | VER-1 through VER-6 |
@@ -55,13 +55,15 @@ WEB-10 and WEB-11 (the iframe page contract).
 
 A host implementation claims a level the same way: `core` is mandatory, and
 `dns01`, `webapp`, `notify`, `probe`, `mcp`, `storage`, `cert.deploy`,
-`content`, `security.blocklist` and `upstream.discovery` apply only if the
-host intends to run plugins of that kind at all. For the capability levels,
+`content`, `security.blocklist`, `upstream.discovery` and `log.sink` apply
+only if the host intends to run plugins of that kind at all. For the capability levels,
 the host side is the requirements a chapter marks as host behavior
 (NOTIFY-9 through NOTIFY-11, PROBE-7 and PROBE-8, MCP-7 and MCP-8, SEC-13,
 STORAGE-12 through STORAGE-14, DEPLOY-10 through DEPLOY-12, SEC-14,
 CONTENT-1, CONTENT-4, CONTENT-5, CONTENT-8, CONTENT-9, BLOCKLIST-8 through
-BLOCKLIST-11, DISCOVERY-8 through DISCOVERY-11, SEC-15).
+BLOCKLIST-11, DISCOVERY-8 through DISCOVERY-11, SEC-15, LOGSINK-8 through
+LOGSINK-11, SEC-16). A host that confines plugin processes also satisfies
+LIFE-16 and SEC-17.
 A host MAY legitimately support `core` and `dns01` but not `webapp`
 (e.g. a headless installation with no browser UI) or vice versa; it MUST NOT
 claim a level while silently skipping one of that level's MUST requirements.
@@ -73,7 +75,7 @@ specific requirement ids checked and their pass/fail outcome, not just a
 level name, so a reader can see exactly what was and was not verified. The
 `vectors/v1/` directory exists to make at least the wire-level requirements
 (WIRE-\*, LIFE-\*, DNS01-\*, NOTIFY-\*, PROBE-\*, MCP-\*, STORAGE-\*,
-DEPLOY-\*, BLOCKLIST-\*, DISCOVERY-\*, and the `host.*` methods in HOST-\*)
+DEPLOY-\*, BLOCKLIST-\*, DISCOVERY-\*, LOGSINK-4, and the `host.*` methods in HOST-\*)
 mechanically checkable without a live host or a live plugin on the other
 end.
 
@@ -108,7 +110,8 @@ addition:
   may reach a live source whose answer changes between the two calls), and
   of a method outside the
   contract, for which only `code` and `data` are compared because the
-  message names the method as each transport spells it.
+  message names the method as each transport spells it. A streaming rpc
+  (WIRE-12) exists on gRPC only and is not compared.
 
 A plugin that does not list `grpc` is checked on stdio only; a host is never
 required to use gRPC.
@@ -205,9 +208,24 @@ additionally satisfy:
 | Manifest | MAN-19, MAN-23, MAN-37 (the `upstream.discovery` capability declaration rules) |
 | Capability | DISCOVERY-1 through DISCOVERY-7 |
 
+## CONF-16: level `log.sink`
+
+A plugin declaring `"log.sink"` in `capabilities` MUST additionally
+satisfy:
+
+| Section | Requirements |
+| --- | --- |
+| Manifest | MAN-19, MAN-23, MAN-38 (the `log.sink` capability declaration rules) |
+| Wire protocol | WIRE-11, WIRE-12 |
+| Capability | LOGSINK-1 through LOGSINK-7 |
+| Security | SEC-16 |
+
+The level needs the gRPC transport: a `log.sink` plugin that does not list
+`grpc` in `transports` cannot claim it (LOGSINK-4).
+
 ## Reference conformance runner
 
-`nginx-ui plugin conformance <path> [--capability dns01|notify|probe|mcp|storage|cert.deploy|security.blocklist|upstream.discovery] [--transport stdio|grpc|both] [--timeout 90s]`
+`nginx-ui plugin conformance <path> [--capability dns01|notify|probe|mcp|storage|cert.deploy|security.blocklist|upstream.discovery|log.sink] [--transport stdio|grpc|both] [--timeout 90s]`
 starts the plugin under the reference host's own supervisor and host API
 and reports every case with the requirement it maps to and the transport it
 ran over (CONF-5). `<path>` is a plugin directory or a package. A plugin
@@ -238,6 +256,8 @@ list `grpc` fails the `WIRE-11` case.
 | DEPLOY-6 | both | `deploy.push` with `dry_run: true`, an empty `config` and a throwaway self-signed certificate for `conformance.invalid` answers within 30 seconds: `-32003` with `data.field` when the kind declares a required field, otherwise a result. A real push is never made. |
 | BLOCKLIST-5, BLOCKLIST-6 | both | `blocklist.fetch` with an empty `config` against the manifest's first source kind answers within 60 seconds: `-32003` with `data.field` when the kind declares a required field; otherwise a result whose `entries` is an array (absent counts as empty) of entries whose `cidr` parses, or `-32003` naming a field. |
 | DISCOVERY-5, DISCOVERY-6 | both | `discovery.resolve` with an empty `config` and the service `nginx-ui-conformance` against the manifest's first provider answers within 30 seconds: `-32003` with `data.field` when the provider declares a required field; otherwise a result whose `targets` is an array (absent counts as empty) of targets with a port between 1 and 65535, or `-32003` naming a field (an unknown service names `service`). |
+| LOGSINK-4 | stdio | `log.push` sent on stdio answers `-32601`, the stream has no JSON-RPC form. The case fails as well when the plugin does not list `grpc` in `transports`. |
+| LOGSINK-5 | grpc | A `log.push` stream of three `combined` entries for `/var/log/nginx/conformance.log` answers within 10 seconds with `accepted` 3. It is skipped when the run is limited to `--transport stdio`. |
 | CONTENT-2, CONTENT-3 | — | Static checks of `content.templates`: the directory exists, holds a template, and every template parses and renders with its default values. |
 | CONTENT-6, CONTENT-7 | — | Static checks of `content.locales`: the directory exists, every `.po` file is named after a host language and parses. |
 | TRANSPORT-1 | — | Runs when both transports ran; see CONF-7. |
@@ -285,6 +305,12 @@ blocks of this spec version add these ids:
 | MAN-36, MAN-37 | error | A declared `security.blocklist` or `upstream.discovery` capability has no block or an empty list, or the manifest does not request `network`. |
 | BLOCKLIST-2, DISCOVERY-2 | error | A source kind or provider code does not match `^[a-z0-9-]{2,32}$` or is declared twice. |
 | BLOCKLIST-3, DISCOVERY-3 | error | A source kind or provider has no `name`, a configuration field breaks NOTIFY-4, or a source kind has a `refresh_seconds` between 1 and 59 or below 0. |
+| MAN-38 | error | A declared `log.sink` capability without the `log.read` permission. |
+| LOGSINK-1 | warning | A `log_sink` block without the `log.sink` capability, which has no effect. |
+| LOGSINK-2 | error | `log_sink.batch_size` outside 0 to 4096, or `log_sink.flush_interval_ms` between 1 and 49 or below 0. |
+| LOGSINK-3 | error | A `log_sink.formats` entry that is not `combined` or `raw`, or that appears twice. |
+| SEC-5 | warning | The `log.read` permission is requested without the `log.sink` capability. |
+| MAN-39 | error | A negative `server.resources.memory_mb` or `server.resources.cpu_percent`. |
 | CONTENT-1 | error | A manifest without `server` declares `capabilities`, `cron` or `events`. |
 | CONTENT-2 | error or warning | `content.templates` is missing, is not a directory or holds no template in `conf/` or `block/` (error); an entry there is not a template (warning). |
 | CONTENT-3 | error or warning | A template does not parse or does not render with its default values (error); it has no `name` (warning). |

@@ -121,9 +121,18 @@ func TestVectorMethodsHaveRPCs(t *testing.T) {
 		m, ok := index[*v.Method]
 
 		if errorCode(v.Response) == codeMethodNotFound {
-			if ok {
+			// A streaming rpc has no JSON-RPC form, so stdio answers -32601
+			// for it like for an unknown method (WIRE-12).
+			if ok && !m.Streaming {
 				t.Errorf("%s: %s is expected to be unknown but is an rpc", v.file, *v.Method)
 			}
+			if ok && v.Direction != m.Direction {
+				t.Errorf("%s: direction %s, proto says %s", v.file, v.Direction, m.Direction)
+			}
+			continue
+		}
+		if m.Streaming {
+			t.Errorf("%s: %s is a streaming rpc, a vector can only show stdio refusing it", v.file, *v.Method)
 			continue
 		}
 		if !ok {
@@ -252,4 +261,30 @@ func normalize(v any) any {
 		}
 	}
 	return v
+}
+
+// TestStreamingRPCs asserts that the streaming flag marks exactly the client
+// streaming rpcs, which are never notifications.
+func TestStreamingRPCs(t *testing.T) {
+	var streaming []string
+	for _, m := range methodIndex(t) {
+		if !m.Streaming {
+			continue
+		}
+		streaming = append(streaming, m.RPCName)
+		if m.Notification {
+			t.Errorf("%s: a streaming rpc cannot be a notification", m.RPCName)
+		}
+		md, err := protoregistry.GlobalFiles.FindDescriptorByName(protoreflect.FullName(m.Service))
+		if err != nil {
+			t.Fatal(err)
+		}
+		rpc := md.(protoreflect.ServiceDescriptor).Methods().ByName(protoreflect.Name(m.Method))
+		if rpc == nil || !rpc.IsStreamingClient() || rpc.IsStreamingServer() {
+			t.Errorf("%s: not a client streaming rpc", m.RPCName)
+		}
+	}
+	if len(streaming) != 1 || streaming[0] != "log.push" {
+		t.Errorf("streaming rpcs = %v, want [log.push]", streaming)
+	}
 }

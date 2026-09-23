@@ -11,7 +11,8 @@ and the permission model below gate access to specific **host functionality**
 REST API) — they are not an OS-level sandbox, and this spec does not define
 one. A host MUST treat installing a plugin as granting it the same level of
 trust as installing any other executable that runs as the host's user, and
-SHOULD make that clear to the person installing one.
+SHOULD make that clear to the person installing one. Resource limits
+(LIFE-16, SEC-17) bound what a process consumes, not what it may access.
 
 ## SEC-2
 
@@ -37,6 +38,7 @@ A plugin declares the `host.*` capabilities it needs in its manifest's
 | `core_api` | `registry.coreHttp` in the browser webapp contract (WEB-7) — unrelated to any `host.*` JSON-RPC method. |
 | `mcp` | Nothing the plugin calls — it gates the host publishing the plugin's `mcp` tools to MCP clients (SEC-13). Required by the `mcp` capability (MAN-33). |
 | `cert.deploy` | Nothing the plugin calls — it gates the host sending certificates and their private keys to the plugin in `deploy.push` (SEC-14). Required by the `cert.deploy` capability (MAN-35). |
+| `log.read` | Nothing the plugin calls — it gates the host streaming the nginx access log lines to the plugin in `log.push` (SEC-16). Required by the `log.sink` capability (MAN-38). |
 | `credentials.read:<kind>` | `host.credentials.get` for that specific `kind` only. |
 
 `host.log`, `host.settings.get` and `host.i18n.locale` require no
@@ -149,6 +151,30 @@ deliberately (BLOCKLIST-10, DISCOVERY-10), MUST test the configuration
 before every reload and MUST keep the previous file when the test fails. A
 person relying on a blocklist source trusts its plugin not to deny them, and
 a host SHOULD make it easy to see and disable what a source denies.
+
+## SEC-16
+
+Granting `log.read` lets the plugin receive every line nginx writes to the
+access logs the host reads (`spec/20-capabilities-logsink.md`): client
+addresses, every requested URL with its query string, which may carry a
+session id or a token, referers and user agents. A host MUST NOT stream a
+line to a plugin unless `log.read` is in the granted permission set (SEC-4),
+MUST stream only logs a person allowed the host to read (LOGSINK-8), and
+SHOULD tell the person approving the permission that the plugin receives
+the access logs, which are personal data in many jurisdictions. A plugin
+MUST treat the entries as personal data and as untrusted input (LOGSINK-7)
+and MUST NOT write them to its own stderr.
+
+## SEC-17
+
+A host that confines plugin processes (LIFE-16) MUST apply the limits a
+person configured for the host even when a manifest hint asks for more, MUST
+NOT let a plugin choose the location or the name of its resource group, and
+MUST NOT fail to run a plugin only because the confinement is unavailable
+on the platform: it runs the process without limits and reports that the
+limits are not enforced. Limits bound the damage a runaway or hostile
+plugin does to the availability of the host; they are not a sandbox
+(SEC-1).
 
 ## Package integrity
 
