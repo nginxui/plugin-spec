@@ -15,7 +15,7 @@ satisfy `core` to run any plugin at all.
 
 | Section | Requirements |
 | --- | --- |
-| Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30, MAN-39 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`, and the capability blocks MAN-31 through MAN-38, which belong to their levels) |
+| Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30, MAN-39, MAN-40 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`, and the capability blocks MAN-31 through MAN-38, which belong to their levels) |
 | Packaging | PKG-1 through PKG-13 for every package; PKG-14 through PKG-17 for a catalog publisher and for a host that installs from a catalog; PKG-18 only for a host that installs plugins on other hosts |
 | Wire protocol | WIRE-1 through WIRE-10; WIRE-11, WIRE-12 and CONF-7 only for a plugin that lists `grpc` in `transports` |
 | Lifecycle | LIFE-1 through LIFE-16 |
@@ -311,6 +311,7 @@ blocks of this spec version add these ids:
 | LOGSINK-3 | error | A `log_sink.formats` entry that is not `combined` or `raw`, or that appears twice. |
 | SEC-5 | warning | The `log.read` permission is requested without the `log.sink` capability. |
 | MAN-39 | error | A negative `server.resources.memory_mb` or `server.resources.cpu_percent`. |
+| MAN-40 | error | An `i18n` key that is not a language of the host. |
 | CONTENT-1 | error | A manifest without `server` declares `capabilities`, `cron` or `events`. |
 | CONTENT-2 | error or warning | `content.templates` is missing, is not a directory or holds no template in `conf/` or `block/` (error); an entry there is not a template (warning). |
 | CONTENT-3 | error or warning | A template does not parse or does not render with its default values (error); it has no `name` (warning). |

@@ -115,6 +115,12 @@
       "description": "MAN-4, Semantic Versioning 2.0.0."
     },
     "description": { "type": "string" },
+    "i18n": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/locale" },
+      "additionalProperties": { "$ref": "#/$defs/manifestI18n" },
+      "description": "MAN-40. Translations of name and description keyed by host locale code."
+    },
     "homepage_url": { "type": "string", "format": "uri" },
     "icon_path": { "$ref": "#/$defs/safeRelativePath" },
     "api_version": {
@@ -181,6 +187,20 @@
       "minLength": 1,
       "not": { "pattern": "(^/|^[A-Za-z]:|\\\\|(^|/)\\.\\.(/|$)|//)" },
       "description": "PKG-3: forward slashes only, not absolute, no .. segment."
+    },
+    "locale": {
+      "type": "string",
+      "enum": ["en", "zh_CN", "zh_TW", "fr_FR", "es", "de_DE", "ru_RU", "vi_VN", "ko_KR", "tr_TR", "ar", "uk_UA", "ja_JP", "pt_PT"],
+      "description": "A language the reference host translates its interface into, see CONTENT-6."
+    },
+    "manifestI18n": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "MAN-40. An empty or absent field falls back to the top level one.",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
     },
     "permission": {
       "type": "string",

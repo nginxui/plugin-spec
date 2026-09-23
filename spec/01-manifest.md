@@ -20,6 +20,7 @@ It is tested against `manifest.proto`, see [`schema/README.md`](../schema/README
 | `name` | string | yes | Human readable display name. |
 | `version` | string | yes | The plugin's own release version (semver). |
 | `description` | string | no | One line summary shown in the plugin list. |
+| `i18n` | map\<string, object\> | no | Translations of `name` and `description` keyed by locale code. See MAN-40. |
 | `homepage_url` | string | no | Documentation or repository link. |
 | `icon_path` | string | no | Relative path to an icon file inside the package. |
 | `api_version` | integer | yes | The wire protocol version this plugin speaks. See `spec/10-versioning.md`. |
@@ -98,6 +99,39 @@ manifest without `server` has no process and declares no capability
 
 `icon_path`, when present, MUST be a safe relative path as defined in
 PKG-3.
+
+## `i18n`
+
+```json
+"i18n": {
+  "zh_CN": { "name": "DNS-01 验证", "description": "使用 lego 支持的任意 DNS 服务商完成 ACME DNS-01 验证。" },
+  "ja_JP": { "name": "DNS-01 チャレンジ" }
+}
+```
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `name` | string | no | `name` in this language. |
+| `description` | string | no | `description` in this language. |
+
+### MAN-40
+
+`i18n`, when present, maps a locale code to the translation of the top
+level `name` and `description` into that language. Every key MUST be a
+language the host translates its own interface into, the set CONTENT-6 lists
+for translation files; a host MUST reject a manifest with any other key.
+`en` is allowed but redundant, since the top level fields are the English
+text.
+
+An empty or absent field means no translation. The top level fields keep
+their rules (`name` is required by MAN-3, `description` is optional) and are
+the fallback: a host that shows a plugin's name or description SHOULD show,
+for its active interface language, the first non-empty value of the
+translation for that exact locale, for its base language (the part before
+`_`), for `en`, the top level field, and finally any other translation.
+Messages a host writes to its logs or sends as notifications MAY keep using
+the top level `name`. A catalog MAY fill the locale maps of its own entry
+from this block.
 
 ## `server`
 

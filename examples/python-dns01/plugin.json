@@ -3,6 +3,12 @@
   "name": "MyDNS Challenge (Example)",
   "version": "0.1.0",
   "description": "Reference DNS-01 plugin for the fictional MyDNS API, in about 60 lines of pure Python standard library.",
+  "i18n": {
+    "zh_CN": {
+      "name": "MyDNS 验证（示例）",
+      "description": "面向虚构 MyDNS API 的 DNS-01 参考插件，仅用约 60 行纯 Python 标准库实现。"
+    }
+  },
   "homepage_url": "https://github.com/0xJacky/nginx-ui-plugin-spec",
   "api_version": 1,
   "server": {

@@ -68,6 +68,16 @@ message Manifest {
   ManifestDiscovery discovery = 28;
   // Tuning of the log.sink capability.
   ManifestLogSink log_sink = 29;
+  // Translations of name and description keyed by host locale code, e.g.
+  // "zh_CN". name and description stay the fallback.
+  map<string, ManifestI18n> i18n = 30;
+}
+
+// ManifestI18n translates the display fields of a manifest into one
+// language. An empty string means no translation for that field.
+message ManifestI18n {
+  string name = 1;
+  string description = 2;
 }
 
 // ManifestServer describes how to start the plugin process.
