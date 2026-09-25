@@ -313,8 +313,9 @@ revocation takes effect without waiting for a certificate to expire.
 
 A partner is onboarded as follows. It creates a minisign key pair and sends
 its public key to the maintainers. The maintainers issue a certificate: they
-sign the public key with a release key, with the partner name and an expiry
-date in the trusted comment (PKG-26), and hand the partner
+sign the public key with a release key, with the partner name and, as
+SEC-29 recommends, an expiry date in the trusted comment (PKG-26), and hand
+the partner
 `plugin.partner` and `plugin.partner.minisig`, which it puts into every
 package it signs (PKG-23). They also list the key in the keyring. Before the
 certificate expires they issue a new one, which the partner ships with its
@@ -328,8 +329,9 @@ partner that signs again gets a new key and a new certificate. A host that
 no longer refreshes, such as a node cut off from the network, keeps what it
 has: it honors a certificate until its expiry date, and a keyring entry
 until the `expires` of the entry or, for an entry without one, for as long
-as it keeps that keyring. The lifetime the maintainers give a certificate
-therefore bounds the damage on such a host.
+as it keeps that keyring. A certificate without an expiry date stays valid
+there for good. The lifetime the maintainers give a certificate therefore
+bounds the damage on such a host.
 
 ## SEC-25: the partner keyring
 
@@ -435,14 +437,23 @@ is revoked.
 
 ## SEC-29: expiry
 
-The date in the trusted comment of a certificate (PKG-26) and the `expires`
-of a keyring entry (SEC-26) name the last day the certificate or the entry
-is valid, on the UTC calendar. A host MUST evaluate it against the current
+Both a certificate and a keyring entry may carry an expiry date: the
+`expires` field of the trusted comment of a certificate (PKG-26) and the
+`expires` member of a keyring entry (SEC-26). Each names the last day the
+certificate or the entry is valid, on the UTC calendar. A certificate or an
+entry without a date does not expire: revocation ends it (SEC-28), and an
+entry also ends when a later keyring drops it. For one that carries a date, a host MUST evaluate the date against the current
 time of its own clock, converted to UTC: the certificate or entry is valid
 while the UTC date of the clock is on or before the named day, that is
 through 23:59:59 UTC of that day, and has expired from 00:00:00 UTC of the
 following day. A date that is not a date of the calendar, such as
 `2027-02-30`, fails the certificate or the entry.
+
+The project SHOULD give every certificate it issues an expiry date. A long
+lifetime, such as several years, is fine. Revocation reaches only the hosts
+that refresh the keyring, and a certificate travels in every package the
+partner signed; without a date, a node that never refreshes the keyring
+trusts a leaked partner key for good.
 
 A host evaluates expiry whenever it derives a level (PKG-22). Like
 revocation, expiry does not change the level recorded for an installed

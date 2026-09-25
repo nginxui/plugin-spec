@@ -14,7 +14,8 @@ A partner key no longer lives in the host binary. It reaches a host in two
 ways, both signed with a release key of the Nginx UI project. A partner
 package carries a certificate: `plugin.partner`, the public key of the
 partner, and `plugin.partner.minisig`, a release key signature of it whose
-trusted comment reads `partner:<name>;expires:<YYYY-MM-DD>`. The project also
+trusted comment reads `partner:<name>`, optionally followed by
+`;expires:<YYYY-MM-DD>`. The project also
 publishes a signed partner keyring, `v1/partners.json` with
 `v1/partners.json.minisig`, next to the official catalog; it lists partner
 keys and revoked key ids. A package signed by a partner key is `verified`
@@ -71,8 +72,8 @@ RW...
 ```
 
 The maintainers issue a certificate by signing that file with a release
-key, putting the partner name and the last valid day into the trusted
-comment (PKG-26):
+key, putting the partner name and, optionally but as SEC-29 recommends, the
+last valid day into the trusted comment (PKG-26):
 
 ```sh
 minisign -S -s release.key -m plugin.partner \
@@ -87,7 +88,8 @@ key type the host does not already verify.
 A host checks a certificate whenever it derives the level of a package
 (PKG-22), in this order (PKG-27): `plugin.partner` parses, a release key
 verifies `plugin.partner.minisig`, the trusted comment has the fixed form,
-the date has not passed, and the keyring does not revoke the key. A
+the date, when there is one, has not passed, and the keyring does not revoke
+the key. A
 certificate that passes makes the partner key known for PKG-21, and the
 package is `verified` when that key verifies `plugin.sums.minisig` and
 `plugin.sums` matches the files.
@@ -184,19 +186,19 @@ a precise instant.
 1. The partner creates a minisign key pair and sends its public key to the
    maintainers.
 2. The maintainers sign the public key with a release key, with the partner
-   name and an expiry date in the trusted comment, and send back
+   name and, as a rule, an expiry date in the trusted comment, and send back
    `plugin.partner` and `plugin.partner.minisig`.
 3. The maintainers add the key to `partners` and publish the keyring with a
    later `updated_at`.
 4. The partner ships the certificate in every package it signs, and gets a
-   new one before the old one expires.
+   new one before the old one expires, if it carries a date.
 
 To offboard a partner or withdraw a compromised key, the maintainers add its
 key id to `revoked`, drop its entry from `partners` and publish the keyring.
 Every host that refreshes stops giving the key `verified`, with or without a
 certificate. A host that does not refresh keeps honoring the certificate
-until its expiry date, so the lifetime of a certificate bounds the damage
-there. A revoked id stays in the list; a partner that signs again gets a new
+until its expiry date, or for good when it has none, so the lifetime of a
+certificate bounds the damage there. A revoked id stays in the list; a partner that signs again gets a new
 key.
 
 ### Tooling
@@ -285,6 +287,14 @@ the keyring. A host shows the partner name next to the `verified` level
   its date, and a keyring entry expires on its `expires`. An entry without
   `expires` stays good on such a host for as long as the cached keyring
   does, so the project sets `expires` on entries it wants bounded.
+* Expiry is optional on a certificate as well: `partner:<name>` alone is a
+  certificate that never expires and ends only by revocation. It spares a
+  partner the rebuild and new signature a renewed certificate needs
+  (PKG-23), but revocation reaches only hosts that refresh the keyring, so a
+  node that never refreshes would trust a leaked key without a date for
+  good. The project therefore SHOULD set a date on every certificate it
+  issues (SEC-29); a long lifetime, such as several years, keeps renewals
+  rare and still bounds that case.
 * Clock: a host clock set back accepts an expired certificate, one set ahead
   refuses a valid one. Either only moves the partner level: the package
   keeps its catalog and operator sources and is never made invalid.

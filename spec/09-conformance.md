@@ -282,9 +282,9 @@ checks, and what each id means in its output:
 | PKG-20 | warning | Only one of `plugin.sums` and `plugin.sums.minisig` is present, so the package counts as unsigned. |
 | PKG-25, PKG-26 | warning | Only one of `plugin.partner` and `plugin.partner.minisig` is present, so the package carries no partner certificate. |
 | PKG-26, PKG-27 | warning | The partner certificate does not verify: `plugin.partner` is no minisign public key, no release key pinned in the linter's binary verifies `plugin.partner.minisig`, or its trusted comment breaks PKG-26. A host ignores such a certificate. |
-| PKG-27 | warning | The partner certificate has expired by the UTC date of the linter's clock (SEC-29). |
+| PKG-27 | warning | The trusted comment of the partner certificate carries an expiry date, and the certificate has expired by the UTC date of the linter's clock (SEC-29). A certificate without a date is never reported as expired. |
 | PKG-27 | warning | The partner certificate verifies, but `plugin.sums.minisig` is not signed by the key it names, so it gives the package nothing. |
-| SEC-18 | warning | `plugin.sums.minisig` does not verify with a key the linter knows: a release key pinned in its binary, or the partner key of a certificate in the package that verifies and has not expired. This is expected for a community plugin, whose key only a catalog entry or an operator names, and for a partner plugin that relies on the keyring alone. |
+| SEC-18 | warning | `plugin.sums.minisig` does not verify with a key the linter knows: a release key pinned in its binary, or the partner key of a certificate in the package that verifies and has not expired (a certificate without an expiry date does not expire). This is expected for a community plugin, whose key only a catalog entry or an operator names, and for a partner plugin that relies on the keyring alone. |
 
 PKG-12 is only checked for an archive, since a plugin directory has no file
 name to compare against. For a plugin directory the directory itself is the

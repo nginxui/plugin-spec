@@ -244,8 +244,8 @@ So that such a package derives `verified` on a host that has never heard of
 the partner, the package carries a certificate for that key:
 `plugin.partner`, the public key of the partner, and
 `plugin.partner.minisig`, a signature of it by a release key of the project
-whose trusted comment names the partner and the last day the certificate is
-valid. A host needs nothing but its release keys to check a certificate, so
+whose trusted comment names the partner and, optionally, the last day the
+certificate is valid. A host needs nothing but its release keys to check a certificate, so
 a certificate works offline and a new partner needs no release of the host.
 The level a certificate earns, the partner keyring that lists partner keys
 without a certificate, and the revocation and expiry of a partner key are
@@ -272,16 +272,20 @@ below the package root is an ordinary file and no certificate.
 `plugin.partner` by a release key of the Nginx UI project (SEC-18), in the
 text form PKG-20 describes. The algorithms and the verification of PKG-20
 apply, the signature of the trusted comment included. The trusted comment,
-the text that follows `trusted comment: ` on its line, MUST be exactly:
+the text that follows `trusted comment: ` on its line, MUST be exactly one
+of:
 
 ```text
+partner:<name>
 partner:<name>;expires:<YYYY-MM-DD>
 ```
 
 * `<name>` names the partner: one or more ASCII letters, digits, dots and
   hyphens (`^[A-Za-z0-9.-]+$`);
-* `<YYYY-MM-DD>` is the last day the certificate is valid, a date of the UTC
-  calendar; the certificate is valid through the whole of that day (SEC-29);
+* `;expires:<YYYY-MM-DD>` is optional. `<YYYY-MM-DD>` is the last day the
+  certificate is valid, a date of the UTC calendar; the certificate is valid
+  through the whole of that day (SEC-29). A certificate without it does not
+  expire and stays valid until the keyring revokes its key (SEC-28);
 * nothing else: no space, no other field and no other order.
 
 minisign signs the trusted comment together with the signature, so the name
@@ -291,6 +295,8 @@ signature carries no meaning. The project issues a certificate with:
 ```sh
 minisign -S -s <release key> -m plugin.partner -t "partner:<name>;expires:<YYYY-MM-DD>"
 ```
+
+and SHOULD give it an expiry date (SEC-29).
 
 ## PKG-27: checking a certificate
 
@@ -305,7 +311,8 @@ every step does:
    verifies it over the exact bytes of `plugin.partner`, the trusted comment
    included (PKG-26);
 3. the trusted comment follows PKG-26;
-4. the certificate has not expired by the date of the host's clock (SEC-29);
+4. when the trusted comment carries an expiry date, the certificate has not
+   expired by the date of the host's clock (SEC-29);
 5. the partner keyring the host holds, if any, does not list the key id of
    the partner key in `revoked` (SEC-28).
 
