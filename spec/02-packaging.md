@@ -3,9 +3,11 @@
 A plugin release is distributed as gzip-compressed tar archives: either one
 portable package, or one package per platform, or both. This document
 describes the archive format, the limits the reference host enforces while
-extracting one (`internal/plugin/package.go`), and how a catalog release
-points a host at the package for its platform (PKG-14 onwards, introduced by
-[RFC 0001](rfcs/0001-per-platform-packages.md)).
+extracting one (`internal/plugin/package.go`), the signature a package
+carries inside itself (PKG-19 through PKG-23, introduced by
+[RFC 0012](rfcs/0012-embedded-package-signatures.md)), and how a catalog
+release points a host at the package for its platform (PKG-14 onwards,
+introduced by [RFC 0001](rfcs/0001-per-platform-packages.md)).
 
 ## PKG-1
 
@@ -106,6 +108,111 @@ A host MUST validate the manifest (`spec/01-manifest.md`) as part of
 extraction, before treating the plugin as installed, and MUST discard the
 extracted directory entirely if validation fails.
 
+## Embedded signature
+
+A package proves who published it with two files at its package root:
+`plugin.sums`, which lists the SHA-256 of every other file, and
+`plugin.sums.minisig`, a [minisign](https://jedisct1.github.io/minisign/)
+signature of that list. The signature travels inside the archive, so a host
+checks it the same way whether the package came from a catalog, an upload,
+the offline package directory or another host of a cluster. The **package
+root** is the directory that holds `plugin.json` after PKG-2, so a package
+signs the same whether or not its entries sit under one top level directory.
+The trust level the key of a signer earns is specified in
+`spec/08-security.md` (SEC-18).
+
+## PKG-19: `plugin.sums`
+
+`plugin.sums` is a text file at the package root with one line for every
+regular file of the package, except `plugin.sums` and `plugin.sums.minisig`
+at the package root themselves:
+
+```text
+<sha256>  <path>
+```
+
+* `<sha256>` is the SHA-256 of the file content as 64 lowercase hexadecimal
+  digits;
+* two spaces separate it from `<path>`, the path of the file relative to the
+  package root with `/` as the separator, which MUST be a safe relative path
+  (PKG-3);
+* every line, the last one included, ends with a single LF (`0x0A`); the
+  file has no CR, no empty line, no byte order mark and no comment;
+* lines are sorted by path in ascending byte order (the order
+  `LC_ALL=C sort` produces), and no path appears twice;
+* directories are not listed; every regular file is, an empty one included.
+
+This is the layout `sha256sum` prints and `sha256sum -c` reads. A file named
+`plugin.sums` or `plugin.sums.minisig` below the package root is an ordinary
+file and is listed. A path that contains a LF or CR byte cannot be listed,
+so a package that carries `plugin.sums` MUST NOT contain such a file.
+
+## PKG-20: `plugin.sums.minisig`
+
+`plugin.sums.minisig` is a minisign signature of the exact bytes of
+`plugin.sums`, in the text form `minisign -S -m plugin.sums` writes: an
+untrusted comment line, the signature, a trusted comment line and the
+signature of the trusted comment. A host MUST accept both minisign
+algorithms, the legacy `Ed` signature of the file itself and the prehashed
+`ED` signature of its BLAKE2b-512 digest, and MUST verify a signature the
+way `minisign -V` does, the signature of the trusted comment included. Both
+comments are free text and carry no meaning in this spec.
+
+## PKG-21: signature state
+
+A host determines the signature state of a package from its extracted
+files:
+
+| The package holds | State |
+| --- | --- |
+| Neither `plugin.sums` nor `plugin.sums.minisig`, or only one of them | Unsigned |
+| Both, and the signature names a key id the host does not know (SEC-18) | Unsigned: an unknown signer counts as no signer |
+| Both, and the signature does not parse, or names a key the host knows that does not verify it | Invalid |
+| Both, a key the host knows verifies the signature, and `plugin.sums` matches the files | Signed by that key |
+| Both, a key the host knows verifies the signature, and `plugin.sums` does not match the files | Invalid |
+
+`plugin.sums` matches the files when it follows PKG-19 exactly and lists
+every regular file of the package, and nothing else, with the SHA-256 of its
+content. A differing digest, a listed path that is missing or is not a
+regular file, a regular file that is not listed and a line that breaks
+PKG-19 are each a mismatch.
+
+A host MUST refuse an invalid package in every mode, developer mode included
+(SEC-20): either a key it trusts signed a list the files no longer agree
+with, or the signature is damaged or claims a key it trusts and fails, so
+the package changed after it was signed. What a host does with an unsigned
+package is specified by SEC-20. A host SHOULD tell the person which row
+applied, so that a missing signature, a half signed package and an unknown
+signer can be told apart.
+
+## PKG-22: when a host checks
+
+A host MUST determine the signature state and the trust level (SEC-18) of a
+package:
+
+* when it inspects the package for a person before installing it (for
+  example an upload dialog or `nginx-ui plugin inspect`), so the person sees
+  the level before deciding; and
+* again when it installs the package, whatever it found while inspecting.
+
+This applies to every source a package reaches a host from: an upload, the
+offline package directory, a catalog download (next to the SHA-256 check of
+PKG-16) and a push from another host (PKG-18). The check covers the files as
+the host extracts them, after the checks of PKG-2 through PKG-7, and MUST be
+complete before the host runs any file of the package or replaces an
+installed plugin with it. A host MUST NOT skip it because a digest matched
+or because another host already checked the same package.
+
+## PKG-23: signing a package
+
+A publisher signs a package once every other file of it is final: it writes
+`plugin.sums` (PKG-19), then runs `minisign -S -m plugin.sums` with its
+secret key. Any later change to a file of the package needs a new
+`plugin.sums` and a new signature. Every package of a release is signed on
+its own, since each carries its own `plugin.json` and executables (PKG-12,
+PKG-13). A package offered in a catalog SHOULD be signed: outside developer
+mode no host installs an unsigned package (SEC-20).
+
 ## Per-platform packages
 
 A native plugin ships one executable per platform. Putting every executable
@@ -125,17 +232,19 @@ MUST ship every one it declares (PKG-9).
 
 All packages of one release (the portable package and every per-platform
 package) MUST carry the same manifest apart from `server.executables` and
-MUST ship the same files apart from the executables themselves. The
-permissions, dependencies, settings and webapp a person approves from the
-catalog's manifest snapshot (PKG-17) are then the ones the host installs,
-whichever package it picked.
+MUST ship the same files apart from the executables themselves and from
+`plugin.sums` and `plugin.sums.minisig`, which list and sign them (PKG-19,
+PKG-20). The permissions, dependencies, settings and webapp a person
+approves from the catalog's manifest snapshot (PKG-17) are then the ones the
+host installs, whichever package it picked.
 
 ## Distribution catalog
 
 A catalog is a static JSON document a host fetches to offer plugins for
 installation. [`schema/catalog.schema.json`](../schema/catalog.schema.json)
 describes its full shape (`schema_version` 1); the requirements below cover
-how a release names its packages and how a host chooses one.
+how a release names its packages, how a host chooses one and what an entry
+says about its publisher.
 
 ## PKG-14
 
@@ -146,13 +255,12 @@ each:
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
 | `url` | string | yes | Where the package is downloaded from. |
-| `sha256` | string | no, SHOULD be present | Lowercase hex SHA-256 of the package file. |
-| `signature_url` | string | no | Detached minisign signature of the package; defaults to `url` + `.minisig`. |
+| `sha256` | string | no, SHOULD be present | Lowercase hex SHA-256 of the package file, a check of the download (PKG-16). |
 
-The release-level `download_url`, `sha256` and `signature_url` describe the
-portable package and stay the fallback for every platform `downloads` does
-not name. `download_url` MAY be omitted or empty when `downloads` is present;
-a release MUST have at least one of the two. A `downloads` entry whose key is
+The release-level `download_url` and `sha256` describe the portable package
+and stay the fallback for every platform `downloads` does not name.
+`download_url` MAY be omitted or empty when `downloads` is present; a
+release MUST have at least one of the two. A `downloads` entry whose key is
 a platform MUST point at a per-platform package of that platform (PKG-12); an
 `any` entry MUST point at a package that runs everywhere (no `server`, or an
 interpreted `server.command`).
@@ -161,6 +269,11 @@ interpreted `server.command`).
 every key of `downloads` plus every platform the portable package serves. An
 absent or empty `platforms` keeps its original meaning, the portable package
 runs on every platform.
+
+A release names no signature: the signature is inside each package (PKG-19,
+PKG-20). The `signature_url` and `signed_by` members of catalogs written
+before [RFC 0012](rfcs/0012-embedded-package-signatures.md) have no meaning,
+and a host ignores them like any other member it does not know.
 
 ## PKG-15
 
@@ -182,12 +295,15 @@ another node or for an offline install.
 ## PKG-16
 
 Verification applies to the selected package: a host MUST check the SHA-256
-the selected entry declares, MUST verify the signature at the selected
-entry's signature URL under the same signature policy it applies to a
-portable package, and after extraction MUST check that the manifest `id` and
-`version` equal the catalog entry id and the release version. A host MUST
-refuse to install a package that has no executable for its own platform and
-no `server.command` to fall back to (MAN-14), whatever the catalog claimed.
+the selected entry declares, MUST determine the signature state and the
+trust level of the package (PKG-21, PKG-22, SEC-18) exactly as for a
+package from any other source, and after extraction MUST check that the
+manifest `id` and `version` equal the catalog entry id and the release
+version. The digest comes from the same catalog as the URL: it shows that
+the download is the file the catalog meant, not who published it, so a
+matching digest never replaces the signature check. A host MUST refuse to
+install a package that has no executable for its own platform and no
+`server.command` to fall back to (MAN-14), whatever the catalog claimed.
 
 ## PKG-17
 
@@ -207,3 +323,18 @@ resolve a package for the receiving host's platform: a package it already
 holds, or the catalog package PKG-15 selects for that platform. When none
 exists it MUST report the platform as unsupported instead of pushing its own
 package.
+
+## PKG-24
+
+A catalog entry MAY carry two members about who publishes the plugin:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `author_public_key` | string | The minisign public key the author signs the plugin's packages with, the base64 line of a minisign `.pub` file. A package downloaded from this entry and signed with this key is `community` (SEC-18). |
+| `trust` | string | `official`, `verified` or `community`: the level the catalog expects the packages of the entry to derive. |
+
+`author_public_key` counts only for the packages a host downloads from the
+entry that carries it, never for a package of another entry or one that
+reached the host another way. `trust` is a label for listing and filtering
+entries before anything is downloaded; a host MUST NOT grant a level because
+of it (SEC-19).

@@ -2,11 +2,16 @@
 
 | | |
 | --- | --- |
-| Status | Accepted, implemented |
+| Status | Accepted, implemented; signature handling superseded by RFC 0012 |
 | Date | 2026-09-23 |
 | Spec changes | PKG-1 (amended), PKG-9 (clarified), PKG-12 through PKG-18, NAME-9, CONF-1 table, `schema/catalog.schema.json` |
 | Reference host | nginx-ui `internal/plugin` (catalog selection, offline packages, cluster sync, lint), `app/src/views/system/plugins` |
 | Reference plugin | nginx-ui-plugin-dns01 `build.sh`, `cmd/manifest -platform` |
+
+The detached `.minisig` signatures, `signature_url` and `signed_by` that this
+RFC mentions were replaced by the signature a package carries inside itself,
+see [RFC 0012](0012-embedded-package-signatures.md). The text below is kept
+as it was accepted.
 
 ## Summary
 

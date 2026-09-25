@@ -16,11 +16,11 @@ satisfy `core` to run any plugin at all.
 | Section | Requirements |
 | --- | --- |
 | Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30, MAN-39, MAN-40 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`, and the capability blocks MAN-31 through MAN-38, which belong to their levels) |
-| Packaging | PKG-1 through PKG-13 for every package; PKG-14 through PKG-17 for a catalog publisher and for a host that installs from a catalog; PKG-18 only for a host that installs plugins on other hosts |
+| Packaging | PKG-1 through PKG-13 and PKG-19 through PKG-23 for every package; PKG-14 through PKG-17 and PKG-24 for a catalog publisher and for a host that installs from a catalog; PKG-18 only for a host that installs plugins on other hosts |
 | Wire protocol | WIRE-1 through WIRE-10; WIRE-11, WIRE-12 and CONF-7 only for a plugin that lists `grpc` in `transports` |
 | Lifecycle | LIFE-1 through LIFE-16 |
 | Host API | HOST-1 through HOST-16, limited to the methods the plugin actually calls or subscribes to — a plugin that never calls `host.cron.register` is not tested against HOST-10, but MUST still handle `host.log`/`host.settings.get`/`host.i18n.locale` correctly if it uses them |
-| Security | SEC-1 through SEC-12 |
+| Security | SEC-1 through SEC-12, SEC-18 through SEC-24 |
 | Versioning | VER-1 through VER-6 |
 | Naming | NAME-1 through NAME-6, NAME-9 |
 
@@ -278,11 +278,14 @@ checks, and what each id means in its output:
 | PKG-8 | error or warning | `README.md` is missing (error), `LICENSE` or `CHANGELOG.md` is missing (warning). |
 | PKG-9 | error | A file `server.executables` or a path-containing `server.command[0]` declares is missing from the package; a missing executable bit is only a warning. |
 | PKG-12 | error | A per-platform package (`<id>-<version>-<goos>-<goarch>.tar.gz`) does not declare exactly its own platform in `server.executables`. |
-| SEC-12 | warning | A sibling `.minisig` does not verify with the pinned release keys. |
+| PKG-19, PKG-21 | error | `plugin.sums` is present and does not match the files: a line breaks PKG-19, a listed file is missing or has another SHA-256, or a regular file is not listed. Checked whether or not the package is signed. |
+| PKG-20 | warning | Only one of `plugin.sums` and `plugin.sums.minisig` is present, so the package counts as unsigned. |
+| SEC-18 | warning | `plugin.sums.minisig` does not verify with the keys pinned in the linter's binary. This is expected for a community plugin, whose key only a catalog entry or an operator names. |
 
 PKG-12 is only checked for an archive, since a plugin directory has no file
-name to compare against. The linter has no catalog to look at, so PKG-13
-through PKG-18 are left to the catalog tooling and the host.
+name to compare against. For a plugin directory the directory itself is the
+package root of PKG-19. The linter has no catalog to look at, so PKG-13
+through PKG-18 and PKG-24 are left to the catalog tooling and the host.
 
 Manifest findings carry the MAN-n id of the rule they break. The capability
 blocks of this spec version add these ids:

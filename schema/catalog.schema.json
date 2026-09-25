@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/0xJacky/nginx-ui-plugin-spec/schema/catalog.schema.json",
   "title": "NGINX UI plugin catalog",
-  "description": "The static catalog document a host fetches from a marketplace source, schema_version 1, including the per-platform downloads of RFC 0001 (spec/02-packaging.md PKG-14 through PKG-17). The reference host reads it in internal/plugin/marketplace.go. Unknown members are ignored by a host, so the schema allows them.",
+  "description": "The static catalog document a host fetches from a marketplace source, schema_version 1, including the per-platform downloads of RFC 0001 (spec/02-packaging.md PKG-14 through PKG-17) and the publisher members of PKG-24. Packages carry their own signature (PKG-19, PKG-20, RFC 0012), so a release names none; signature_url and signed_by of older catalogs are ignored. The reference host reads it in internal/plugin/marketplace.go. Unknown members are ignored by a host, so the schema allows them.",
   "type": "object",
   "required": ["schema_version", "plugins"],
   "additionalProperties": true,
@@ -57,7 +57,7 @@
         "author": { "type": "string" },
         "author_public_key": {
           "type": "string",
-          "description": "Minisign public key a community release signed_by author is verified with."
+          "description": "PKG-24: minisign public key (the base64 line of a .pub file) the author signs the packages of this entry with. A package downloaded from this entry and signed with it is community (SEC-18)."
         },
         "homepage_url": { "$ref": "#/$defs/url" },
         "repository_url": { "$ref": "#/$defs/url" },
@@ -66,7 +66,10 @@
         "categories": { "type": "array", "items": { "type": "string" } },
         "capabilities": { "type": "array", "items": { "type": "string" } },
         "license": { "type": "string" },
-        "trust": { "enum": ["official", "verified", "community"] },
+        "trust": {
+          "enum": ["official", "verified", "community"],
+          "description": "PKG-24: informational label for listing and filtering. A host derives the level of a package from its signer (SEC-18) and never grants one from this member (SEC-19)."
+        },
         "stage": {
           "type": "string",
           "description": "Maturity shown next to the plugin, e.g. production or beta."
@@ -84,10 +87,9 @@
       "description": "PKG-14: one package of a release.",
       "properties": {
         "url": { "$ref": "#/$defs/url" },
-        "sha256": { "$ref": "#/$defs/sha256" },
-        "signature_url": {
-          "$ref": "#/$defs/url",
-          "description": "Detached minisign signature, defaults to url + .minisig."
+        "sha256": {
+          "$ref": "#/$defs/sha256",
+          "description": "SHA-256 of the package file, a check of the download (PKG-16)."
         }
       }
     },
@@ -132,14 +134,6 @@
         "sha256": {
           "description": "SHA-256 of the portable package.",
           "anyOf": [{ "$ref": "#/$defs/sha256" }, { "const": "" }]
-        },
-        "signature_url": {
-          "type": "string",
-          "description": "Signature of the portable package, defaults to download_url + .minisig."
-        },
-        "signed_by": {
-          "enum": ["official", "author"],
-          "description": "author: signed with the entry's author_public_key instead of the nginx-ui release key."
         },
         "release_notes_url": { "$ref": "#/$defs/url" },
         "yanked": { "type": "boolean" },

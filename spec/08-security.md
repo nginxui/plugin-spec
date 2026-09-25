@@ -188,8 +188,106 @@ before the manifest has even been validated.
 
 ## SEC-12
 
-A host SHOULD verify a package's integrity (for example, a checksum or
-signature published alongside the release) before installing it, when such
-a signal is available, and MUST make the package's declared `id`, `version`
-and `permissions` visible to the person installing it, before installation
-completes, regardless of whether an integrity signal is available.
+A host MUST determine the signature state and the trust level of a package
+(PKG-21, PKG-22, SEC-18) before installing it, and MUST make the package's
+declared `id`, `version` and `permissions`, its trust level and, for a
+signed package, the key id of its signer visible to the person installing it
+before installation completes, at every trust level. A catalog digest
+(PKG-16) is checked next to the signature, never instead of it.
+
+## Package trust
+
+A trust level says who published a package. A host derives it from the key
+that signed the package (PKG-19 through PKG-21), never from the place the
+package came from, and it decides which installs and updates the host
+allows. It does not limit what an installed plugin may do: that is the job
+of the permission model above, and SEC-1 applies at every level.
+
+## SEC-18: trust levels
+
+A host derives the trust level of a package from the key that signed its
+`plugin.sums`:
+
+| Signer | Level |
+| --- | --- |
+| A release key of the Nginx UI project, pinned in the host binary | `official` |
+| A partner key, pinned in the host binary | `verified` |
+| The `author_public_key` of the catalog entry the package was downloaded from (PKG-24), or a key the operator added to the host's trusted key list (the reference host's `plugin.trusted_public_keys`) | `community` |
+| None: no signature, or an unknown signer (PKG-21) | `unsigned` |
+
+The levels rank `unsigned` < `community` < `verified` < `official`. A key
+that appears in more than one row gives the highest of its levels. Only the
+two pinned key sets give `verified` or `official`, so neither a catalog nor
+an operator can raise a key above `community`; the pinned sets change only
+with a release of the host.
+
+`official` means the Nginx UI project published the package. `verified` is
+reserved for partner organizations of the project, whose keys the project
+pins in the host binary; it names the publisher and makes no claim that
+anyone reviewed the source. `community` means the package is signed by a key
+the host learned from a catalog entry or from its operator. A package that
+reaches a host without a catalog entry (an upload, the offline package
+directory, a push from another host) has no `author_public_key` to match,
+so it is `community` only when its key is on the host's trusted key list.
+
+## SEC-19: the catalog label
+
+The `trust` member of a catalog entry (PKG-24) is informational. A host MAY
+use it to label entries and to filter them before it downloads anything, and
+MUST NOT grant or raise a level because of it. The level of a package is the
+one the host derives when it inspects and installs the package (PKG-22);
+where the two differ, the derived level applies to every decision this
+chapter ties to trust.
+
+## SEC-20: developer mode
+
+A host MAY offer a developer mode setting (the reference host's
+`plugin.developer_mode`), which MUST be off by default. While it is off, or
+when the host offers none, a host MUST NOT install an unsigned package from
+any source: an upload, the offline package directory, a catalog download or
+a push from another host. While it is on, a host MAY install an unsigned
+package, and SHOULD show the person installing it that its publisher cannot
+be confirmed.
+
+Developer mode does not admit an invalid package (PKG-21), does not lift the
+community policy (SEC-21) and does not make an unsigned plugin eligible for
+automatic updates (SEC-22). It gates installs only: this spec does not
+require a host to stop a plugin installed while developer mode was on once
+the mode is switched off.
+
+## SEC-21: community packages
+
+A host MUST NOT install a `community` package unless its community policy
+allows community plugins (the reference host's
+`plugin.allow_community_plugins`), and a person MUST confirm the install
+after the host showed them that the package is signed by its author, not by
+the Nginx UI project or a partner. A host MAY count the confirmation given
+on a cluster controller for the nodes it pushes the same version to, and MAY
+count placing a package in the offline package directory as the
+confirmation of the operator who put it there.
+
+## SEC-22: updates
+
+A host that updates plugins automatically MUST do so only for a plugin whose
+installed trust (SEC-24) is `official` or `verified`, and MUST refuse an
+automatic update whose package derives a level that ranks below the
+installed trust of the plugin (a downgrade). When a person starts the
+update, the host MUST show them that the package ranks below the installed
+trust before it installs the package, so a developer can replace an official
+plugin with their own build while developer mode is on. An update is any
+install that replaces the package of an installed plugin, and SEC-9 applies
+to it as well.
+
+## SEC-23: installs a host starts on its own
+
+A host that installs a plugin which is not installed yet, without a person
+asking for that plugin (such as the reference host's automatic install of
+the DNS-01 plugin), MUST accept only an `official` package for it.
+
+## SEC-24: recorded trust
+
+A host MUST record, for every installed plugin, the trust level it derived
+when it installed the package and the key id of the signer (the 16
+hexadecimal digits minisign prints, none for an unsigned package), MUST base
+SEC-22 on the recorded level, and MUST make both visible to the person
+managing plugins.
