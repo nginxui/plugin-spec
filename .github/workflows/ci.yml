@@ -1,0 +1,35 @@
+name: CI
+
+# Runs on every pull request and on main: buf lint and format, a check that
+# gen/go and spec/methods.json are what proto/ generates, then the tests of
+# both Go modules. `make tools` installs the pinned generator versions, so a
+# stale tree here means a contributor forgot `make generate`.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: gen/go/go.mod
+          cache-dependency-path: |
+            gen/go/go.sum
+            tools/go.sum
+
+      - name: Install the pinned generators
+        run: make tools
+
+      - run: make check
