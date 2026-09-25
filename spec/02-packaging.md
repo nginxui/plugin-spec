@@ -102,7 +102,7 @@ Regenerating a package from the same source tree SHOULD be
 byte-for-byte deterministic wherever the toolchain allows it (stable file
 order, no embedded timestamps beyond what the archive format requires), so
 that a package's checksum is a meaningful integrity signal. The reference
-`plugin.json` generator (e.g. `cmd/manifest` in `nginx-ui-plugin-dns01`)
+`plugin.json` generator (e.g. `cmd/manifest` in `plugin-dns01`)
 achieves this for the manifest by encoding every map in key order.
 
 ## PKG-11

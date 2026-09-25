@@ -4,7 +4,7 @@ package nginxui.plugin.v1;
 
 import "google/protobuf/struct.proto";
 
-option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // ErrorCode lists the error codes this contract defines. PluginError.code is a
 // plain int32 so that a code outside this list stays representable; the enum

@@ -5,7 +5,7 @@ package nginxui.plugin.v1;
 import "google/protobuf/struct.proto";
 import "nginxui/plugin/v1/options.proto";
 
-option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // HTTP is the RPC fallback of the http capability, used when the manifest
 // declares "listen": "rpc". The plugin serves it and the host is the caller.

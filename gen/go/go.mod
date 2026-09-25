@@ -1,4 +1,4 @@
-module github.com/0xJacky/nginx-ui-plugin-spec/gen/go
+module github.com/nginxui/plugin-spec/gen/go
 
 go 1.27
 

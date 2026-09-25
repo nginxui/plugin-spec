@@ -6,7 +6,7 @@
 | Date | 2026-09-23 |
 | Spec changes | PKG-1 (amended), PKG-9 (clarified), PKG-12 through PKG-18, NAME-9, CONF-1 table, `schema/catalog.schema.json` |
 | Reference host | nginx-ui `internal/plugin` (catalog selection, offline packages, cluster sync, lint), `app/src/views/system/plugins` |
-| Reference plugin | nginx-ui-plugin-dns01 `build.sh`, `cmd/manifest -platform` |
+| Reference plugin | plugin-dns01 `build.sh`, `cmd/manifest -platform` |
 
 The detached `.minisig` signatures, `signature_url` and `signed_by` that this
 RFC mentions were replaced by the signature a package carries inside itself,
@@ -257,7 +257,7 @@ Example, the official DNS-01 plugin:
       "id": "com.nginxui.dns01",
       "name": { "en": "DNS-01 Challenge" },
       "description": { "en": "Solve the ACME DNS-01 challenge with any of the DNS providers supported by lego." },
-      "repository_url": "https://github.com/0xJacky/nginx-ui-plugin-dns01",
+      "repository_url": "https://github.com/nginxui/plugin-dns01",
       "capabilities": ["dns01"],
       "license": "AGPL-3.0",
       "trust": "official",
@@ -270,15 +270,15 @@ Example, the official DNS-01 plugin:
           "min_nginx_ui_version": "2.7.0",
           "platforms": ["darwin-amd64", "darwin-arm64", "linux-amd64", "linux-arm64", "windows-amd64", "windows-arm64"],
           "downloads": {
-            "darwin-amd64": { "url": "https://github.com/0xJacky/nginx-ui-plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-darwin-amd64.tar.gz", "sha256": "<sha256>" },
-            "darwin-arm64": { "url": "https://github.com/0xJacky/nginx-ui-plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-darwin-arm64.tar.gz", "sha256": "<sha256>" },
-            "linux-amd64": { "url": "https://github.com/0xJacky/nginx-ui-plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-linux-amd64.tar.gz", "sha256": "<sha256>" },
-            "linux-arm64": { "url": "https://github.com/0xJacky/nginx-ui-plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-linux-arm64.tar.gz", "sha256": "<sha256>" },
-            "windows-amd64": { "url": "https://github.com/0xJacky/nginx-ui-plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-windows-amd64.tar.gz", "sha256": "<sha256>" },
-            "windows-arm64": { "url": "https://github.com/0xJacky/nginx-ui-plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-windows-arm64.tar.gz", "sha256": "<sha256>" }
+            "darwin-amd64": { "url": "https://github.com/nginxui/plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-darwin-amd64.tar.gz", "sha256": "<sha256>" },
+            "darwin-arm64": { "url": "https://github.com/nginxui/plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-darwin-arm64.tar.gz", "sha256": "<sha256>" },
+            "linux-amd64": { "url": "https://github.com/nginxui/plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-linux-amd64.tar.gz", "sha256": "<sha256>" },
+            "linux-arm64": { "url": "https://github.com/nginxui/plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-linux-arm64.tar.gz", "sha256": "<sha256>" },
+            "windows-amd64": { "url": "https://github.com/nginxui/plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-windows-amd64.tar.gz", "sha256": "<sha256>" },
+            "windows-arm64": { "url": "https://github.com/nginxui/plugin-dns01/releases/download/v1.0.0/com.nginxui.dns01-1.0.0-windows-arm64.tar.gz", "sha256": "<sha256>" }
           },
           "signed_by": "official",
-          "release_notes_url": "https://github.com/0xJacky/nginx-ui-plugin-dns01/releases/tag/v1.0.0",
+          "release_notes_url": "https://github.com/nginxui/plugin-dns01/releases/tag/v1.0.0",
           "manifest": {
             "id": "com.nginxui.dns01",
             "name": "DNS-01 Challenge",

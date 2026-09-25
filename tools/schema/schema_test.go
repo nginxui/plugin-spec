@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	pluginv1 "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1"
+	pluginv1 "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )

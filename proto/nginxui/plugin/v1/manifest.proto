@@ -4,7 +4,7 @@ package nginxui.plugin.v1;
 
 import "google/protobuf/struct.proto";
 
-option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // Manifest is plugin.json, see spec/01-manifest.md. Its protobuf JSON mapping
 // with proto field names is the file format. schema/plugin.schema.json adds

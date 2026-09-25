@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/0xJacky/nginx-ui-plugin-spec/schema/catalog.schema.json",
+  "$id": "https://github.com/nginxui/plugin-spec/schema/catalog.schema.json",
   "title": "NGINX UI plugin catalog",
   "description": "The static catalog document a host fetches from a marketplace source, schema_version 1, including the per-platform downloads of RFC 0001 (spec/02-packaging.md PKG-14 through PKG-17) and the publisher members of PKG-24. Packages carry their own signature (PKG-19, PKG-20, RFC 0012), so a release names none; signature_url and signed_by of older catalogs are ignored. The reference host reads it in internal/plugin/marketplace.go. Unknown members are ignored by a host, so the schema allows them.",
   "type": "object",

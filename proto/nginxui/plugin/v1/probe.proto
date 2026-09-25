@@ -4,7 +4,7 @@ package nginxui.plugin.v1;
 
 import "nginxui/plugin/v1/options.proto";
 
-option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // Probe is the probe capability. A plugin that declares the capability checks
 // the health of a target with the probe kinds its manifest lists, and the host

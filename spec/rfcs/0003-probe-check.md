@@ -6,7 +6,7 @@
 | Date | 2026-09-23 |
 | Spec changes | `spec/13-capabilities-probe.md` (PROBE-1 through PROBE-8), MAN-19, MAN-32, NAME-10, CONF-9, WIRE-9 table, `proto/nginxui/plugin/v1/probe.proto`, `ManifestProbe` in `manifest.proto`, `schema/plugin.schema.json`, vectors 27 through 29 |
 | Reference host | nginx-ui `internal/plugin/capability/probe.go`, `internal/sitecheck/probe.go`, `model.SiteConfig` (`probe_kind`, `probe_config`), migration `20260923000001`, `api/sites` (`GET /api/site_navigation/probe_kinds`), `app/src/views/dashboard/components/SiteHealthCheckModal.vue` |
-| Reference SDK | nginx-ui-plugin-sdk-go `probe.go` (`ProbeHandler`, `ProbeUp`, `ProbeDown`, `ProbeDegraded`) |
+| Reference SDK | plugin-sdk-go `probe.go` (`ProbeHandler`, `ProbeUp`, `ProbeDown`, `ProbeDegraded`) |
 
 ## Summary
 

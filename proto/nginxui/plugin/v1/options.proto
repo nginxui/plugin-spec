@@ -4,7 +4,7 @@ package nginxui.plugin.v1;
 
 import "google/protobuf/descriptor.proto";
 
-option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // Method options that bind every rpc of this package to the stdio JSON-RPC
 // transport. The numbers sit in the 50000-99999 range protobuf reserves for

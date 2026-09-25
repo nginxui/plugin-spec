@@ -6,7 +6,7 @@
 | Date | 2026-09-23 |
 | Spec changes | `spec/15-capabilities-storage.md` (STORAGE-1 through STORAGE-14), MAN-19, MAN-34, NAME-10, CONF-4, CONF-7, CONF-11, WIRE-6 (`-32002` and `-32602` rows), WIRE-9 table, WIRE-10 (`double` byte sizes), WIRE-11 routing table, LIFE-10 (shutdown list), `proto/nginxui/plugin/v1/storage.proto`, `ManifestStorage` in `manifest.proto`, `schema/plugin.schema.json`, vectors 33 through 38 |
 | Reference host | nginx-ui `internal/plugin/capability/storage.go`, `internal/backup/storage.go`, `internal/backup/storage_source.go`, `model.AutoBackup` (`storage_config`, `retention_count`), migration `20260923000002`, `api/backup` (`GET /api/auto_backup/storage_backends`, `POST /api/auto_backup/test_storage`, `/api/auto_backup/:id/stored`), `app/src/views/backup/AutoBackup` |
-| Reference SDK | nginx-ui-plugin-sdk-go `storage.go` (`StorageHandler`, `StorageValidator`, `StoredObject`) |
+| Reference SDK | plugin-sdk-go `storage.go` (`StorageHandler`, `StorageValidator`, `StoredObject`) |
 
 ## Summary
 

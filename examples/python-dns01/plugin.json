@@ -9,7 +9,7 @@
       "description": "面向虚构 MyDNS API 的 DNS-01 参考插件，仅用约 60 行纯 Python 标准库实现。"
     }
   },
-  "homepage_url": "https://github.com/0xJacky/nginx-ui-plugin-spec",
+  "homepage_url": "https://github.com/nginxui/plugin-spec",
   "api_version": 1,
   "server": {
     "command": ["python3", "server/main.py"],

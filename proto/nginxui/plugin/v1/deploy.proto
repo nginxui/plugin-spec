@@ -4,7 +4,7 @@ package nginxui.plugin.v1;
 
 import "nginxui/plugin/v1/options.proto";
 
-option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // Deploy is the cert.deploy capability. A plugin that declares the capability
 // pushes issued certificates to the kinds of external target its manifest

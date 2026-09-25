@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/0xJacky/nginx-ui-plugin-spec/schema/partners.schema.json",
+  "$id": "https://github.com/nginxui/plugin-spec/schema/partners.schema.json",
   "title": "NGINX UI partner keyring",
   "description": "The partner keyring the Nginx UI project publishes as v1/partners.json next to the official catalog v1/index.json, schema_version 1 (spec/08-security.md SEC-25 through SEC-29, RFC 0013). A release key signs its exact bytes in v1/partners.json.minisig, and a host verifies that signature before it parses the document. Only the keyring of the official catalog counts. Unknown members are ignored by a host, so the schema allows them.",
   "type": "object",

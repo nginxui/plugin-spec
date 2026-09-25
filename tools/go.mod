@@ -1,9 +1,9 @@
-module github.com/0xJacky/nginx-ui-plugin-spec/tools
+module github.com/nginxui/plugin-spec/tools
 
 go 1.27
 
 require (
-	github.com/0xJacky/nginx-ui-plugin-spec/gen/go v0.0.0
+	github.com/nginxui/plugin-spec/gen/go v0.0.0
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -15,4 +15,4 @@ require (
 	google.golang.org/grpc v1.83.2 // indirect
 )
 
-replace github.com/0xJacky/nginx-ui-plugin-spec/gen/go => ../gen/go
+replace github.com/nginxui/plugin-spec/gen/go => ../gen/go

@@ -6,7 +6,7 @@
 | Date | 2026-09-23 |
 | Spec changes | `spec/18-capabilities-blocklist.md` (BLOCKLIST-1 through BLOCKLIST-11), MAN-19, MAN-36, SEC-3 (`network` row), SEC-15, NAME-10, CONF-4, CONF-7, CONF-14, WIRE-9 table, WIRE-11 routing table, LIFE-10 (shutdown list), `proto/nginxui/plugin/v1/blocklist.proto`, `ManifestBlocklist` in `manifest.proto`, `schema/plugin.schema.json`, vectors 43 and 44 |
 | Reference host | nginx-ui `internal/plugin/capability/blocklist.go`, `internal/security/blocklist` (registry, rendering, runner), `internal/config/generated.go`, `model.BlocklistSource`, migration `20260923000004`, `api/blocklist`, `app/src/views/security/BlocklistSources.vue` |
-| Reference SDK | nginx-ui-plugin-sdk-go `blocklist.go` (`BlocklistHandler`) |
+| Reference SDK | plugin-sdk-go `blocklist.go` (`BlocklistHandler`) |
 
 ## Summary
 

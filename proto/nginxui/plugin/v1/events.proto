@@ -5,7 +5,7 @@ package nginxui.plugin.v1;
 import "google/protobuf/struct.proto";
 import "nginxui/plugin/v1/options.proto";
 
-option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // Events delivers subscribed host events to the plugin. The plugin serves it
 // and the host is the caller. See spec/06-host-api.md.

@@ -6,7 +6,7 @@
 | Date | 2026-09-23 |
 | Spec changes | `spec/14-capabilities-mcp.md` (MCP-1 through MCP-8), MAN-19, MAN-23, MAN-33, SEC-3 (`mcp` permission), SEC-13, NAME-11, CONF-10, WIRE-6 (`-32602` row), WIRE-9 table, `proto/nginxui/plugin/v1/mcp.proto`, `ManifestMCP` in `manifest.proto`, `schema/plugin.schema.json`, vectors 30 through 32, `tools/methods` (`-32602` decode rule scoped to WIRE-6) |
 | Reference host | nginx-ui `internal/plugin/capability/mcp.go`, `internal/mcp/server.go` (`AddServerTools`, `DeleteServerTools`), `internal/plugin/manager_capability.go` (`MCPToolName`), `app/src/views/system/plugins/permissions.ts` |
-| Reference SDK | nginx-ui-plugin-sdk-go `mcp.go` (`MCPHandler`, `MCPTools`, `MCPText`, `MCPError`, `UnknownTool`) |
+| Reference SDK | plugin-sdk-go `mcp.go` (`MCPHandler`, `MCPTools`, `MCPText`, `MCPError`, `UnknownTool`) |
 
 ## Summary
 

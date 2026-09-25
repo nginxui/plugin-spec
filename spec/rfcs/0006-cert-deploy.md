@@ -6,7 +6,7 @@
 | Date | 2026-09-23 |
 | Spec changes | `spec/16-capabilities-deploy.md` (DEPLOY-1 through DEPLOY-12), MAN-19, MAN-23, MAN-35, SEC-3 (`cert.deploy` permission), SEC-7, SEC-14, NAME-10, CONF-4, CONF-7, CONF-12, WIRE-6 (`-32002` row), WIRE-9 table, WIRE-11 routing table, LIFE-10 (shutdown list), `proto/nginxui/plugin/v1/deploy.proto`, `ManifestDeploy` in `manifest.proto`, `schema/plugin.schema.json`, vectors 39 through 42 |
 | Reference host | nginx-ui `internal/plugin/capability/deploy.go`, `internal/cert/deploy` (registry, certificate loading, runner), `model.CertDeployTarget`, `model.CertDeployment`, migration `20260923000003`, `api/cert_deploy`, `app/src/views/certificate/DeployTargets.vue`, `app/src/views/certificate/components/CertificateDeployTargets.vue`, `app/src/views/system/plugins/permissions.ts` |
-| Reference SDK | nginx-ui-plugin-sdk-go `deploy.go` (`DeployHandler`, `DeployValidator`) |
+| Reference SDK | plugin-sdk-go `deploy.go` (`DeployHandler`, `DeployValidator`) |
 
 ## Summary
 

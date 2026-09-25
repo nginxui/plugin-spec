@@ -6,7 +6,7 @@
 | Date | 2026-09-23 |
 | Spec changes | `spec/12-capabilities-notify.md` (NOTIFY-1 through NOTIFY-11), MAN-19, MAN-31, NAME-10, CONF-8, WIRE-6 (`-32002` row), WIRE-9 table, `proto/nginxui/plugin/v1/notify.proto`, `ManifestNotify` and `ConfigurationSchema` in `manifest.proto`, `schema/plugin.schema.json`, vectors 23 through 26 |
 | Reference host | nginx-ui `internal/plugin/capability/notify.go`, `internal/notification/source.go`, `api/external_notify` (`GET /api/external_notifies/channels`, validation on create and modify), `app/src/components/PluginConfigForm`, `app/src/views/preference/components/ExternalNotify` |
-| Reference SDK | nginx-ui-plugin-sdk-go `notify.go` (`NotifyHandler`, `NotifyValidator`) |
+| Reference SDK | plugin-sdk-go `notify.go` (`NotifyHandler`, `NotifyValidator`) |
 
 ## Summary
 

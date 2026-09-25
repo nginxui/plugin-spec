@@ -5,7 +5,7 @@ package nginxui.plugin.v1;
 import "google/protobuf/struct.proto";
 import "nginxui/plugin/v1/options.proto";
 
-option go_package = "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
+option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // DNS01 is the dns01 capability. A plugin that declares the capability serves
 // it and the host is the caller. See spec/05-capabilities-dns01.md.

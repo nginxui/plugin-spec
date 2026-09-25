@@ -16,7 +16,7 @@ import (
 	"os"
 	"sort"
 
-	pluginv1 "github.com/0xJacky/nginx-ui-plugin-spec/gen/go/nginxui/plugin/v1"
+	pluginv1 "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"

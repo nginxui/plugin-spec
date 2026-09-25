@@ -6,7 +6,7 @@
 | Date | 2026-09-23 |
 | Spec changes | `spec/20-capabilities-logsink.md` (LOGSINK-1 through LOGSINK-11), WIRE-12, the `streaming` method option, WIRE-9 and WIRE-11 tables, LIFE-2 (`transports`), LIFE-10 (shutdown list), MAN-19, MAN-23, MAN-38, SEC-3 (`log.read` row), SEC-16, CONF-1, CONF-4, CONF-5, CONF-7, CONF-16, NAME intro, `proto/nginxui/plugin/v1/log.proto`, `options.proto`, `ManifestLogSink` in `manifest.proto`, `tools/methods` (`streaming`), `schema/plugin.schema.json`, vector 47 |
 | Reference host | nginx-ui `internal/nginx_log/sink` (hub and access log tail), `internal/plugin/logsink.go` (per plugin queue and streamer), `internal/plugin/capability/logsink.go`, `internal/plugin/grpcbridge` (client streams), `internal/plugin/conformance.go` (LOGSINK-4, LOGSINK-5), `app/src/views/system/plugins/PluginDrawer.vue` |
-| Reference SDK | nginx-ui-plugin-sdk-go `logsink.go` (`LogSinkHandler`), `grpc.go` (client streams) |
+| Reference SDK | plugin-sdk-go `logsink.go` (`LogSinkHandler`), `grpc.go` (client streams) |
 
 ## Summary
 

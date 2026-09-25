@@ -16,8 +16,8 @@ plugins written with the reference SDKs.
 
 * **Plugin authors** who want a contract that does not change under them and
   does not require reading Go source.
-* **SDK maintainers** ([nginx-ui-plugin-sdk-go](https://github.com/0xJacky/nginx-ui-plugin-sdk-go),
-  [nginx-ui-plugin-sdk-web](https://github.com/0xJacky/nginx-ui-plugin-sdk-web),
+* **SDK maintainers** ([plugin-sdk-go](https://github.com/nginxui/plugin-sdk-go),
+  [plugin-sdk-web](https://github.com/nginxui/plugin-sdk-web),
   or an SDK in a third language) who need the wire format, error codes and
   timing contract to build a helper library against.
 * **Host implementers** who want to run the same plugin packages the
@@ -121,7 +121,7 @@ files are committed, since they are published with the spec; run
 `make generate` after every change under `proto/` and commit its output
 together with the change.
 
-`gen/go` is the Go module `github.com/0xJacky/nginx-ui-plugin-spec/gen/go`
+`gen/go` is the Go module `github.com/nginxui/plugin-spec/gen/go`
 (package `pluginv1`, import path `.../gen/go/nginxui/plugin/v1`). `tools/` is a
 separate module that uses it through a `replace` directive and is not meant
 to be imported.
@@ -154,9 +154,9 @@ This spec changes by pull request against this repository:
 ## Related repositories
 
 * [nginx-ui](https://github.com/0xJacky/nginx-ui) — the reference host
-* [nginx-ui-plugin-sdk-go](https://github.com/0xJacky/nginx-ui-plugin-sdk-go) — Go SDK for server-side plugins
-* [nginx-ui-plugin-sdk-web](https://github.com/0xJacky/nginx-ui-plugin-sdk-web) — TypeScript SDK for browser plugin bundles
-* [nginx-ui-plugin-dns01](https://github.com/0xJacky/nginx-ui-plugin-dns01) — the official `dns01` capability plugin
+* [plugin-sdk-go](https://github.com/nginxui/plugin-sdk-go) — Go SDK for server-side plugins
+* [plugin-sdk-web](https://github.com/nginxui/plugin-sdk-web) — TypeScript SDK for browser plugin bundles
+* [plugin-dns01](https://github.com/nginxui/plugin-dns01) — the official `dns01` capability plugin
 
 ## License
 

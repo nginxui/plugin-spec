@@ -6,7 +6,7 @@
 | Date | 2026-09-23 |
 | Spec changes | `spec/19-capabilities-discovery.md` (DISCOVERY-1 through DISCOVERY-11), MAN-19, MAN-37, SEC-3 (`network` row), SEC-15, NAME-10, CONF-4, CONF-7, CONF-15, WIRE-9 table, WIRE-11 routing table, LIFE-10 (shutdown list), `proto/nginxui/plugin/v1/discovery.proto`, `ManifestDiscovery` in `manifest.proto`, `schema/plugin.schema.json`, vectors 45 and 46 |
 | Reference host | nginx-ui `internal/plugin/capability/discovery.go`, `internal/upstream/discovery` (registry, rendering, runner), `internal/config/generated.go`, `model.UpstreamDiscovery`, migration `20260923000005`, `api/upstream_discovery`, `app/src/views/upstream/components/UpstreamDiscoveries.vue` |
-| Reference SDK | nginx-ui-plugin-sdk-go `discovery.go` (`DiscoveryHandler`) |
+| Reference SDK | plugin-sdk-go `discovery.go` (`DiscoveryHandler`) |
 
 ## Summary
 
