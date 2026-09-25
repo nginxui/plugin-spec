@@ -2,11 +2,18 @@
 
 | | |
 | --- | --- |
-| Status | Accepted |
+| Status | Accepted; pinned partner keys superseded by RFC 0013 |
 | Date | 2026-09-26 |
 | Spec changes | PKG-13 (amended), PKG-14 (`signature_url` removed), PKG-16 (rewritten), PKG-19 through PKG-24, SEC-12 (rewritten), SEC-18 through SEC-24, CONF-1, the lint table of `spec/09-conformance.md`, `schema/catalog.schema.json` (`signature_url` and `signed_by` removed, `author_public_key` and `trust` described), the layout table of `README.md`, a note in RFC 0001 |
 | Supersedes | The detached `.minisig` signatures of RFC 0001 |
 | Reference host | nginx-ui `internal/pkgsign`, `internal/releasesign` (partner keys), `internal/plugin` (package verification, marketplace, offline packages, cluster sync, lint), `model/plugin.go` (`Trust`, `Signer`), `settings/plugin.go` (`DeveloperMode` replaces `RequireSignature`), `app/src/views/system/plugins` |
+
+The partner keys pinned in the host binary that this RFC describes were
+replaced by partner certificates inside the package and a partner keyring
+signed with a release key, see
+[RFC 0013](0013-partner-certificates-and-keyring.md). The `verified` level,
+the lint check of SEC-18 and the revocation of partner keys follow RFC 0013.
+The text below is kept as it was accepted.
 
 ## Summary
 

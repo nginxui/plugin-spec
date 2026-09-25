@@ -29,13 +29,13 @@ plugins written with the reference SDKs.
 | Path | Contents |
 | --- | --- |
 | `spec/01-manifest.md` | `plugin.json` schema and validation rules (`MAN-n`) |
-| `spec/02-packaging.md` | Archive format, layout, size limits, required files, embedded signature, catalog downloads (`PKG-n`) |
+| `spec/02-packaging.md` | Archive format, layout, size limits, required files, embedded signature, partner certificate, catalog downloads (`PKG-n`) |
 | `spec/03-wire-protocol.md` | JSON-RPC 2.0 framing, error codes, message limits, the gRPC transport and streaming rpcs (`WIRE-n`) |
 | `spec/04-lifecycle.md` | Handshake, liveness, configuration, shutdown, resource limits (`LIFE-n`) |
 | `spec/05-capabilities-dns01.md` | The `dns01` capability's methods (`DNS01-n`) |
 | `spec/06-host-api.md` | `host.*` methods, events and cron delivery (`HOST-n`) |
 | `spec/07-webapp.md` | Browser bundle contract, slots, registry API (`WEB-n`) |
-| `spec/08-security.md` | Permission model, credential handling, trust boundary, trust levels derived from the package signature (`SEC-n`) |
+| `spec/08-security.md` | Permission model, credential handling, trust boundary, trust levels derived from the package signature, the partner keyring (`SEC-n`) |
 | `spec/09-conformance.md` | Conformance levels: `core`, `dns01`, `webapp`, `notify`, `probe`, `mcp`, `storage`, `cert.deploy`, `content`, `security.blocklist`, `upstream.discovery`, `log.sink`, and the transport checks (`CONF-n`, `TRANSPORT-1`) |
 | `spec/10-versioning.md` | Spec versioning, `api_version`, upgrade compatibility (`VER-n`) |
 | `spec/11-naming.md` | Plugin id, provider, channel, probe kind, storage backend, deploy target kind, blocklist source kind and discovery provider code namespaces, MCP tool names, resource groups (`NAME-n`) |
@@ -54,6 +54,7 @@ plugins written with the reference SDKs.
 | `tools/` | Generator of `spec/methods.json` and the consistency tests, a Go module of its own |
 | `schema/plugin.schema.json` | JSON Schema (draft 2020-12) for `plugin.json`, checked against `manifest.proto` |
 | `schema/catalog.schema.json` | JSON Schema (draft 2020-12) for a marketplace catalog document (PKG-14, PKG-24) |
+| `schema/partners.schema.json` | JSON Schema (draft 2020-12) for the partner keyring published next to the official catalog (SEC-25, SEC-26) |
 | `spec/rfcs/` | Accepted design changes, with the reasoning the numbered requirements leave out |
 | `examples/python-dns01/` | Zero-dependency Python 3 reference plugin |
 | `vectors/v1/` | Request/response test vectors for SDK authors |

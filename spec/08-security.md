@@ -198,10 +198,12 @@ before installation completes, at every trust level. A catalog digest
 ## Package trust
 
 A trust level says who published a package. A host derives it from the key
-that signed the package (PKG-19 through PKG-21), never from the place the
-package came from, and it decides which installs and updates the host
-allows. It does not limit what an installed plugin may do: that is the job
-of the permission model above, and SEC-1 applies at every level.
+that signed the package (PKG-19 through PKG-21) and from what the release
+keys of the project say about that key (PKG-25 through PKG-27, SEC-25
+through SEC-29), never from the place the package came from, and it decides
+which installs and updates the host allows. It does not limit what an
+installed plugin may do: that is the job of the permission model above, and
+SEC-1 applies at every level.
 
 ## SEC-18: trust levels
 
@@ -211,24 +213,29 @@ A host derives the trust level of a package from the key that signed its
 | Signer | Level |
 | --- | --- |
 | A release key of the Nginx UI project, pinned in the host binary | `official` |
-| A partner key, pinned in the host binary | `verified` |
+| A partner key a release key vouches for: the key of a certificate in the package that passes PKG-27, or a key the partner keyring lists whose entry has not expired (SEC-25, SEC-26, SEC-29); in both cases only while its key id is not revoked (SEC-28) | `verified` |
 | The `author_public_key` of the catalog entry the package was downloaded from (PKG-24), or a key the operator added to the host's trusted key list (the reference host's `plugin.trusted_public_keys`) | `community` |
 | None: no signature, or an unknown signer (PKG-21) | `unsigned` |
 
 The levels rank `unsigned` < `community` < `verified` < `official`. A key
-that appears in more than one row gives the highest of its levels. Only the
-two pinned key sets give `verified` or `official`, so neither a catalog nor
-an operator can raise a key above `community`; the pinned sets change only
-with a release of the host.
+that appears in more than one row gives the highest of its levels. Only a
+release key gives `official`, and only a key that a release key vouches for,
+through a certificate or the keyring, gives `verified`, so neither a catalog
+nor an operator can raise a key above `community`. The release keys change
+only with a release of the host; partner keys are added and revoked without
+one (SEC-25).
 
 `official` means the Nginx UI project published the package. `verified` is
 reserved for partner organizations of the project, whose keys the project
-pins in the host binary; it names the publisher and makes no claim that
-anyone reviewed the source. `community` means the package is signed by a key
-the host learned from a catalog entry or from its operator. A package that
-reaches a host without a catalog entry (an upload, the offline package
-directory, a push from another host) has no `author_public_key` to match,
-so it is `community` only when its key is on the host's trusted key list.
+vouches for with its release key; it names the publisher and makes no claim
+that anyone reviewed the source. A host SHOULD show the partner name next to
+the level: the name of the keyring entry when the keyring lists the key,
+otherwise the name in the certificate (PKG-26). `community` means the
+package is signed by a key the host learned from a catalog entry or from its
+operator. A package that reaches a host without a catalog entry (an upload,
+the offline package directory, a push from another host) has no
+`author_public_key` to match, so it is `community` only when its key is on
+the host's trusted key list.
 
 ## SEC-19: the catalog label
 
@@ -290,4 +297,154 @@ A host MUST record, for every installed plugin, the trust level it derived
 when it installed the package and the key id of the signer (the 16
 hexadecimal digits minisign prints, none for an unsigned package), MUST base
 SEC-22 on the recorded level, and MUST make both visible to the person
-managing plugins.
+managing plugins. For a `verified` plugin a host SHOULD record and show the
+partner name as well (SEC-18).
+
+## Partner keys
+
+A partner key reaches a host in two ways, both anchored in the release keys
+of the project, and neither needs a release of the host. A certificate
+(PKG-25 through PKG-27) travels inside every package the partner signs,
+needs no network and makes the package `verified` on a host that has never
+heard of the partner. The partner keyring, a document the project signs with
+a release key and publishes next to the official catalog, lists partner keys
+and revoked key ids and reaches every host that refreshes its catalogs, so a
+revocation takes effect without waiting for a certificate to expire.
+
+A partner is onboarded as follows. It creates a minisign key pair and sends
+its public key to the maintainers. The maintainers issue a certificate: they
+sign the public key with a release key, with the partner name and an expiry
+date in the trusted comment (PKG-26), and hand the partner
+`plugin.partner` and `plugin.partner.minisig`, which it puts into every
+package it signs (PKG-23). They also list the key in the keyring. Before the
+certificate expires they issue a new one, which the partner ships with its
+next packages.
+
+A partner is offboarded, or a compromised key withdrawn, by listing its key
+id in `revoked` and publishing the keyring. From its next refresh on, every
+host the keyring reaches stops giving that key `verified`, whether a package
+carries a certificate for it or not. A revoked key id stays in the list; a
+partner that signs again gets a new key and a new certificate. A host that
+no longer refreshes, such as a node cut off from the network, keeps what it
+has: it honors a certificate until its expiry date, and a keyring entry
+until the `expires` of the entry or, for an entry without one, for as long
+as it keeps that keyring. The lifetime the maintainers give a certificate
+therefore bounds the damage on such a host.
+
+## SEC-25: the partner keyring
+
+The partner keyring is a JSON document (SEC-26) that the Nginx UI project
+publishes as `v1/partners.json` next to the official catalog `v1/index.json`,
+together with `v1/partners.json.minisig`, a minisign signature of the exact
+bytes of the document by a release key. For the reference host these are
+`https://raw.githubusercontent.com/0xJacky/nginx-ui-plugins/main/v1/partners.json`
+and the same URL with `.minisig` appended. The signature has the text form of
+PKG-20, and a host MUST verify it with its release keys the way PKG-20
+describes before it parses the document. Its comments carry no meaning.
+
+Only the keyring of the official catalog counts. A host MUST fetch it from
+that location, which it knows independently of the catalog sources a person
+configures, and MAY fetch it through the mirror or proxy it uses for the
+official catalog, since the signature, not the transport, authenticates the
+document. A host MUST NOT look for a keyring next to any other catalog
+source: a custom source cannot publish partners, and a document is a keyring
+only when a release key verifies its signature.
+
+## SEC-26: keyring format
+
+```json
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-26T08:00:00Z",
+  "partners": [
+    {
+      "name": "example-corp",
+      "public_key": "untrusted comment: minisign public key 0123456789ABCDEF\nRW...",
+      "expires": "2027-09-30"
+    }
+  ],
+  "revoked": ["FEDCBA9876543210"]
+}
+```
+
+| Member | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `schema_version` | integer | yes | `1`, the only layout this spec defines. |
+| `updated_at` | string | yes | RFC 3339 time of this version of the document. Every new version carries a later time (SEC-27). |
+| `partners` | array | yes | The partner keys, one object each. |
+| `partners[].name` | string | yes | The partner name, in the syntax of PKG-26. |
+| `partners[].public_key` | string | yes | The minisign public key of the partner, in the text form of `plugin.partner` (PKG-25). |
+| `partners[].expires` | string | no | `YYYY-MM-DD`, the last day the entry is valid (SEC-29). Absent means the entry does not expire. |
+| `revoked` | array of strings | yes | Revoked partner key ids, each the 16 hexadecimal digits minisign prints for a key (SEC-24). |
+
+[`schema/partners.schema.json`](../schema/partners.schema.json) describes
+the document. A host MUST NOT use a document whose `schema_version` it does
+not know or whose `updated_at` does not parse, and keeps its cached keyring
+instead (SEC-27). A host MUST ignore an entry of `partners` whose `name`,
+`public_key` or `expires` does not parse, and a `revoked` value that is not
+a key id, and use the rest of the document. A host compares key ids without
+regard to case, and ignores members it does not know (VER-4).
+
+A listed key whose entry has not expired needs no certificate: a package it
+signs derives `verified` (SEC-18) unless its key id is revoked (SEC-28).
+
+## SEC-27: refresh, rollback and cache
+
+A host MUST fetch the keyring and its signature each time it refreshes its
+catalogs, and SHOULD do so even when a person removed the official catalog
+from its sources, since revocations reach a host only this way. A host MUST
+take a fetched document as its keyring only when:
+
+1. a release key verifies its signature (SEC-25);
+2. SEC-26 allows the host to use it; and
+3. its `updated_at` is not earlier than the `updated_at` of the keyring the
+   host has cached. An older document may lack a revocation the cached one
+   has, so a host MUST refuse it (rollback).
+
+A host MUST store the keyring it took, with its signature, on disk in place
+of the one it cached before, and MUST load the cached keyring when it
+starts, so that a restart or a node without network keeps it. It SHOULD
+verify the signature again when it loads the cached keyring. When a fetch
+fails, or the host refuses the fetched document, the host MUST keep using
+the cached keyring and SHOULD report the failure. A host that has never
+obtained a keyring has no keyring entries and no revocations: only
+certificates give `verified` there.
+
+The project MUST give every new version of the keyring a later `updated_at`
+than the version before it.
+
+## SEC-28: revocation
+
+A partner key whose key id the keyring of the host lists in `revoked` MUST
+NOT give `verified`, whatever vouches for it: a certificate that passes
+every other step of PKG-27, or an entry of `partners` in the same keyring.
+Revocation takes precedence over both.
+
+Revocation withdraws the partner level only. It does not affect a release
+key, whose set changes only with a release of the host, and a revoked key
+that is the `author_public_key` of the catalog entry or on the operator's
+trusted key list still gives `community` (SEC-18), with the confirmation
+SEC-21 requires.
+
+A host applies revocation whenever it derives a level (PKG-22). Revocation
+does not change the level a host recorded for an installed plugin (SEC-24),
+but no update signed by the revoked key derives `verified` any more, so an
+automatic update to it is refused as a downgrade (SEC-22). A host SHOULD show
+a person managing plugins that the signer of an installed `verified` plugin
+is revoked.
+
+## SEC-29: expiry
+
+The date in the trusted comment of a certificate (PKG-26) and the `expires`
+of a keyring entry (SEC-26) name the last day the certificate or the entry
+is valid, on the UTC calendar. A host MUST evaluate it against the current
+time of its own clock, converted to UTC: the certificate or entry is valid
+while the UTC date of the clock is on or before the named day, that is
+through 23:59:59 UTC of that day, and has expired from 00:00:00 UTC of the
+following day. A date that is not a date of the calendar, such as
+`2027-02-30`, fails the certificate or the entry.
+
+A host evaluates expiry whenever it derives a level (PKG-22). Like
+revocation, expiry does not change the level recorded for an installed
+plugin (SEC-24): it bounds which packages a key can still make `verified`,
+not which installed plugins stay so.

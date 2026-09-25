@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/0xJacky/nginx-ui-plugin-spec/schema/partners.schema.json",
+  "title": "NGINX UI partner keyring",
+  "description": "The partner keyring the Nginx UI project publishes as v1/partners.json next to the official catalog v1/index.json, schema_version 1 (spec/08-security.md SEC-25 through SEC-29, RFC 0013). A release key signs its exact bytes in v1/partners.json.minisig, and a host verifies that signature before it parses the document. Only the keyring of the official catalog counts. Unknown members are ignored by a host, so the schema allows them.",
+  "type": "object",
+  "required": ["schema_version", "updated_at", "partners", "revoked"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "description": "The only keyring layout spec 1.x defines. A host does not use a document with another value and keeps its cached keyring (SEC-26)."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 time of this version. Every new version carries a later time, and a host refuses a document older than the keyring it cached (SEC-27)."
+    },
+    "partners": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/partner" },
+      "description": "Partner keys. A listed key whose entry has not expired makes a package it signs verified without a certificate, unless its key id is revoked (SEC-18, SEC-28)."
+    },
+    "revoked": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/keyId" },
+      "description": "Revoked partner key ids. A revoked key never gives verified, whether a certificate or an entry of partners names it (SEC-28)."
+    }
+  },
+  "$defs": {
+    "partnerName": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9.-]+$",
+      "description": "PKG-26: the partner name, ASCII letters, digits, dots and hyphens, the same syntax as in a partner certificate."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "SEC-29: a day of the UTC calendar as YYYY-MM-DD. The entry is valid through the whole of that day by the host's clock."
+    },
+    "keyId": {
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{16}$",
+      "description": "The 16 hexadecimal digits minisign prints for a key (SEC-24), compared without regard to case."
+    },
+    "publicKey": {
+      "type": "string",
+      "pattern": "^(untrusted comment: [^\\r\\n]*\\n)?RW[A-Za-z0-9+/]{54}\\n?$",
+      "description": "PKG-25: a minisign public key in the text form of a .pub file, an untrusted comment line and the key line, or the key line alone."
+    },
+    "partner": {
+      "type": "object",
+      "required": ["name", "public_key"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "$ref": "#/$defs/partnerName" },
+        "public_key": { "$ref": "#/$defs/publicKey" },
+        "expires": {
+          "$ref": "#/$defs/date",
+          "description": "SEC-29: the last day the entry is valid. Absent means the entry does not expire."
+        }
+      }
+    }
+  }
+}

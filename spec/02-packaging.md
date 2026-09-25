@@ -5,9 +5,12 @@ portable package, or one package per platform, or both. This document
 describes the archive format, the limits the reference host enforces while
 extracting one (`internal/plugin/package.go`), the signature a package
 carries inside itself (PKG-19 through PKG-23, introduced by
-[RFC 0012](rfcs/0012-embedded-package-signatures.md)), and how a catalog
-release points a host at the package for its platform (PKG-14 onwards,
-introduced by [RFC 0001](rfcs/0001-per-platform-packages.md)).
+[RFC 0012](rfcs/0012-embedded-package-signatures.md)), the certificate a
+partner package carries for the key that signed it (PKG-25 through PKG-27,
+introduced by [RFC 0013](rfcs/0013-partner-certificates-and-keyring.md)),
+and how a catalog release points a host at the package for its platform
+(PKG-14 onwards, introduced by
+[RFC 0001](rfcs/0001-per-platform-packages.md)).
 
 ## PKG-1
 
@@ -144,7 +147,9 @@ at the package root themselves:
 
 This is the layout `sha256sum` prints and `sha256sum -c` reads. A file named
 `plugin.sums` or `plugin.sums.minisig` below the package root is an ordinary
-file and is listed. A path that contains a LF or CR byte cannot be listed,
+file and is listed. The certificate files `plugin.partner` and
+`plugin.partner.minisig` (PKG-25, PKG-26) are ordinary files too and are
+listed, at the package root as anywhere else. A path that contains a LF or CR byte cannot be listed,
 so a package that carries `plugin.sums` MUST NOT contain such a file.
 
 ## PKG-20: `plugin.sums.minisig`
@@ -177,6 +182,14 @@ content. A differing digest, a listed path that is missing or is not a
 regular file, a regular file that is not listed and a line that breaks
 PKG-19 are each a mismatch.
 
+The keys a host knows are the keys SEC-18 gives a level: its release keys,
+a partner key that a certificate in the package (PKG-27) or the partner
+keyring (SEC-25) vouches for and that is not revoked (SEC-28), the
+`author_public_key` of the catalog entry the package was downloaded from and
+the keys on the host's trusted key list. A key that only a certificate
+failing PKG-27 names is unknown, so a failed certificate never makes a
+package invalid by itself.
+
 A host MUST refuse an invalid package in every mode, developer mode included
 (SEC-20): either a key it trusts signed a list the files no longer agree
 with, or the signature is damaged or claims a key it trusts and fails, so
@@ -203,6 +216,11 @@ complete before the host runs any file of the package or replaces an
 installed plugin with it. A host MUST NOT skip it because a digest matched
 or because another host already checked the same package.
 
+The partner certificate (PKG-27) and the partner keyring (SEC-25) are part
+of the check. A host evaluates them with the keyring it holds and the date
+of its clock at that moment (SEC-29), so the level a package derives when it
+is installed can differ from the one the person saw when it was inspected.
+
 ## PKG-23: signing a package
 
 A publisher signs a package once every other file of it is final: it writes
@@ -212,6 +230,100 @@ secret key. Any later change to a file of the package needs a new
 its own, since each carries its own `plugin.json` and executables (PKG-12,
 PKG-13). A package offered in a catalog SHOULD be signed: outside developer
 mode no host installs an unsigned package (SEC-20).
+
+A partner copies the two files of its certificate (PKG-25, PKG-26) unchanged
+into the package root before it writes `plugin.sums`, so that `plugin.sums`
+lists them. A certificate belongs to a key, not to a plugin: one certificate
+serves every package the partner signs with that key. A renewed certificate
+is a changed file and needs a new `plugin.sums` and a new signature.
+
+## Partner certificate
+
+A partner of the Nginx UI project signs its packages with a key of its own.
+So that such a package derives `verified` on a host that has never heard of
+the partner, the package carries a certificate for that key:
+`plugin.partner`, the public key of the partner, and
+`plugin.partner.minisig`, a signature of it by a release key of the project
+whose trusted comment names the partner and the last day the certificate is
+valid. A host needs nothing but its release keys to check a certificate, so
+a certificate works offline and a new partner needs no release of the host.
+The level a certificate earns, the partner keyring that lists partner keys
+without a certificate, and the revocation and expiry of a partner key are
+specified in `spec/08-security.md` (SEC-18, SEC-25 through SEC-29).
+
+## PKG-25: `plugin.partner`
+
+`plugin.partner` is a text file at the package root that holds the minisign
+public key of the partner that signs the package, in the form of a minisign
+`.pub` file:
+
+* an untrusted comment line that starts with `untrusted comment: `, whose
+  text carries no meaning in this spec;
+* the key line, the base64 encoding minisign writes of the algorithm `Ed`,
+  the key id and the Ed25519 public key.
+
+A file that holds the key line alone is also accepted. Every line ends with
+a LF (`0x0A`), which the last line MAY omit. A file named `plugin.partner`
+below the package root is an ordinary file and no certificate.
+
+## PKG-26: `plugin.partner.minisig`
+
+`plugin.partner.minisig` is a minisign signature of the exact bytes of
+`plugin.partner` by a release key of the Nginx UI project (SEC-18), in the
+text form PKG-20 describes. The algorithms and the verification of PKG-20
+apply, the signature of the trusted comment included. The trusted comment,
+the text that follows `trusted comment: ` on its line, MUST be exactly:
+
+```text
+partner:<name>;expires:<YYYY-MM-DD>
+```
+
+* `<name>` names the partner: one or more ASCII letters, digits, dots and
+  hyphens (`^[A-Za-z0-9.-]+$`);
+* `<YYYY-MM-DD>` is the last day the certificate is valid, a date of the UTC
+  calendar; the certificate is valid through the whole of that day (SEC-29);
+* nothing else: no space, no other field and no other order.
+
+minisign signs the trusted comment together with the signature, so the name
+and the date are as authentic as the key. The untrusted comment of the
+signature carries no meaning. The project issues a certificate with:
+
+```sh
+minisign -S -s <release key> -m plugin.partner -t "partner:<name>;expires:<YYYY-MM-DD>"
+```
+
+## PKG-27: checking a certificate
+
+A package carries a certificate when both `plugin.partner` and
+`plugin.partner.minisig` are at its package root. Whenever a host determines
+the signature state and the trust level of such a package (PKG-22), it MUST
+check the certificate in this order, and the certificate passes only when
+every step does:
+
+1. `plugin.partner` parses as a minisign public key (PKG-25);
+2. `plugin.partner.minisig` parses, and one of the release keys of the host
+   verifies it over the exact bytes of `plugin.partner`, the trusted comment
+   included (PKG-26);
+3. the trusted comment follows PKG-26;
+4. the certificate has not expired by the date of the host's clock (SEC-29);
+5. the partner keyring the host holds, if any, does not list the key id of
+   the partner key in `revoked` (SEC-28).
+
+A certificate that passes makes the partner key a key the host knows
+(PKG-21). When that key verifies `plugin.sums.minisig` and `plugin.sums`
+matches the files, the package is signed by the partner key and derives
+`verified` (SEC-18). Since `plugin.sums` lists the certificate (PKG-19), a
+package whose certificate was added, replaced or removed after signing no
+longer matches its `plugin.sums`.
+
+A certificate that fails a step, and a package that holds only one of the
+two files, gives no partner trust. The host ignores the certificate and
+derives the level of the package from its remaining sources: a keyring
+entry, the catalog entry or the operator's trusted key list (SEC-18). A
+certificate that fails MUST NOT make a package invalid by itself (PKG-21). A
+host SHOULD tell the person which step failed, so that an expired
+certificate, a revoked key and a certificate the project never issued can be
+told apart.
 
 ## Per-platform packages
 
