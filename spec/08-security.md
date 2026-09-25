@@ -339,7 +339,7 @@ The partner keyring is a JSON document (SEC-26) that the Nginx UI project
 publishes as `v1/partners.json` next to the official catalog `v1/index.json`,
 together with `v1/partners.json.minisig`, a minisign signature of the exact
 bytes of the document by a release key. For the reference host these are
-`https://raw.githubusercontent.com/0xJacky/nginx-ui-plugins/main/v1/partners.json`
+`https://plugins.nginxui.com/v1/partners.json`
 and the same URL with `.minisig` appended. The signature has the text form of
 PKG-20, and a host MUST verify it with its release keys the way PKG-20
 describes before it parses the document. Its comments carry no meaning.

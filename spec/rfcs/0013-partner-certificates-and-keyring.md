@@ -112,9 +112,9 @@ The project publishes the keyring next to the official catalog. For the
 reference host:
 
 ```text
-https://raw.githubusercontent.com/0xJacky/nginx-ui-plugins/main/v1/index.json
-https://raw.githubusercontent.com/0xJacky/nginx-ui-plugins/main/v1/partners.json
-https://raw.githubusercontent.com/0xJacky/nginx-ui-plugins/main/v1/partners.json.minisig
+https://plugins.nginxui.com/v1/index.json
+https://plugins.nginxui.com/v1/partners.json
+https://plugins.nginxui.com/v1/partners.json.minisig
 ```
 
 ```json
