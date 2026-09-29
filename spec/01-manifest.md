@@ -371,7 +371,7 @@ Each entry of `settings`:
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
 | `key` | string | yes | Settings map key. |
-| `type` | string | yes | `text`, `bool`, `number`, `select`, `secret` or `textarea`. |
+| `type` | string | yes | `text`, `bool`, `number`, `select`, `secret`, `textarea` or `list`. |
 | `display_name` | string | yes | Field label. |
 | `help_text` | string | no | Field description. |
 | `default` | any | no | Default value. |
@@ -385,7 +385,9 @@ Each entry of `settings`:
 ### MAN-28
 
 `settings_schema.settings[].type` MUST be one of `text`, `bool`, `number`,
-`select`, `secret`, `textarea`.
+`select`, `secret`, `textarea`, `list`. A `list` field holds an array of
+strings; its `default`, when present, MUST be an array of strings, and the
+host renders it as an editable list of single line entries.
 
 ### MAN-29
 

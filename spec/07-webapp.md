@@ -57,6 +57,10 @@ interface NginxUIGlobal {
     gettext: unknown; http: unknown
     /** Resolved versions of the checked shared libraries, keyed by package name. */
     versions: Record<string, string>
+    /** Host dialogs a bundle may open, see below. Absent on older hosts. */
+    ui?: {
+      openDnsCredentialEditor?: () => Promise<DnsCredentialSummary | undefined>
+    }
   }
   registerPlugin: (id: string, definition: { setup(registry: PluginRegistry): void | Promise<void>, teardown?(): void }) => void
 }
@@ -67,6 +71,13 @@ interface NginxUIGlobal {
 and `shared.http` are the host's own translation and HTTP client instances,
 not their npm packages' generic module exports, and carry no entry in
 `versions`.
+
+`shared.ui` exposes host dialogs so a bundle can reuse the host's own forms
+instead of rebuilding them. `openDnsCredentialEditor()` opens the host's DNS
+credential editor and resolves with the created credential (`id`, `name`,
+`code`, optional `provider` and `provider_code`), or `undefined` when the
+person cancels. A bundle MUST feature-detect every `shared.ui` member and
+keep working without it.
 
 ## WEB-5
 

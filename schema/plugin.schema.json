@@ -660,7 +660,7 @@
         "key": { "type": "string", "minLength": 1 },
         "type": {
           "type": "string",
-          "enum": ["text", "bool", "number", "select", "secret", "textarea"]
+          "enum": ["text", "bool", "number", "select", "secret", "textarea", "list"]
         },
         "display_name": { "type": "string", "minLength": 1 },
         "help_text": { "type": "string" },
