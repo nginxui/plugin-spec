@@ -209,7 +209,11 @@ MUST NOT rely on the plugin reading them from anywhere else:
 | `NGINX_UI_VERSION` | The host application's own version string. |
 
 A host sets the proxy variables under the conditions of LIFE-17, and
-`NGINX_UI_PLUGIN_HTTP_SECRET` under those of LIFE-18.
+`NGINX_UI_PLUGIN_HTTP_SECRET` under those of LIFE-18. A host that runs as a
+public demo sets `NGINX_UI_DEMO` to `1`, and leaves it unset otherwise, so a
+plugin can replace data a demo cannot provide with placeholders. The value
+comes from the host's own configuration, never from its inherited
+environment.
 
 ## LIFE-15
 
