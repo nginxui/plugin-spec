@@ -299,7 +299,7 @@ blocks of this spec version add these ids:
 
 | Id | Level | Check |
 | --- | --- | --- |
-| DNS01-18 | error | A provider has no `form`, or its `form` has a field with an empty or duplicate `key` or no `label`, a `group` other than `credential` or `setting`, a `unit` other than `seconds`, or a method with a duplicate name, no fields, a key that is not a credential field, or more than one recommended method. |
+| DNS01-18 | error | A provider has no `form`, or its `form` has a field with an empty or duplicate `key` or no `label`, a `group` other than `credential` or `setting`, a `unit` other than `seconds`, a single method, a method with a duplicate name, a key in `fields` that is not a credential field, an empty `values` key, a `values` key that is also a field key without being a credential field that some method lists and no method both lists and sets, two methods with the same fields and the same values, or more than one recommended method. |
 | MAN-31, MAN-32, MAN-33 | error | A declared `notify`, `probe` or `mcp` capability has no block or an empty list; `mcp` without the `mcp` permission. |
 | NOTIFY-2, PROBE-2 | error | A channel or kind code does not match `^[a-z0-9-]{2,32}$` or is declared twice. |
 | NOTIFY-3, PROBE-3 | error | A channel or kind has no `name`. |

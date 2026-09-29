@@ -215,8 +215,10 @@ message DNS01ProviderMethod {
   // Plain English name, a gettext msgid.
   string name = 1;
   bool recommended = 2;
-  // Credential field keys this method uses.
+  // Credential field keys this method uses. May be empty.
   repeated string fields = 3;
+  // Fixed config values the host stores while this method is chosen.
+  map<string, string> values = 4;
 }
 
 // ManifestHTTP is the metadata block of the http capability.

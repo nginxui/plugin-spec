@@ -402,9 +402,14 @@
         "recommended": { "type": "boolean" },
         "fields": {
           "type": "array",
-          "minItems": 1,
           "items": { "type": "string", "minLength": 1 },
-          "description": "DNS01-16. Keys of credential fields."
+          "description": "DNS01-16. Keys of credential fields, empty when the method needs none."
+        },
+        "values": {
+          "type": "object",
+          "propertyNames": { "minLength": 1 },
+          "additionalProperties": { "type": "string" },
+          "description": "DNS01-16. Fixed config values the host stores while this method is chosen."
         }
       }
     },

@@ -252,7 +252,8 @@ and from nothing else. A provider that takes no values declares an empty
     ],
     "methods": [
       { "name": "API token", "recommended": true, "fields": ["MYDNS_API_TOKEN"] },
-      { "name": "Global API key", "fields": ["MYDNS_API_EMAIL", "MYDNS_API_KEY"] }
+      { "name": "Global API key", "fields": ["MYDNS_API_EMAIL", "MYDNS_API_KEY"] },
+      { "name": "Instance role", "fields": [], "values": { "MYDNS_AUTH_MODE": "instance" } }
     ]
   }
 }
@@ -280,7 +281,8 @@ Each entry of `form.fields`:
 | `link` | string | no | A documentation URL for the field. |
 
 `key` MUST be unique within `form.fields`. A host MUST NOT ask for, store
-or send a key that `form.fields` does not list. A host SHOULD show
+or send a key that neither `form.fields` nor the `values` of a method
+(DNS01-16) lists. A host SHOULD show
 `"setting"` fields apart from the credentials, for example collapsed under
 an advanced section. Properties that are empty, `false` or absent mean the
 same thing, so a plugin SHOULD omit them to keep the manifest small.
@@ -300,15 +302,34 @@ saved credential, and it MUST treat the `"credential"` values as secret
 | --- | --- | --- | --- |
 | `name` | string | yes | Plain English name of the way to sign in. |
 | `recommended` | boolean | no | The method a host SHOULD preselect. At most one entry MAY set it. |
-| `fields` | array\<string\> | yes | The keys of the `"credential"` fields this method uses. |
+| `fields` | array\<string\> | yes | The keys of the `"credential"` fields this method uses. Empty when the method needs no input, such as a role the server already has. |
+| `values` | map\<string, string\> | no | Fixed config values that select this method on the plugin side, such as an authentication mode. |
 
 Every key in a method's `fields` MUST be the `key` of a `"credential"` entry
-of `form.fields`. A `"credential"` field that no method lists is shared: a
-host MUST show it with every method. A host MUST show only the fields of the
-chosen method (plus the shared ones), and on save MUST store the values of
-those fields and clear the credential values of the other methods. When
-editing saved values, a host SHOULD preselect the method whose fields hold
-them; otherwise the recommended method, then the first one.
+of `form.fields`. Two methods MAY list the same key. A `"credential"` field
+that no method lists is shared: a host MUST show it with every method. A
+host MUST show only the fields of the chosen method (plus the shared ones),
+and on save MUST store the values of those fields and clear the credential
+values the chosen method does not use.
+
+A key of a method's `values` is usually not a field at all: the person never
+edits it. It MAY also be the `key` of a `form.fields` entry when that entry
+is a `"credential"` field, at least one method lists it in `fields`, and no
+method both lists it in `fields` and sets it in `values`. The field is then
+shown only with the methods that list it, and the methods that set it fix
+its value instead, such as an algorithm the person picks for one way to sign
+in and that another way requires.
+
+On save a host MUST store every entry of the chosen method's `values`, as a
+`"credential"` value when the key is a credential field and as a
+`"setting"` value otherwise. It MUST remove each key that appears in the
+`values` of another method unless the chosen method sets it or lists it in
+`fields`. These keys reach the plugin in `config` like any other value
+(DNS01-4).
+
+When editing saved values, a host SHOULD preselect the method whose
+`values` all match the saved ones and whose fields hold values; otherwise
+the recommended method, then the first one.
 
 ## DNS01-17
 
@@ -326,9 +347,15 @@ A `form` MUST be well formed:
   non-empty `label`;
 - `group` is `"credential"` or `"setting"`, and `unit` is `"seconds"` or
   absent;
-- method names are unique, every method lists at least one key, every key it
-  lists is a `"credential"` field of `form.fields`, and at most one method is
-  `recommended`.
+- `form.methods` is absent or has at least two entries, method names are
+  unique, every key a method's `fields` lists is a `"credential"` field of
+  `form.fields`, and at most one method is `recommended`;
+- every key of a method's `values` is non-empty; when it is also the `key`
+  of a `form.fields` entry, that entry is a `"credential"` field, some
+  method lists it in `fields`, and no method both lists it and sets it in
+  `values`;
+- no two methods have the same `fields` (in any order) and the same
+  `values`.
 
 The reference linter reports a form that breaks one of these as an error
 under DNS01-18 (`spec/09-conformance.md`). A host SHOULD refuse to install a
