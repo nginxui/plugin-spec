@@ -15,12 +15,12 @@ satisfy `core` to run any plugin at all.
 
 | Section | Requirements |
 | --- | --- |
-| Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30, MAN-39, MAN-40 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17, which only apply to a plugin that declares `webapp`, and the capability blocks MAN-31 through MAN-38, which belong to their levels) |
+| Manifest | MAN-1 through MAN-14, MAN-18 through MAN-30, MAN-39, MAN-40 (every manifest-level requirement except the `webapp`-specific MAN-15/16/17/41, which only apply to a plugin that declares `webapp`, and the capability blocks MAN-31 through MAN-38, which belong to their levels) |
 | Packaging | PKG-1 through PKG-13, PKG-19 through PKG-23 and PKG-25 through PKG-27 for every package; PKG-14 through PKG-17 and PKG-24 for a catalog publisher and for a host that installs from a catalog; PKG-18 only for a host that installs plugins on other hosts |
 | Wire protocol | WIRE-1 through WIRE-10; WIRE-11, WIRE-12 and CONF-7 only for a plugin that lists `grpc` in `transports` |
 | Lifecycle | LIFE-1 through LIFE-16 |
-| Host API | HOST-1 through HOST-16, limited to the methods the plugin actually calls or subscribes to — a plugin that never calls `host.cron.register` is not tested against HOST-10, but MUST still handle `host.log`/`host.settings.get`/`host.i18n.locale` correctly if it uses them |
-| Security | SEC-1 through SEC-12, SEC-18 through SEC-29 |
+| Host API | HOST-1 through HOST-19, limited to the methods the plugin actually calls or subscribes to — a plugin that never calls `host.cron.register` is not tested against HOST-10, but MUST still handle `host.log`/`host.settings.get`/`host.i18n.locale` correctly if it uses them |
+| Security | SEC-1 through SEC-12, SEC-18 through SEC-30 |
 | Versioning | VER-1 through VER-6 |
 | Naming | NAME-1 through NAME-6, NAME-9 |
 
@@ -44,11 +44,11 @@ A plugin declaring a `webapp` block MUST additionally satisfy:
 
 | Section | Requirements |
 | --- | --- |
-| Manifest | MAN-15, MAN-16, MAN-17 (the `webapp` block rules) |
-| Webapp | WEB-1 through WEB-12 |
+| Manifest | MAN-15, MAN-16, MAN-17, MAN-41 (the `webapp` block rules) |
+| Webapp | WEB-1 through WEB-14 |
 
 A plugin whose `webapp` block declares only `pages` (no `bundle_path`) is
-exempt from WEB-1 through WEB-8 (the bundle contract) but MUST still satisfy
+exempt from WEB-1 through WEB-8, WEB-13 and WEB-14 (the bundle contract) but MUST still satisfy
 WEB-10 and WEB-11 (the iframe page contract).
 
 ## CONF-4: host conformance
@@ -262,6 +262,7 @@ list `grpc` fails the `WIRE-11` case.
 | CONTENT-6, CONTENT-7 | — | Static checks of `content.locales`: the directory exists, every `.po` file is named after a host language and parses. |
 | TRANSPORT-1 | — | Runs when both transports ran; see CONF-7. |
 | WEB-1, WEB-5 | — | Static checks of the webapp bundle. |
+| WEB-13 | — | Static checks of the chunks: every `webapp.chunks` file exists in the package and is a non-empty `.js` file. |
 | LIFE-10 | — | `plugin.shutdown` and `plugin.exit` stop the process in time. |
 
 ## Reference linter
@@ -322,6 +323,8 @@ blocks of this spec version add these ids:
 | LOGSINK-3 | error | A `log_sink.formats` entry that is not `combined` or `raw`, or that appears twice. |
 | SEC-5 | warning | The `log.read` permission is requested without the `log.sink` capability. |
 | MAN-39 | error | A negative `server.resources.memory_mb` or `server.resources.cpu_percent`. |
+| MAN-41 | error | `webapp.chunks` without `webapp.bundle_path`, a chunk name that does not match `^[a-z0-9][a-z0-9_-]{0,31}$`, a path that is not a safe relative path ending in `.js`, is the bundle itself or is used by two chunks, or a file that is missing from the package. |
+| HOST-18 | warning | `log.paths_changed` in `events` without the `log.files` permission, an event that is never delivered. |
 | MAN-40 | error | An `i18n` key that is not a language of the host. |
 | CONTENT-1 | error | A manifest without `server` declares `capabilities`, `cron` or `events`. |
 | CONTENT-2 | error or warning | `content.templates` is missing, is not a directory or holds no template in `conf/` or `block/` (error); an entry there is not a template (warning). |

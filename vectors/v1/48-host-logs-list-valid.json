@@ -1,0 +1,22 @@
+{
+  "description": "The plugin asks which nginx log files it may read. The caller has the log.files permission. Rotated files are not listed.",
+  "requirement": "HOST-17",
+  "method": "host.logs.list",
+  "direction": "plugin_to_host",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 102,
+    "method": "host.logs.list"
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 102,
+    "result": {
+      "logs": [
+        { "path": "/var/log/nginx/access.log", "type": "access", "source": "default" },
+        { "path": "/var/log/nginx/example.com.error.log", "type": "error", "source": "config", "config_file": "/etc/nginx/sites-enabled/example.com.conf" }
+      ]
+    }
+  }
+}

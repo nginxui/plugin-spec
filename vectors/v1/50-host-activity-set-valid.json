@@ -1,0 +1,14 @@
+{
+  "description": "The plugin shows its background indexing in the host's processing indicator. No permission is needed.",
+  "requirement": "HOST-19",
+  "method": "host.activity.set",
+  "direction": "plugin_to_host",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 104,
+    "method": "host.activity.set",
+    "params": { "key": "indexing", "label": "Nginx Log Indexing...", "active": true }
+  },
+  "response": { "jsonrpc": "2.0", "id": 104, "result": {} }
+}

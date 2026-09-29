@@ -220,6 +220,26 @@
     "direction": "plugin_to_host"
   },
   {
+    "rpc_name": "host.logs.list",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "LogsList",
+    "full_method": "/nginxui.plugin.v1.Host/LogsList",
+    "request": "nginxui.plugin.v1.HostLogsListRequest",
+    "response": "nginxui.plugin.v1.HostLogsListResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.activity.set",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "ActivitySet",
+    "full_method": "/nginxui.plugin.v1.Host/ActivitySet",
+    "request": "nginxui.plugin.v1.HostActivitySetRequest",
+    "response": "nginxui.plugin.v1.HostActivitySetResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
     "rpc_name": "http.handle",
     "service": "nginxui.plugin.v1.HTTP",
     "method": "Handle",

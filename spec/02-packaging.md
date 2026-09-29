@@ -36,7 +36,7 @@ down.
 
 Every path a manifest gives (`icon_path`, `server.executables[*]`,
 `server.command[0]` when it contains a separator, `webapp.bundle_path`,
-`webapp.style_path`, `webapp.pages[].file`, `content.templates`,
+`webapp.style_path`, `webapp.chunks` values, `webapp.pages[].file`, `content.templates`,
 `content.locales`) and every archive entry name MUST be a **safe relative
 path**:
 

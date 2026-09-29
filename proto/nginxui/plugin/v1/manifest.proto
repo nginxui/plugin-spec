@@ -114,6 +114,9 @@ message ManifestWebapp {
   map<string, string> shared = 3;
   // Zero-build iframe pages.
   repeated ManifestPage pages = 4;
+  // Extra IIFE files the bundle loads on demand with registry.loadChunk. Maps
+  // a chunk name to a package relative .js path. See spec/07-webapp.md WEB-13.
+  map<string, string> chunks = 5;
 }
 
 // ManifestPage is a zero-build iframe page.

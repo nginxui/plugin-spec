@@ -20,6 +20,8 @@ entry's own method (HOST-10).
 | `host.cron.unregister` | `cron` | Remove a previously registered cron entry. |
 | `host.notify` | `notify` | Push a notification into the host's UI. |
 | `host.metrics.snapshot` | `metrics.read` | Read the host's current metrics snapshot. |
+| `host.logs.list` | `log.files` | List the nginx log files the plugin may read. |
+| `host.activity.set` | none | Show or clear an entry of the plugin's background work in the host's processing indicator. |
 
 ## HOST-1
 
@@ -199,6 +201,39 @@ whatever the host's own metrics subsystem produces at the time of the call.
 A plugin MUST treat it as read-only, best-effort telemetry, not a stable
 schema to build alerting logic against across host versions.
 
+## `host.logs.list`
+
+## HOST-17
+
+```json
+{ "jsonrpc": "2.0", "id": 29, "method": "host.logs.list" }
+```
+
+```json
+{ "jsonrpc": "2.0", "id": 29, "result": { "logs": [
+  { "path": "/var/log/nginx/access.log", "type": "access", "source": "default" },
+  { "path": "/var/log/nginx/example.com.error.log", "type": "error", "source": "config", "config_file": "/etc/nginx/sites-enabled/example.com.conf" }
+] } }
+```
+
+Requires the `log.files` permission (SEC-30). There are no params. `logs` is
+an array, never `null`. Each entry has:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `path` | string | Absolute path of the live log file. |
+| `type` | string | `access` or `error`. |
+| `source` | string | `config` when an nginx configuration file names the path, `default` when it is one of nginx's built-in default log paths. |
+| `config_file` | string | The configuration file that names the path. Absent when `source` is `default`. |
+
+A host MUST list only paths it allows reading itself, the same paths it would
+show a person in its own log viewer, and MUST NOT list a path twice. Rotated
+files (`access.log.1`, `access.log.2.gz`, `access.log-20260101` and the like)
+are not listed: a plugin that wants history looks for them next to a listed
+path and reads them itself. A plugin MUST read only listed paths and the
+rotated files of a listed path (SEC-30). The list is a snapshot; a plugin
+calls the method again when it receives `log.paths_changed` (HOST-18).
+
 ## Event delivery: `events.on`
 
 ## HOST-14
@@ -246,7 +281,48 @@ Defined event types:
 | `backup.completed` | A backup finished. |
 | `auth.login_failed` | A login attempt failed. |
 | `plugin.changed` | A plugin was installed, upgraded, enabled or disabled. |
+| `log.paths_changed` | The set of nginx log files `host.logs.list` returns changed, for example after a configuration scan found or lost a log directive. Delivered only to a plugin holding `log.files`. See HOST-18. |
 
 A host MUST NOT invent a new event type without a change to this spec; a
 plugin author needs this list to be exhaustive to know what it can subscribe
 to at all.
+
+## HOST-18
+
+`log.paths_changed` is an ordinary event (HOST-14, HOST-15) with one addition:
+a host MUST send it only to a plugin whose granted permission set (SEC-4)
+contains `log.files`, whatever its manifest `events` array says, and, as for
+every event, only when that array lists the type. The host sends it when the
+set of paths `host.logs.list` would return changed. `data` MAY be absent or an
+empty object and carries nothing a plugin needs: it MUST call `host.logs.list`
+again to learn the new set. A host SHOULD coalesce a burst of changes into one
+notification.
+
+## `host.activity.set`
+
+## HOST-19
+
+```json
+{ "jsonrpc": "2.0", "id": 30, "method": "host.activity.set", "params": { "key": "indexing", "label": "Nginx Log Indexing...", "active": true } }
+```
+
+Requires no permission. It shows the plugin's background work in the host's
+global processing indicator, next to the host's own tasks. `key` identifies
+the entry inside this plugin, MUST be 1 to 64 characters of `[a-z0-9._-]`, and
+`label` MUST be 1 to 128 characters (else `-32602`). `active: true` creates
+the entry or replaces its label, `active: false` removes it and ignores
+`label`. Removing an entry that does not exist is not an error. The host MUST
+reply `{}`.
+
+Entries are namespaced by the calling plugin id: a plugin only ever reads,
+changes or clears its own entries, and two plugins that use the same `key` do
+not affect each other. `label` is an English source string, not a translated
+text. The host translates it with its own gettext, in the language of the
+person looking at the indicator, and shows the source string when it has no
+translation. A plugin supplies translations for its labels in the browser
+bundle with `registerTranslations` (WEB-7), keyed by the same English string.
+
+A host MUST remove every entry of a plugin when the plugin stops, crashes,
+is disabled or is uninstalled, so a plugin that dies while `active` cannot
+leave the indicator on. A host MAY limit the number of entries per plugin and
+reply `-32602` beyond it; it MUST allow at least 8.

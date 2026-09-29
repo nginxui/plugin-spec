@@ -1,0 +1,12 @@
+{
+  "description": "The host tells a plugin that holds log.files that the set of log files changed. The payload is empty and the plugin lists the files again.",
+  "requirement": "HOST-18",
+  "method": "events.on",
+  "direction": "host_to_plugin",
+  "kind": "notification",
+  "request": {
+    "jsonrpc": "2.0",
+    "method": "events.on",
+    "params": { "type": "log.paths_changed", "ts": 1732000000 }
+  }
+}

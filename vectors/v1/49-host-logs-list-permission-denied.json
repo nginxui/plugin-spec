@@ -1,0 +1,17 @@
+{
+  "description": "A plugin that was not granted log.files is refused and gets no list of log files.",
+  "requirement": "HOST-2",
+  "method": "host.logs.list",
+  "direction": "plugin_to_host",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 103,
+    "method": "host.logs.list"
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 103,
+    "error": { "code": -32001, "message": "permission log.files is not granted" }
+  }
+}

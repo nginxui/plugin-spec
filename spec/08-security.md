@@ -39,10 +39,11 @@ A plugin declares the `host.*` capabilities it needs in its manifest's
 | `mcp` | Nothing the plugin calls — it gates the host publishing the plugin's `mcp` tools to MCP clients (SEC-13). Required by the `mcp` capability (MAN-33). |
 | `cert.deploy` | Nothing the plugin calls — it gates the host sending certificates and their private keys to the plugin in `deploy.push` (SEC-14). Required by the `cert.deploy` capability (MAN-35). |
 | `log.read` | Nothing the plugin calls — it gates the host streaming the nginx access log lines to the plugin in `log.push` (SEC-16). Required by the `log.sink` capability (MAN-38). |
+| `log.files` | `host.logs.list` and the `log.paths_changed` event. It tells the person installing the plugin that the plugin reads the nginx log files the host lists, and their rotated files, by itself (SEC-30). |
 | `credentials.read:<kind>` | `host.credentials.get` for that specific `kind` only. |
 
-`host.log`, `host.settings.get` and `host.i18n.locale` require no
-permission at all (HOST-3, HOST-7, HOST-8).
+`host.log`, `host.settings.get`, `host.i18n.locale` and `host.activity.set`
+require no permission at all (HOST-3, HOST-7, HOST-8, HOST-19).
 
 ## SEC-4
 
@@ -176,6 +177,23 @@ on the platform: it runs the process without limits and reports that the
 limits are not enforced. Limits bound the damage a runaway or hostile
 plugin does to the availability of the host; they are not a sandbox
 (SEC-1).
+
+## SEC-30
+
+Granting `log.files` lets the plugin read every nginx log file the host lists
+for it, and the rotated files next to them (HOST-17): access logs with client
+addresses, every requested URL with its query string, which may carry a
+session id or a token, referers and user agents, and error logs with paths and
+request details. The plugin opens the files itself, with the operating system
+privileges it runs with (SEC-1), so the permission is a declaration and a gate
+on the listing, not a sandbox. A host MUST NOT answer `host.logs.list` and
+MUST NOT send `log.paths_changed` unless `log.files` is in the granted
+permission set (SEC-4), MUST list only paths it allows reading itself
+(HOST-17), and SHOULD tell the person approving the permission that the plugin
+reads the nginx logs, which are personal data in many jurisdictions. A plugin
+MUST read only the files the host listed and their rotated files, MUST treat
+their content as personal data and as untrusted input, and MUST NOT write it
+to its own stderr.
 
 ## Package integrity
 

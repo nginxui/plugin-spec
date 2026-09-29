@@ -202,6 +202,7 @@ See `spec/07-webapp.md` for the full contract. The manifest-level shape is:
 | `style_path` | string | no | Relative path to the bundle's stylesheet. |
 | `shared` | map\<string, string\> | no | Shared runtime library name to the semver range the bundle was built against. |
 | `pages` | object[] | no | Zero-build iframe pages. |
+| `chunks` | map\<string, string\> | no | Extra IIFE files the bundle loads on demand: chunk name to a relative path. See MAN-41 and WEB-13. |
 
 ### MAN-15
 
@@ -219,6 +220,17 @@ contain at least an `"en"` key.
 `webapp.shared`, when present, MUST map a shared runtime library name (e.g.
 `"vue"`, `"antdv-next"`) to a string the host's semver range matcher accepts
 (WEB-6).
+
+### MAN-41
+
+`webapp.chunks`, when present, declares the on-demand chunks of the bundle
+(WEB-13). It MUST NOT be present unless `webapp.bundle_path` is, since the
+entry is what loads a chunk. Every key MUST match `^[a-z0-9][a-z0-9_-]{0,31}$`.
+Every value MUST be a safe relative path (PKG-3) that ends in `.js`, MUST NOT
+equal `webapp.bundle_path`, and MUST NOT appear under two names. A host MUST
+reject a manifest that breaks any of these. A package that lacks a file a
+value names is invalid, which the reference linter reports
+(`spec/09-conformance.md`).
 
 ## `content`
 
@@ -322,7 +334,7 @@ MUST NOT appear twice. See `spec/20-capabilities-logsink.md` and SEC-16.
 
 Each entry of `permissions` MUST be one of the fixed permission names
 (`kv`, `network`, `cron`, `notify`, `metrics.read`, `core_api`, `mcp`,
-`cert.deploy`, `log.read`) or MUST match
+`cert.deploy`, `log.read`, `log.files`) or MUST match
 `^credentials\.read:.+$` with a non-empty kind after the colon. See
 `spec/08-security.md` for what each permission gates.
 

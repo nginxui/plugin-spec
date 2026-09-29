@@ -205,7 +205,7 @@
     "permission": {
       "type": "string",
       "anyOf": [
-        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api", "mcp", "cert.deploy", "log.read"] },
+        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api", "mcp", "cert.deploy", "log.read", "log.files"] },
         { "pattern": "^credentials\\.read:.+$" }
       ]
     },
@@ -291,8 +291,20 @@
         "pages": {
           "type": "array",
           "items": { "$ref": "#/$defs/manifestPage" }
+        },
+        "chunks": {
+          "type": "object",
+          "description": "MAN-41, WEB-13: chunk name to a package relative .js file.",
+          "propertyNames": { "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$" },
+          "additionalProperties": {
+            "allOf": [
+              { "$ref": "#/$defs/safeRelativePath" },
+              { "pattern": "\\.js$" }
+            ]
+          }
         }
-      }
+      },
+      "dependentRequired": { "chunks": ["bundle_path"] }
     },
     "manifestPage": {
       "type": "object",

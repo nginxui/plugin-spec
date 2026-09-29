@@ -72,6 +72,18 @@ service Host {
   rpc MetricsSnapshot(HostMetricsSnapshotRequest) returns (HostMetricsSnapshotResponse) {
     option (nginxui.plugin.v1.rpc_name) = "host.metrics.snapshot";
   }
+
+  // Lists the nginx log files the host allows the plugin to read. Permission
+  // "log.files".
+  rpc LogsList(HostLogsListRequest) returns (HostLogsListResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.logs.list";
+  }
+
+  // Shows or clears one entry of the host's processing indicator for the
+  // calling plugin. No permission needed.
+  rpc ActivitySet(HostActivitySetRequest) returns (HostActivitySetResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.activity.set";
+  }
 }
 
 // HostLogRequest is the params of host.log.
@@ -207,3 +219,41 @@ message HostMetricsSnapshotResponse {
   // contract.
   google.protobuf.Value snapshot = 1;
 }
+
+// HostLogsListRequest is the params of host.logs.list. It is empty.
+message HostLogsListRequest {}
+
+// HostLogsListResponse is the result of host.logs.list.
+message HostLogsListResponse {
+  // Every log file the host allows the plugin to read. Rotated files are not
+  // listed, the plugin finds them next to the file it was given. Never null.
+  repeated HostLogFile logs = 1;
+}
+
+// HostLogFile is one entry of HostLogsListResponse.
+message HostLogFile {
+  // Absolute path of the live log file.
+  string path = 1;
+  // "access" or "error".
+  string type = 2;
+  // "config" when an nginx configuration file names the path, "default" when
+  // it is one of nginx's built-in default log paths.
+  string source = 3;
+  // Configuration file that names the path. Empty when source is "default".
+  string config_file = 4;
+}
+
+// HostActivitySetRequest is the params of host.activity.set.
+message HostActivitySetRequest {
+  // Identifies the entry inside the calling plugin, at most 64 characters of
+  // [a-z0-9._-].
+  string key = 1;
+  // English source string shown in the indicator while active is true. The
+  // host translates it. At most 128 characters.
+  string label = 2;
+  // True shows the entry and false removes it.
+  bool active = 3;
+}
+
+// HostActivitySetResponse is the result of host.activity.set. It is empty.
+message HostActivitySetResponse {}
