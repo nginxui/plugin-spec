@@ -33,13 +33,15 @@ The manifest MUST include a `dns01` block whenever `capabilities` includes
       {
         "name": "MyDNS",
         "code": "mydns",
-        "configuration": {
-          "credentials": { "MYDNS_API_TOKEN": "API token for the MyDNS account" },
-          "additional": { "MYDNS_TTL": "TXT record TTL in seconds (default: 120)" }
-        },
         "links": { "api": "https://mydns.example/docs/api" },
         "propagation_timeout_seconds": 120,
-        "polling_interval_seconds": 2
+        "polling_interval_seconds": 2,
+        "form": {
+          "fields": [
+            { "key": "MYDNS_API_TOKEN", "label": "API token", "group": "credential", "secret": true },
+            { "key": "MYDNS_TTL", "label": "TXT record TTL", "group": "setting", "default": "120", "unit": "seconds" }
+          ]
+        }
       }
     ]
   }
@@ -52,12 +54,10 @@ The manifest MUST include a `dns01` block whenever `capabilities` includes
 | --- | --- | --- | --- |
 | `name` | string | yes | Display name of the DNS vendor. |
 | `code` | string | yes | Short identifier used on the wire and in the credential form. See `spec/11-naming.md`. |
-| `configuration.credentials` | map\<string, string\> | no | Field name to help text, for secret values (API tokens, passwords). |
-| `configuration.additional` | map\<string, string\> | no | Field name to help text, for non-secret values (TTL, base URL, timeouts). |
 | `links.api` | string | no | Vendor API documentation URL. |
-| `links.go_client` | string | no | Upstream client library URL, when the plugin wraps one. |
 | `propagation_timeout_seconds` | integer | no | Overrides the host's default propagation wait for this provider. |
 | `polling_interval_seconds` | integer | no | How often the host (or the plugin, for `dns01.check`) re-checks propagation. |
+| `form` | object | yes | Every value the provider accepts and how to lay out the credential form: labels, sign-in methods, defaults. See DNS01-14. |
 
 ## DNS01-2
 
@@ -96,7 +96,7 @@ Request:
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `provider` | string | The `code` of the provider to use, without the plugin id prefix. |
-| `config` | map\<string, string\> | The merged `credentials` and `additional` field values the person filled in. |
+| `config` | map\<string, string\> | The values the person filled in, keyed by `form.fields[].key`: the credential and the setting fields merged into one map (DNS01-15). |
 | `options` | object | Opaque per-certificate options from the challenge form slot (`spec/07-webapp.md`). Absent when the plugin ships no custom form. |
 | `domain` | string | The certificate identifier, leading wildcard `*.` removed. |
 | `fqdn` | string | The `_acme-challenge` name derived by the ACME client, before CNAME following. |
@@ -231,3 +231,106 @@ through `challenge_config` unchanged."
 A plugin MUST tolerate `options` being absent or `{}` (e.g. a certificate
 issued before the plugin's own form slot existed) and MUST apply reasonable
 defaults in that case rather than failing the call.
+
+## Credential form
+
+## DNS01-14
+
+Every provider MUST carry a `form` object. It is the only description of
+the values the provider accepts: a host renders the credential form from it
+and from nothing else. A provider that takes no values declares an empty
+`fields` array.
+
+```json
+{
+  "form": {
+    "fields": [
+      { "key": "MYDNS_API_TOKEN", "label": "API token", "help": "Needs the DNS edit permission.", "group": "credential", "secret": true },
+      { "key": "MYDNS_API_EMAIL", "label": "Account email", "group": "credential" },
+      { "key": "MYDNS_API_KEY", "label": "API key", "group": "credential", "secret": true },
+      { "key": "MYDNS_TTL", "label": "TXT record TTL", "group": "setting", "default": "120", "unit": "seconds" }
+    ],
+    "methods": [
+      { "name": "API token", "recommended": true, "fields": ["MYDNS_API_TOKEN"] },
+      { "name": "Global API key", "fields": ["MYDNS_API_EMAIL", "MYDNS_API_KEY"] }
+    ]
+  }
+}
+```
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `fields` | array | yes | The inputs in display order (DNS01-15). |
+| `methods` | array | no | The ways to sign in, when there is more than one (DNS01-16). |
+
+## DNS01-15
+
+Each entry of `form.fields`:
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `key` | string | yes | The config key the value is stored under and sent to the plugin under. |
+| `label` | string | yes | Short plain English label. |
+| `help` | string | no | One plain English sentence shown under the input. |
+| `group` | string | yes | `"credential"` for a sign-in value, `"setting"` for a tuning value such as a TTL, a base URL or a timeout. |
+| `optional` | boolean | no | The provider works without a value. Absent means `false`. |
+| `secret` | boolean | no | The value is a password, token or key and SHOULD be rendered as a password input. |
+| `default` | string | no | The value the provider uses when the field is empty. A host SHOULD show it as a placeholder and MUST NOT store it on the person's behalf. |
+| `unit` | string | no | `"seconds"` when the value is a number of seconds. Absent means no unit. |
+| `link` | string | no | A documentation URL for the field. |
+
+`key` MUST be unique within `form.fields`. A host MUST NOT ask for, store
+or send a key that `form.fields` does not list. A host SHOULD show
+`"setting"` fields apart from the credentials, for example collapsed under
+an advanced section. Properties that are empty, `false` or absent mean the
+same thing, so a plugin SHOULD omit them to keep the manifest small.
+
+`group` decides where a host keeps a value: it stores the values of
+`"credential"` fields and of `"setting"` fields in two separate maps of the
+saved credential, and it MUST treat the `"credential"` values as secret
+(SEC-7). What the plugin receives does not change with the group: every
+`dns01` request carries the saved values of both groups merged into the one
+`config` map of DNS01-4, keyed by `key`.
+
+## DNS01-16
+
+`form.methods` MUST be absent or have at least two entries. Each entry:
+
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `name` | string | yes | Plain English name of the way to sign in. |
+| `recommended` | boolean | no | The method a host SHOULD preselect. At most one entry MAY set it. |
+| `fields` | array\<string\> | yes | The keys of the `"credential"` fields this method uses. |
+
+Every key in a method's `fields` MUST be the `key` of a `"credential"` entry
+of `form.fields`. A `"credential"` field that no method lists is shared: a
+host MUST show it with every method. A host MUST show only the fields of the
+chosen method (plus the shared ones), and on save MUST store the values of
+those fields and clear the credential values of the other methods. When
+editing saved values, a host SHOULD preselect the method whose fields hold
+them; otherwise the recommended method, then the first one.
+
+## DNS01-17
+
+Every `label`, `help` and method `name` in `form`, and the provider `name`,
+is an English gettext msgid. A host SHOULD look each one up in the
+translations the plugin registers with `registerTranslations`
+(`spec/07-webapp.md` WEB-7) and
+MUST fall back to the English text when there is no translation.
+
+## DNS01-18
+
+A `form` MUST be well formed:
+
+- every `form.fields` entry has a non-empty `key` no other entry has and a
+  non-empty `label`;
+- `group` is `"credential"` or `"setting"`, and `unit` is `"seconds"` or
+  absent;
+- method names are unique, every method lists at least one key, every key it
+  lists is a `"credential"` field of `form.fields`, and at most one method is
+  `recommended`.
+
+The reference linter reports a form that breaks one of these as an error
+under DNS01-18 (`spec/09-conformance.md`). A host SHOULD refuse to install a
+plugin whose manifest carries a provider without a `form` or with a form
+that breaks one of these.

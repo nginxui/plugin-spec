@@ -158,29 +158,65 @@ message ManifestDNS01 {
 
 // DNS01Provider describes one vendor a plugin can solve DNS-01 for.
 message DNS01Provider {
+  reserved 3;
+  reserved "configuration";
+
   string name = 1;
   // Vendor code, shared across every installed dns01 plugin.
   string code = 2;
-  DNS01ProviderConfig configuration = 3;
   DNS01ProviderLinks links = 4;
   // Default used when the plugin does not implement dns01.options.
   int32 propagation_timeout_seconds = 5;
   // Default used when the plugin does not implement dns01.options.
   int32 polling_interval_seconds = 6;
-}
-
-// DNS01ProviderConfig lists credential and additional fields with help text.
-message DNS01ProviderConfig {
-  // Credential field name to help text.
-  map<string, string> credentials = 1;
-  // Additional field name to help text.
-  map<string, string> additional = 2;
+  // Credential form, see DNS01-14. Required.
+  DNS01ProviderForm form = 7;
 }
 
 // DNS01ProviderLinks points at vendor documentation.
 message DNS01ProviderLinks {
+  reserved 2;
+  reserved "go_client";
+
   string api = 1;
-  string go_client = 2;
+}
+
+// DNS01ProviderForm describes how a host lays out the credential form.
+message DNS01ProviderForm {
+  // Fields in display order.
+  repeated DNS01ProviderField fields = 1;
+  // Ways to sign in, present only when there is more than one.
+  repeated DNS01ProviderMethod methods = 2;
+}
+
+// DNS01ProviderField is one input of the credential form.
+message DNS01ProviderField {
+  // Config key the value is stored and sent under.
+  string key = 1;
+  // Short plain English label, a gettext msgid.
+  string label = 2;
+  // Optional plain English sentence, a gettext msgid.
+  string help = 3;
+  // "credential" or "setting".
+  string group = 4;
+  bool optional = 5;
+  // Rendered as a password input.
+  bool secret = 6;
+  // Value used when the field is left empty, shown as a placeholder.
+  string default = 7;
+  // "seconds" or empty.
+  string unit = 8;
+  // Documentation URL for the field.
+  string link = 9;
+}
+
+// DNS01ProviderMethod is one way to sign in to the vendor.
+message DNS01ProviderMethod {
+  // Plain English name, a gettext msgid.
+  string name = 1;
+  bool recommended = 2;
+  // Credential field keys this method uses.
+  repeated string fields = 3;
 }
 
 // ManifestHTTP is the metadata block of the http capability.

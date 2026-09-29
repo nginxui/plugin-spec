@@ -337,7 +337,7 @@
     },
     "dns01Provider": {
       "type": "object",
-      "required": ["name", "code"],
+      "required": ["name", "code", "form"],
       "additionalProperties": false,
       "properties": {
         "name": { "type": "string", "minLength": 1 },
@@ -346,30 +346,66 @@
           "pattern": "^[a-z0-9-]{2,32}$",
           "description": "DNS01-2. NAME-4: shared namespace across every installed dns01 plugin."
         },
-        "configuration": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "credentials": {
-              "type": "object",
-              "additionalProperties": { "type": "string" }
-            },
-            "additional": {
-              "type": "object",
-              "additionalProperties": { "type": "string" }
-            }
-          }
-        },
         "links": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "api": { "type": "string" },
-            "go_client": { "type": "string" }
+            "api": { "type": "string" }
           }
         },
         "propagation_timeout_seconds": { "type": "integer", "minimum": 0 },
-        "polling_interval_seconds": { "type": "integer", "minimum": 0 }
+        "polling_interval_seconds": { "type": "integer", "minimum": 0 },
+        "form": { "$ref": "#/$defs/dns01ProviderForm" }
+      }
+    },
+    "dns01ProviderForm": {
+      "type": "object",
+      "required": ["fields"],
+      "additionalProperties": false,
+      "description": "DNS01-14 through DNS01-18.",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dns01ProviderField" },
+          "description": "DNS01-15. Every value the provider accepts, in display order. Empty when it takes none."
+        },
+        "methods": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/dns01ProviderMethod" },
+          "description": "DNS01-16. Present only when there is more than one way to sign in."
+        }
+      }
+    },
+    "dns01ProviderField": {
+      "type": "object",
+      "required": ["key", "label", "group"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "minLength": 1, "description": "The config key the value is stored and sent under." },
+        "label": { "type": "string", "minLength": 1, "description": "DNS01-17: an English gettext msgid." },
+        "help": { "type": "string", "description": "DNS01-17: an English gettext msgid." },
+        "group": { "type": "string", "enum": ["credential", "setting"] },
+        "optional": { "type": "boolean" },
+        "secret": { "type": "boolean" },
+        "default": { "type": "string" },
+        "unit": { "type": "string", "enum": ["", "seconds"] },
+        "link": { "type": "string" }
+      }
+    },
+    "dns01ProviderMethod": {
+      "type": "object",
+      "required": ["name", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "DNS01-17: an English gettext msgid." },
+        "recommended": { "type": "boolean" },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "DNS01-16. Keys of credential fields."
+        }
       }
     },
     "manifestHttp": {

@@ -31,7 +31,7 @@ A plugin declaring `"dns01"` in `capabilities` MUST additionally satisfy:
 | Section | Requirements |
 | --- | --- |
 | Manifest | MAN-19, MAN-21 (the `dns01` capability declaration rules) |
-| Capability | DNS01-1 through DNS01-13 |
+| Capability | DNS01-1 through DNS01-18 |
 
 `dns01.validate`, `dns01.options` and `dns01.check` are individually
 optional (a plugin MAY reply `-32002` to any of them), but `dns01.present`
@@ -299,6 +299,7 @@ blocks of this spec version add these ids:
 
 | Id | Level | Check |
 | --- | --- | --- |
+| DNS01-18 | error | A provider has no `form`, or its `form` has a field with an empty or duplicate `key` or no `label`, a `group` other than `credential` or `setting`, a `unit` other than `seconds`, or a method with a duplicate name, no fields, a key that is not a credential field, or more than one recommended method. |
 | MAN-31, MAN-32, MAN-33 | error | A declared `notify`, `probe` or `mcp` capability has no block or an empty list; `mcp` without the `mcp` permission. |
 | NOTIFY-2, PROBE-2 | error | A channel or kind code does not match `^[a-z0-9-]{2,32}$` or is declared twice. |
 | NOTIFY-3, PROBE-3 | error | A channel or kind has no `name`. |

@@ -72,9 +72,10 @@ platform supports one, but this spec does not require enforcement.
 
 ## SEC-7
 
-A value that is a credential (a `dns01` provider's `configuration.credentials`
-entry, a `type: "secret"` settings field, anything delivered through
-`host.credentials.get`, the private key `deploy.push` carries) MUST NOT
+A value that is a credential (the value of a `dns01` provider's form field
+with `group: "credential"`, a `type: "secret"` settings field, anything
+delivered through `host.credentials.get`, the private key `deploy.push`
+carries) MUST NOT
 appear in:
 
 * an error `message` (WIRE-5) — use `data.field` to name the offending field

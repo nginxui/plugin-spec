@@ -22,16 +22,14 @@
       {
         "name": "MyDNS",
         "code": "mydns",
-        "configuration": {
-          "credentials": {
-            "MYDNS_API_TOKEN": "API token for the MyDNS account"
-          },
-          "additional": {
-            "MYDNS_TTL": "TXT record TTL in seconds (default: 120)"
-          }
-        },
         "links": {
           "api": "https://mydns.example/docs/api"
+        },
+        "form": {
+          "fields": [
+            { "key": "MYDNS_API_TOKEN", "label": "API token", "group": "credential", "secret": true },
+            { "key": "MYDNS_TTL", "label": "TXT record TTL", "group": "setting", "default": "120", "unit": "seconds" }
+          ]
         }
       }
     ]
