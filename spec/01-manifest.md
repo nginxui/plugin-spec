@@ -273,7 +273,10 @@ block with at least one entry in `dns01.providers`. See `spec/05-capabilities-dn
 ### MAN-22
 
 When `capabilities` includes `"http"`, the manifest MUST include an `http`
-block whose `listen` field is exactly `"unix"` or `"rpc"`.
+block whose `listen` field is exactly `"unix"` or `"rpc"`. `"unix"` means the
+plugin serves HTTP on a listener of its own, see LIFE-18 for where it listens
+and how the host finds it, and `"rpc"` that the host sends every request as one
+`http.handle` call.
 
 ### MAN-31
 

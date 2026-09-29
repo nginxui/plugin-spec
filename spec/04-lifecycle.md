@@ -54,7 +54,7 @@ The plugin MUST reply with `InitializeResult`:
 | `api_version` | integer | yes | The wire protocol version this process implements. |
 | `capabilities` | string[] | yes | Capability names this process actually implements at runtime. |
 | `transports` | string[] | no | Transports the plugin serves, e.g. `["stdio", "grpc"]`. stdio is always served, listed or not; empty/absent means stdio only. Listing `grpc` opts in to the gRPC transport (`spec/03-wire-protocol.md` WIRE-11). A `log.sink` plugin MUST list `grpc` (LOGSINK-4). |
-| `http_port` | integer | no | Reported by a plugin serving the `http` capability on a loopback port instead of a Unix socket (Windows). |
+| `http_port` | integer | no | Reported by a plugin serving the `http` capability on a loopback port instead of a Unix socket (Windows), see LIFE-18. |
 | `rpc_port` | integer | no | Reported by a plugin serving gRPC on a loopback port instead of a Unix socket (Windows). |
 | `rpc_token` | string | no | Bearer token the host sends as `authorization: Bearer <rpc_token>` on every call to `rpc_port`. |
 | `rpc_socket` | string | no | Absolute path of the Unix socket the plugin serves gRPC on. Absent means `<NGINX_UI_PLUGIN_DATA_DIR>/rpc.sock`; a plugin whose default path exceeds the platform's socket path limit reports the path it used instead (WIRE-11). |
@@ -208,6 +208,9 @@ MUST NOT rely on the plugin reading them from anywhere else:
 | `NGINX_UI_PLUGIN_DATA_DIR` | An absolute path to a directory this plugin, and no other, may write to. |
 | `NGINX_UI_VERSION` | The host application's own version string. |
 
+A host sets the proxy variables under the conditions of LIFE-17, and
+`NGINX_UI_PLUGIN_HTTP_SECRET` under those of LIFE-18.
+
 ## LIFE-15
 
 The host MUST NOT forward its own ACME-client-only environment variables
@@ -215,6 +218,91 @@ The host MUST NOT forward its own ACME-client-only environment variables
 environment: those variables belong to the host's built-in HTTP-01 path, and
 a `dns01` plugin has its own, explicit way to receive the equivalent setting
 per certificate (`spec/05-capabilities-dns01.md`).
+
+## Proxy
+
+## LIFE-17
+
+A host that has its own outbound HTTP proxy configuration SHOULD hand it to a
+plugin process that holds the `network` permission (SEC-2) through the
+environment, so the plugin's HTTP client reaches the internet the way the
+host does:
+
+| Variable | Meaning |
+| --- | --- |
+| `HTTP_PROXY` and `http_proxy` | The proxy URL for plain HTTP requests. |
+| `HTTPS_PROXY` and `https_proxy` | The proxy URL for HTTPS requests. |
+| `NO_PROXY` and `no_proxy` | The hosts that bypass the proxy. It lists at least the loopback addresses (`localhost,127.0.0.1,::1`), plus whatever the host configuration exempts. |
+
+The host sets them only while a proxy is configured, from its own proxy
+configuration, and both spellings of a variable carry the same value. They
+replace any proxy variable the host process itself inherited. When the host
+has no proxy configuration, the plugin process inherits the environment
+unchanged.
+
+A host MUST NOT pass any of these variables, set from its configuration or
+inherited from its own environment, to a plugin that does not hold `network`:
+such a plugin has no business making outbound requests, and a proxy address
+may embed credentials.
+
+The variables are read by the standard HTTP clients of most languages, for
+example `http.ProxyFromEnvironment` in Go. They are read when the process
+starts, so a changed proxy configuration reaches a plugin on its next start.
+They say nothing about the `host.*` calls, which never leave the machine.
+
+## HTTP listener
+
+## LIFE-18
+
+A plugin that declares the `http` capability with `http.listen` `"unix"`
+(MAN-22) serves HTTP on a listener the host proxies to, and MUST accept
+connections on it before it sends the `plugin.initialize` reply. Where the
+listener is depends on the platform, and the host reads it from the same
+places for every plugin:
+
+* **Unix socket.** The plugin listens on `<NGINX_UI_PLUGIN_DATA_DIR>/http.sock`
+  (LIFE-14). There is no `http_socket` member: the host takes exactly this
+  path, so a plugin whose data directory path does not fit the platform's
+  `sun_path` limit (WIRE-11) cannot serve the capability there and SHOULD fail
+  the handshake with an internal error (`-32603`) that says why. A plugin MUST
+  remove a stale socket file left at that path before listening, SHOULD create
+  the socket with mode `0600`, and SHOULD remove it when it exits.
+* **Loopback TCP.** A plugin that cannot listen on a Unix socket (Windows)
+  listens on `127.0.0.1` with a free port and reports it as `http_port` in the
+  reply (LIFE-2). A host on such a platform uses `http_port` and treats a reply
+  without it as a plugin that is not serving.
+
+Both listeners are reachable by more than the host (any local process can
+connect to a loopback port, and a socket file can be misconfigured), so the
+host proves itself on every request with a per process secret:
+
+* At every process start the host generates a new random secret of at least 32
+  bytes, encoded in a URL safe alphabet, and passes it in the environment
+  variable `NGINX_UI_PLUGIN_HTTP_SECRET` to a plugin that declares `http` with
+  `listen` `"unix"`. A host MUST NOT reuse a secret across starts, MUST NOT
+  pass it to any other plugin and MUST NOT let the plugin process inherit one
+  from its own environment.
+* The host sends the secret in the request header `X-Nginx-UI-Plugin-Secret`
+  on every request it proxies, on the Unix socket and on the loopback port
+  alike, WebSocket upgrades included. It MUST remove every copy of that header
+  from the request it received from the client before it adds its own.
+* The plugin MUST answer `401` to every request that does not carry exactly one
+  such header with the matching value, compare it in constant time, and MUST NOT
+  log it, echo it or hand it to its request handlers. A plugin SHOULD read the
+  variable once and remove it from its environment so that child processes do
+  not inherit it. A plugin that finds the variable unset MUST NOT open the
+  listener and SHOULD fail the handshake with an internal error (`-32603`) that
+  names the variable.
+
+The host authenticates the person before it proxies a request, removes their
+credentials (`Authorization`, `Cookie`) and any client supplied
+`X-Nginx-UI-User` and `X-Nginx-UI-User-ID`, and sets the two headers to the id
+and name of the person. A plugin that checked the secret can rely on those
+headers. WebSocket upgrades and streamed responses pass through.
+
+On `plugin.shutdown` (LIFE-10) a plugin SHOULD stop accepting new connections,
+let the requests still running finish within the bound of that step, and close
+the ones that do not.
 
 ## Resource limits
 

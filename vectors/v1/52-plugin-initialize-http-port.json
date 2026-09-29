@@ -1,0 +1,26 @@
+{
+  "description": "Handshake of a plugin serving the http capability on a loopback port, as it does where Unix sockets are unavailable: it reports the port in http_port and the host uses it instead of the socket in the data directory.",
+  "requirement": "LIFE-18",
+  "method": "plugin.initialize",
+  "direction": "host_to_plugin",
+  "kind": "request",
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "plugin.initialize",
+    "params": {
+      "host": { "version": "2.7.0", "os": "windows", "arch": "amd64", "locale": "en" },
+      "settings": {},
+      "permissions": ["network"]
+    }
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "api_version": 1,
+      "capabilities": ["http"],
+      "http_port": 49321
+    }
+  }
+}
