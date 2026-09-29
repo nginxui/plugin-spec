@@ -45,10 +45,10 @@ A plugin declaring a `webapp` block MUST additionally satisfy:
 | Section | Requirements |
 | --- | --- |
 | Manifest | MAN-15, MAN-16, MAN-17, MAN-41 (the `webapp` block rules) |
-| Webapp | WEB-1 through WEB-14 |
+| Webapp | WEB-1 through WEB-15 |
 
 A plugin whose `webapp` block declares only `pages` (no `bundle_path`) is
-exempt from WEB-1 through WEB-8, WEB-13 and WEB-14 (the bundle contract) but MUST still satisfy
+exempt from WEB-1 through WEB-8 and WEB-13 through WEB-15 (the bundle contract) but MUST still satisfy
 WEB-10 and WEB-11 (the iframe page contract).
 
 ## CONF-4: host conformance

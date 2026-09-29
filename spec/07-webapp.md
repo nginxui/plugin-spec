@@ -124,6 +124,7 @@ bundle, MUST keep working.
 | `registerTranslations(locale, messages)` | function | Merges `{ "<English source string>": "<translation>" }` into the host's translations for `locale`. |
 | `registerSettingsPanel(component)` | function | Replaces the schema-driven settings form (MAN-27..30) with a custom component receiving `{ settings, save }`. |
 | `http` | object | Axios-like client, `baseURL` = `./api/plugins/{id}/http`, proxied to the plugin's `http` capability (`spec/06-host-api.md` covers `server`/wire methods; this is the browser-side counterpart). Resolves with a full response object. |
+| `wsUrl(path)` | function | Returns an absolute `ws:` or `wss:` URL for `path` under the plugin's `http` capability, carrying the credentials the host needs to accept a browser WebSocket (WEB-15). Absent on hosts without WebSocket support. |
 | `loadChunk(name)` | function | Loads the on-demand chunk `name` declared in `webapp.chunks` (WEB-13) and returns a Promise of the exports object the chunk handed to `registerChunk`. |
 | `coreHttp` | object | The host's own REST API client. Usable only when the manifest requests the `core_api` permission (`spec/08-security.md`); resolves with the response body directly. |
 | `manifest` | object | This plugin's manifest, as the host parsed it. |
@@ -134,7 +135,7 @@ bundle, MUST keep working.
 | Option | Type | Used by | Meaning |
 | --- | --- | --- | --- |
 | `order` | number | every slot | Lower values render first. |
-| `when` | `(ctx) => boolean` | every slot | Return `false` to skip the registration for that context. |
+| `when` | `(ctx) => boolean` | every slot | Return `false` to skip the registration for that context. For `nginx_log.list.column:{key}` the context is the list, not a row (WEB-14). |
 | `label` | string | `nginx_log.view:{key}`, `nginx_log.list.column:{key}` | Display text, an English source string the host translates with its gettext, the plugin supplying translations through `registerTranslations`. |
 | `sortValue` | `(row) => string \| number \| null \| undefined` | `nginx_log.list.column:{key}` | Makes the column sortable by the returned value. |
 | `filters` | `{ label: string, value: string, match: (row) => boolean }[]` | `nginx_log.list.column:{key}` | Makes the column filterable, see WEB-14. |
@@ -163,9 +164,9 @@ Slots the host defines, and the context object passed to each:
 | `sidebar.footer` | `{}` | Bottom of the sidebar. |
 | `nginx_log.view:{key}` | `{ path, type }` | An extra view mode of the nginx log page for one log file. `path` is the log file path and `type` is `access` or `error`. `key` names the mode (WEB-14). |
 | `nginx_log.list.toolbar` | `{ type }` | The actions area above the nginx log list. `type` is `access` or `error`, the list being shown. |
-| `nginx_log.list.column:{key}` | `{ row }` | One extra column of the nginx log list. `row` is the list row of the log file (WEB-14). |
+| `nginx_log.list.column:{key}` | `{ row }` | One extra column of the nginx log list. `row` is the list row of the log file. `opts.when` receives `{ type }` of the list instead (WEB-14). |
 | `nginx_log.list.row.actions` | `{ row }` | Per-row actions of the nginx log list. |
-| `site.log.actions` | `{ accessLogPath, errorLogPath, siteName }` | Log related actions of one site, in the site editor and in the site list. A path is an empty string when the site has no such log. |
+| `site.log.actions` | `{ accessLogPath, accessLogInherited, errorLogPath, errorLogInherited, siteName }` | Log related actions of one site, in the site editor and in the site list. A path is an empty string when the site has no such log, and the matching `...Inherited` flag tells whether the path is the nginx default log the site falls back to (WEB-14). |
 
 A host MAY add slots beyond this table in a future spec 1.x revision without
 a version bump (WIRE-7-style forward compatibility): a bundle MUST treat an
@@ -239,9 +240,14 @@ mode is offered for that file.
 
 `nginx_log.list.column:{key}`: every registration adds one column after the
 host's own columns, ordered by `opts.order`. The column title is `opts.label`.
-The component renders the cell of the row it receives. The host loads the
-whole list at once, so it sorts and filters plugin columns itself, in the
-browser:
+`opts.when(ctx)` is called once per list with the list context `{ type }`
+(`access` or `error`, the list being shown) and decides whether the column
+exists at all: when it returns `false` the host renders neither the header
+nor any cell, and offers no sorting or filtering for it. A column that suits
+only one kind of log is therefore registered once and hidden on the other
+list. The component renders the cell of the row it receives, with the context
+`{ row }`. The host loads the whole list at once, so it sorts and filters
+plugin columns itself, in the browser:
 
 * with `opts.sortValue(row)`, the column header sorts the list by the returned
   value (numbers by magnitude, strings by locale order, `null` and
@@ -259,8 +265,51 @@ a host MAY add fields, and a plugin MUST ignore the ones it does not know.
 
 `nginx_log.list.toolbar`, `nginx_log.list.row.actions` and `site.log.actions`
 render every registration in `opts.order`, the components being free to
-render nothing. For `site.log.actions` the paths are those of the log
-directives of the site's own configuration.
+render nothing. For `nginx_log.list.row.actions` and the toolbar,
+`opts.when(ctx)` receives the same context the component does.
+
+`site.log.actions` gets the log files of one site. `accessLogPath` and
+`errorLogPath` are the path of the site's own `access_log` or `error_log`
+directive. When the site has none, the host falls back to the nginx default
+log of that kind, as nginx itself does, and reports its path when it is a
+usable file path; the matching `accessLogInherited` or `errorLogInherited` is
+then `true`, and it is `false` for a path the site's own configuration
+declares. A path is the empty string when neither exists (for instance
+`access_log off` or no default log), and its flag is then `false`. A plugin
+whose action is only meaningful for the site's own traffic hides itself when
+the flag is `true`, or warns that the log may hold the traffic of other sites.
+The host resolves these values without a request per site, so a plugin MUST
+NOT rely on any other way to learn them.
+
+## WEB-15
+
+`registry.wsUrl(path)` (WEB-7) returns the address a browser WebSocket to
+`path` under the plugin's `http` capability connects to. A browser cannot set
+request headers on a WebSocket, so the URL carries whatever credentials the
+host needs to authenticate the handshake, and the node selection when the host
+is managing another node. A host:
+
+* MUST return an absolute URL whose scheme is `wss:` when the page was loaded
+  over `https:` and `ws:` otherwise, and whose path is the plugin's `http`
+  route joined with `path` (a leading `/` of `path` is optional and a query
+  string in `path` is kept);
+* MUST accept a WebSocket upgrade request on that route authenticated by the
+  credentials the URL carries, and MUST NOT accept those query credentials on
+  any other request, which keep using the headers of the `http` client;
+* MUST NOT forward those credentials to the plugin: the request the plugin
+  sees carries the usual host identity headers and no session token in the
+  query string;
+* MUST route the handshake to the node the user selected, the way it routes
+  the `http` client;
+* MUST reject a handshake whose `Origin` it does not trust, with the same
+  rule it applies to its own WebSocket endpoints, so a plugin endpoint is no
+  easier to reach from another site than one of the host's.
+
+A plugin MUST NOT build such a URL itself, because how the host authenticates
+a WebSocket is its own business and may change. A plugin feature-detects
+`registry.wsUrl` and, on a host without it, treats live updates as
+unavailable. The plugin still has to authorize what its handlers do, as with
+any request reaching its `http` capability.
 
 ## Zero-build pages
 
