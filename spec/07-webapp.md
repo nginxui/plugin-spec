@@ -94,6 +94,16 @@ own manifest `id`. A host MUST treat a bundle that never calls it (or calls
 it with a different id) as failed to load, and MUST NOT let that failure
 prevent other plugins' bundles from loading.
 
+When a plugin is disabled, uninstalled or replaced while a page is open, the
+host SHOULD take its contributions out of that page without a reload: routes,
+slot registrations and the settings panel. Before it does, it calls
+`teardown()` when the definition has one, so the bundle can stop what it
+started outside its components (timers, connections, global listeners). A
+failing `teardown` MUST NOT keep the contributions in place. A bundle cannot
+run twice on one page, so when the same version is enabled again the host
+calls `setup` again on the same definition; a bundle MUST therefore expect
+`setup` to run more than once and reset any module level state it keeps.
+
 ## WEB-6: shared runtime compatibility
 
 `webapp.shared` (MAN-17) declares, per shared library, the semver range the
