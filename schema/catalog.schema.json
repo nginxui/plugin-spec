@@ -72,7 +72,7 @@
         },
         "stage": {
           "type": "string",
-          "description": "Maturity shown next to the plugin, e.g. production or beta."
+          "description": "Maturity shown next to the plugin, e.g. production or beta. PKG-28: beta marks the whole plugin as beta."
         },
         "releases": {
           "type": "array",
@@ -137,6 +137,10 @@
         },
         "release_notes_url": { "$ref": "#/$defs/url" },
         "yanked": { "type": "boolean" },
+        "beta": {
+          "type": "boolean",
+          "description": "PKG-28: the publisher calls this release beta. A version with a prerelease part is beta without it."
+        },
         "manifest": {
           "$ref": "plugin.schema.json",
           "description": "PKG-17: snapshot of the release manifest, whose server.executables names every platform the release ships."

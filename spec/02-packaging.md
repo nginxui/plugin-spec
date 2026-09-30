@@ -457,3 +457,20 @@ entry that carries it, never for a package of another entry or one that
 reached the host another way. `trust` is a label for listing and filtering
 entries before anything is downloaded; a host MUST NOT grant a level because
 of it (SEC-19).
+
+## PKG-28
+
+A release is beta when its `version` has a prerelease part (semantic
+versioning 2.0.0, for example `1.0.0-beta.1` or `2.0.0-rc.1`), or when its
+catalog release carries `"beta": true`. The member is optional and is for a
+publisher who ships a plain version but still calls the release beta. An
+entry whose `stage` is `beta` is beta as a whole.
+
+A host SHOULD show a beta release, and an installed plugin whose version has
+a prerelease part, with a mark that says it is still being tested. A host
+SHOULD NOT move a stable installation to a beta release on its own: when it
+picks the newest installable release (PKG-15), reports available updates or
+updates automatically, it SHOULD choose among the stable releases. It MAY
+choose a beta release when the installed version is beta itself, or when
+nothing is installed and the catalog has no stable release that installs.
+Installing a beta release the person asked for by version is always allowed.
