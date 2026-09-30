@@ -523,3 +523,20 @@ A host SHOULD mark a release, and an installed plugin, whose channel is not
 `stable`, with a mark that says it is still being tested or is under
 development. When a host installs a plugin on other hosts (PKG-18) it installs
 the exact version it runs, and it MAY also hand on the followed channel.
+
+## PKG-29
+
+A catalog entry MAY carry `screenshots`, an array of at most eight images of
+the plugin in use, in the order a host shows them:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `url` | string | Address of a PNG, JPEG or WebP image. A width of 1280 to 1920 pixels at an aspect ratio of about 16:10 suits every host. |
+| `caption` | object | Locale code to a short caption, `en` is the fallback. Optional. |
+
+The images come from the catalog, not from a signed package, so a host MUST
+load them from `https` addresses only (plain `http` only where it also allows
+insecure package downloads) and SHOULD load them only from the host of the
+catalog, of the package it would install, or of a code hosting service it
+trusts, dropping the others. A host MAY show fewer screenshots than an entry
+lists and MUST NOT treat a missing or broken image as a fault of the entry.

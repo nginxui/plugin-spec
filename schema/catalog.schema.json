@@ -46,6 +46,15 @@
       "description": "Locale code to text, en is the fallback.",
       "additionalProperties": { "type": "string" }
     },
+    "screenshot": {
+      "type": "object",
+      "required": ["url"],
+      "additionalProperties": true,
+      "properties": {
+        "url": { "$ref": "#/$defs/url" },
+        "caption": { "$ref": "#/$defs/localized" }
+      }
+    },
     "entry": {
       "type": "object",
       "required": ["id", "releases"],
@@ -63,6 +72,12 @@
         "repository_url": { "$ref": "#/$defs/url" },
         "readme_url": { "$ref": "#/$defs/url" },
         "icon_url": { "$ref": "#/$defs/url" },
+        "screenshots": {
+          "type": "array",
+          "maxItems": 8,
+          "description": "PKG-29: images of the plugin in use, in display order.",
+          "items": { "$ref": "#/$defs/screenshot" }
+        },
         "categories": { "type": "array", "items": { "type": "string" } },
         "capabilities": { "type": "array", "items": { "type": "string" } },
         "license": { "type": "string" },
