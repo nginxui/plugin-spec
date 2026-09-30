@@ -544,9 +544,9 @@ lists and MUST NOT treat a missing or broken image as a fault of the entry.
 ## PKG-30
 
 A catalog MAY carry a top-level `name`, an object of locale code to the name
-of the catalog, with `en` as the fallback. A host SHOULD show it wherever it
-names the source of a plugin, rather than the address of the catalog, and MAY
-let the user give a source a name of their own, which then takes precedence. A
+of the catalog, with `en` as the fallback. The catalog is the authority on its
+name: a host SHOULD show it wherever it names the source of a plugin, rather
+than the address of the catalog, and SHOULD NOT let a user rename a source. A
 host SHOULD collapse whitespace in the name and MAY shorten it; 64 characters
-suit every host. Where a catalog declares no name and the user gave none, a
-host SHOULD name the source by the host part of its address.
+suit every host. Where a catalog declares no name, a host SHOULD name the
+source by the host part of its address.
