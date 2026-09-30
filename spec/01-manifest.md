@@ -141,7 +141,7 @@ from this block.
 | `command` | string[] | no\* | Fallback argv for an interpreted plugin (e.g. `["python3", "server/main.py"]`). |
 | `lifecycle` | string | no | `"resident"` (default) or `"on_demand"`. |
 | `idle_timeout_seconds` | integer | no | For `on_demand`: seconds of no acquisition before the host stops the process. |
-| `resources` | object | no | Resource hints: `memory_mb` and `cpu_percent`, see MAN-39 and LIFE-16. |
+| `resources` | object | no | Resource hints: `memory_mb`, `cpu_percent` and `recommended_memory_mb`, see MAN-39, LIFE-16 and LIFE-19. |
 
 \* At least one of `executables` or `command` MUST be present when `server` is present.
 
@@ -180,17 +180,25 @@ neither is available for its platform.
 
 ### MAN-39
 
-`server.resources`, when present, declares the most the process needs:
+`server.resources`, when present, declares what the process needs at most
+and the memory the machine should have:
 
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
 | `memory_mb` | integer | no | Memory in MiB. `0` or absent means no hint. |
 | `cpu_percent` | integer | no | CPU time in percent of one core, `100` being one core and `250` two and a half. `0` or absent means no hint. |
+| `recommended_memory_mb` | integer | no | Memory in MiB that the machine, or the container the host runs in, should have for the plugin to work well. `0` or absent means no hint. |
 
-Both MUST NOT be negative. They are hints: a host that confines plugin
-processes applies the smaller of a hint and its own limit, and a host that
-does not ignores them (LIFE-16). A plugin author SHOULD leave headroom, since
+All three MUST NOT be negative. `memory_mb` and `cpu_percent` are hints: a
+host that confines plugin processes applies the smaller of a hint and its own
+limit, and a host that does not ignores them (LIFE-16). A plugin author SHOULD leave headroom, since
 a process that exceeds `memory_mb` under confinement is killed.
+
+`recommended_memory_mb` is advice for the people who choose plugins, not a
+limit on the process. It is the total memory of the machine, or the memory
+limit of the container the host runs in, counting nginx-ui and the plugin
+together. A host never refuses to install or run a plugin because of it, and
+shows it as LIFE-19 describes.
 
 ## `webapp`
 

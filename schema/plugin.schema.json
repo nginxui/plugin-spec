@@ -264,7 +264,7 @@
     "manifestResources": {
       "type": "object",
       "additionalProperties": false,
-      "description": "MAN-39. Hints a host that confines plugin processes applies, capped by its own limits (LIFE-16).",
+      "description": "MAN-39. Hints a host that confines plugin processes applies, capped by its own limits (LIFE-16), and the memory that suits the plugin (LIFE-19).",
       "properties": {
         "memory_mb": {
           "type": "integer",
@@ -275,6 +275,11 @@
           "type": "integer",
           "minimum": 0,
           "description": "CPU time in percent of one core, 100 being one core. 0 or absent means no hint."
+        },
+        "recommended_memory_mb": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Memory in MiB the machine, or the container the host runs in, should have for the plugin to work well. Advice only (LIFE-19). 0 or absent means no hint."
         }
       }
     },

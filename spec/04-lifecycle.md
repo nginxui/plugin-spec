@@ -341,3 +341,13 @@ cgroup v2 is missing or its files cannot be written (another operating
 system, a process without the privilege, a container without delegation)
 the processes run without limits and the plugin info reports the limits as
 not enforced.
+
+## LIFE-19
+
+A host SHOULD show `server.resources.recommended_memory_mb` (MAN-39) wherever
+a plugin can be chosen or installed, such as a marketplace and the details of
+a plugin. It SHOULD warn before the install, and on the installed plugin,
+when the memory the host runs with is below the value: the total memory of
+the machine, or the memory limit of the container when the host runs in one.
+A host MUST NOT refuse to install or run a plugin because of this value,
+which is advice and not a limit (LIFE-16).

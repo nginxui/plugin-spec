@@ -95,14 +95,19 @@ message ManifestServer {
   ManifestResources resources = 5;
 }
 
-// ManifestResources are the resources a plugin process needs at most. A host
-// that confines plugin processes applies the smaller of a hint and its own
-// limit; a hint never raises a limit. See spec/04-lifecycle.md LIFE-16.
+// ManifestResources are the resources a plugin process needs at most, and the
+// memory that suits it best. A host that confines plugin processes applies the
+// smaller of a hint and its own limit; a hint never raises a limit. See
+// spec/04-lifecycle.md LIFE-16.
 message ManifestResources {
   // Memory in MiB. 0 means no hint.
   int32 memory_mb = 1;
   // CPU time in percent of one core, 100 being one core. 0 means no hint.
   int32 cpu_percent = 2;
+  // Memory in MiB the machine, or the container the host runs in, should have
+  // for the plugin to work well, counting the host. Advice for people who
+  // choose plugins, never a limit. 0 means no hint. See LIFE-19.
+  int32 recommended_memory_mb = 3;
 }
 
 // ManifestWebapp describes the optional browser bundle.
