@@ -11,6 +11,10 @@
       "const": 1,
       "description": "The only catalog layout spec 1.x defines. Adding downloads did not change it: a host that does not know downloads still reads download_url."
     },
+    "name": {
+      "$ref": "#/$defs/localized",
+      "description": "PKG-30: the name of the catalog a host shows for this source, locale code to text, en is the fallback."
+    },
     "updated_at": {
       "type": "string",
       "format": "date-time"
