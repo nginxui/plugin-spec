@@ -460,17 +460,66 @@ of it (SEC-19).
 
 ## PKG-28
 
-A release is beta when its `version` has a prerelease part (semantic
-versioning 2.0.0, for example `1.0.0-beta.1` or `2.0.0-rc.1`), or when its
-catalog release carries `"beta": true`. The member is optional and is for a
-publisher who ships a plain version but still calls the release beta. An
-entry whose `stage` is `beta` is beta as a whole.
+A release belongs to one of three release channels, ordered from the most to
+the least stable: `stable`, `beta` and `dev`. A catalog release MAY carry a
+`channel` member with one of these values. When it is absent, a host MUST
+infer the channel from the `version` (semantic versioning 2.0.0):
 
-A host SHOULD show a beta release, and an installed plugin whose version has
-a prerelease part, with a mark that says it is still being tested. A host
-SHOULD NOT move a stable installation to a beta release on its own: when it
-picks the newest installable release (PKG-15), reports available updates or
-updates automatically, it SHOULD choose among the stable releases. It MAY
-choose a beta release when the installed version is beta itself, or when
-nothing is installed and the catalog has no stable release that installs.
-Installing a beta release the person asked for by version is always allowed.
+* a version without a prerelease part is `stable`;
+* a version whose prerelease part starts with one of the identifiers `alpha`,
+  `dev`, `nightly`, `snapshot`, `canary` or `preview` (compared without
+  regard to case, and only the first dot separated identifier counts, so
+  `1.0.0-nightly.20260930` is `dev` and `1.0.0-alphabet` is not) is `dev`;
+* any other prerelease, for example `1.0.0-beta.1` or `2.0.0-rc.1`, is `beta`.
+
+The member is for a publisher who ships a plain version but still wants it on
+a less stable channel. A `channel` the host does not know is treated as if it
+were absent. The `stage` of an entry is a label for display and does not
+change the channel of any release.
+
+A publisher SHOULD number prereleases with dot separated numeric identifiers,
+such as `1.1.0-beta.10`, because identifiers are ordered as numbers only when
+they are separate: `1.1.0-beta10` sorts before `1.1.0-beta9`.
+
+A host that installs from a catalog SHOULD keep one followed channel for each
+installed plugin, which is `stable` unless the person chooses another, and
+SHOULD let the person change it. The channel that updates of the plugin come
+from is the less stable of the followed channel and the channel of the
+installed release; a host SHOULD compute it and SHOULD NOT store it. When the
+host picks the newest installable release (PKG-15), reports available
+updates, updates automatically or resolves a dependency for an installed
+plugin, it SHOULD consider only the releases whose channel is that channel or
+a more stable one. Following a less stable channel therefore includes every
+more stable release, so a person on `beta` also receives the stable release
+that ends a beta series and needs no other line of releases. Releases are ordered by semantic versioning
+precedence, in which a release sorts after its own prereleases
+(`1.1.0-beta.3` < `1.1.0`) and a stable `1.0.1` sorts before `1.1.0-beta.2`,
+so a host never offers an older release as an update.
+
+Only the person changes the followed channel: installing a release on a less
+stable channel does not. Such an installation gets newer releases of that
+channel while it runs the release, and returns to the followed channel once a
+release on a more stable channel is installed. This is how a plugin that so
+far has only `beta` releases is used: a first install takes the newest one,
+newer betas are offered, the stable release is offered when it is out, and
+after installing it the plugin gets no more betas unless the person chose
+`beta`. The same holds for a person who follows `stable` and installs a
+single beta to try it. A host SHOULD NOT move an installation to a less stable
+channel on any other occasion. For a plugin that is not installed, a host
+SHOULD pick the newest stable release, then the newest `beta` release when no
+stable release installs, then the newest `dev` release. A host SHOULD mark a
+plugin that has no stable release yet, and say so when it is installed.
+
+A host MUST allow installing any release that is not yanked and runs on the
+host, by its version, whatever its channel and whether it is older or newer
+than the installed version. Installing an older version is a downgrade: a host
+SHOULD tell the person so, and that data written by the newer version may not
+be readable by the older one. A downgrade MUST NOT happen without the person
+asking for it, so automatic updates never install a release that sorts before
+the installed version. The checks that apply to any install, such as the trust
+level of the package (SEC-18), apply to a downgrade unchanged.
+
+A host SHOULD mark a release, and an installed plugin, whose channel is not
+`stable`, with a mark that says it is still being tested or is under
+development. When a host installs a plugin on other hosts (PKG-18) it installs
+the exact version it runs, and it MAY also hand on the followed channel.

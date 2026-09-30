@@ -72,7 +72,7 @@
         },
         "stage": {
           "type": "string",
-          "description": "Maturity shown next to the plugin, e.g. production or beta. PKG-28: beta marks the whole plugin as beta."
+          "description": "Maturity shown next to the plugin, e.g. production or beta. Display only, release channels are set per release (PKG-28)."
         },
         "releases": {
           "type": "array",
@@ -137,9 +137,10 @@
         },
         "release_notes_url": { "$ref": "#/$defs/url" },
         "yanked": { "type": "boolean" },
-        "beta": {
-          "type": "boolean",
-          "description": "PKG-28: the publisher calls this release beta. A version with a prerelease part is beta without it."
+        "channel": {
+          "type": "string",
+          "enum": ["stable", "beta", "dev"],
+          "description": "PKG-28: the release channel, from the most to the least stable. Without it the host infers the channel from the version: no prerelease part is stable, a prerelease starting with alpha, dev, nightly, snapshot, canary or preview is dev, any other prerelease is beta."
         },
         "manifest": {
           "$ref": "plugin.schema.json",
