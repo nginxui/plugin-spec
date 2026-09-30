@@ -71,6 +71,9 @@ message Manifest {
   // Translations of name and description keyed by host locale code, e.g.
   // "zh_CN". name and description stay the fallback.
   map<string, ManifestI18n> i18n = 30;
+  // Plugin ids that must never be enabled together with this plugin. See
+  // spec/01-manifest.md MAN-42 and spec/04-lifecycle.md LIFE-20.
+  repeated string conflicts = 31;
 }
 
 // ManifestI18n translates the display fields of a manifest into one

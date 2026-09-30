@@ -151,6 +151,12 @@
       "type": "array",
       "items": { "type": "string" }
     },
+    "conflicts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "MAN-42. Plugin ids that must not be enabled at the same time as this plugin (LIFE-20)."
+    },
     "events": {
       "type": "array",
       "items": { "type": "string" },

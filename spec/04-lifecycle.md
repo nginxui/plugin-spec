@@ -351,3 +351,27 @@ when the memory the host runs with is below the value: the total memory of
 the machine, or the memory limit of the container when the host runs in one.
 A host MUST NOT refuse to install or run a plugin because of this value,
 which is advice and not a limit (LIFE-16).
+
+## LIFE-20
+
+A host MUST NOT run two conflicting plugins (MAN-42) at the same time. Two
+plugins conflict when either of them lists the other in `conflicts`.
+
+* **Enable.** When an enabled plugin conflicts with the plugin being enabled,
+  the host MUST refuse with an error that names the enabled plugin. When the
+  caller asks to replace the conflicting plugins, the host disables them
+  first, as a normal disable does including the plugins that depend on them,
+  and then enables the plugin.
+* **Install with enable.** A package that is installed and enabled in one step
+  (upload, catalog install, automatic install, installing a dependency) is
+  installed, but a plugin that conflicts with an enabled plugin stays
+  disabled, unless the caller asks to replace the conflicting plugins. An
+  upgrade keeps the plugin enabled only when no enabled plugin conflicts with
+  the new version, since an upgrade can add a `conflicts` entry.
+* **Startup.** The host goes through the enabled plugins in its usual start
+  order. A plugin that conflicts with one that stays enabled is not started:
+  the host disables it, so it stays off after a restart and none of its pages
+  or content are served, and records an error that names the other plugin.
+* **Synchronised hosts.** A host that mirrors the state of another host
+  (PKG-18) follows that state: enabling a plugin there replaces the
+  conflicting plugins.

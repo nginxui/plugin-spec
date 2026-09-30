@@ -32,6 +32,7 @@ It is tested against `manifest.proto`, see [`schema/README.md`](../schema/README
 | `permissions` | string[] | no | Host API permissions this plugin requests. See `spec/08-security.md`. |
 | `requires` | object[] | no | Other plugin ids (with an optional version range) this plugin depends on. |
 | `requires_capabilities` | string[] | no | Capability names this plugin expects some other installed plugin to provide. |
+| `conflicts` | string[] | no | Plugin ids that must never be enabled at the same time as this plugin. See MAN-42. |
 | `events` | string[] | no | Event type identifiers this plugin subscribes to. See `spec/06-host-api.md`. |
 | `cron` | object[] | no | Host-scheduled invocations. See `spec/06-host-api.md`. |
 | `network_hosts` | string[] | no | Declarative list of hosts the plugin intends to contact, for permission review. |
@@ -366,6 +367,20 @@ plugin whose `requires` cannot be satisfied.
 expects some other enabled plugin to provide. A host SHOULD warn, and MAY
 refuse to enable the plugin, when no enabled plugin provides a listed
 capability.
+
+## `conflicts`
+
+### MAN-42
+
+`conflicts` lists plugin ids that MUST NOT be enabled at the same time as
+this plugin. Every entry MUST be a valid plugin id (MAN-2), MUST NOT be the
+id of the plugin itself, MUST NOT appear twice, and MUST NOT also be the id of
+an entry of `requires`. A host MUST reject a manifest that breaks one of
+these rules.
+
+The relation is symmetric: two plugins conflict when either of them lists the
+other, so a plugin can declare a conflict with a plugin that does not know
+about it. What a host does with a conflict is described in LIFE-20.
 
 ## `events` and `cron`
 
