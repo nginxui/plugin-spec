@@ -15,6 +15,10 @@
       "$ref": "#/$defs/localized",
       "description": "PKG-30: the name of the catalog a host shows for this source, locale code to text, en is the fallback."
     },
+    "icon": {
+      "$ref": "#/$defs/url",
+      "description": "PKG-30: a square image that stands for the catalog, loaded under the rules PKG-29 sets for screenshots."
+    },
     "updated_at": {
       "type": "string",
       "format": "date-time"

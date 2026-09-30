@@ -550,3 +550,9 @@ than the address of the catalog, and SHOULD NOT let a user rename a source. A
 host SHOULD collapse whitespace in the name and MAY shorten it; 64 characters
 suit every host. Where a catalog declares no name, a host SHOULD name the
 source by the host part of its address.
+
+A catalog MAY also carry a top-level `icon`, the address of a square PNG, SVG
+or WebP image that stands for it, at least 64 pixels wide where it is not a
+vector image. A host loads it under the rules PKG-29 sets for screenshots,
+from the host of the catalog or of a code hosting service it trusts, drops an
+icon it would not load and shows a generic image in its place.
