@@ -556,3 +556,8 @@ or WebP image that stands for it, at least 64 pixels wide where it is not a
 vector image. A host loads it under the rules PKG-29 sets for screenshots,
 from the host of the catalog or of a code hosting service it trusts, drops an
 icon it would not load and shows a generic image in its place.
+
+A catalog SHOULD be served at `/v1/index.json` of its site. A host MAY accept
+a source given as a site address alone, with no path, and look for the
+catalog at `/v1/index.json` and then at `/index.json` of that site, keeping
+the first address that answers with a catalog as the source.
