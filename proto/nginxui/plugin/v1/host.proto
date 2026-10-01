@@ -84,6 +84,45 @@ service Host {
   rpc ActivitySet(HostActivitySetRequest) returns (HostActivitySetResponse) {
     option (nginxui.plugin.v1.rpc_name) = "host.activity.set";
   }
+
+  // Writes one nginx configuration snippet of the plugin, tests the whole
+  // configuration and reloads nginx, putting the previous snippet back when
+  // either step fails. Permission "nginx.snippet".
+  rpc NginxSnippetPut(HostNginxSnippetPutRequest) returns (HostNginxSnippetPutResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.nginx.snippet.put";
+  }
+
+  // Removes one snippet of the plugin the same way. Permission
+  // "nginx.snippet".
+  rpc NginxSnippetDelete(HostNginxSnippetDeleteRequest) returns (HostNginxSnippetDeleteResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.nginx.snippet.delete";
+  }
+
+  // Lists the snippets of the plugin. Permission "nginx.snippet".
+  rpc NginxSnippetList(HostNginxSnippetListRequest) returns (HostNginxSnippetListResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.nginx.snippet.list";
+  }
+
+  // Lists the nginx configuration files. Permission "nginx.config.read".
+  rpc NginxConfigList(HostNginxConfigListRequest) returns (HostNginxConfigListResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.nginx.config.list";
+  }
+
+  // Reads one nginx configuration file. Permission "nginx.config.read".
+  rpc NginxConfigGet(HostNginxConfigGetRequest) returns (HostNginxConfigGetResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.nginx.config.get";
+  }
+
+  // Lists the sites. Permission "sites.read".
+  rpc SitesList(HostSitesListRequest) returns (HostSitesListResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.sites.list";
+  }
+
+  // Lists the certificates without their private keys. Permission
+  // "certs.read".
+  rpc CertsList(HostCertsListRequest) returns (HostCertsListResponse) {
+    option (nginxui.plugin.v1.rpc_name) = "host.certs.list";
+  }
 }
 
 // HostLogRequest is the params of host.log.
@@ -257,3 +296,125 @@ message HostActivitySetRequest {
 
 // HostActivitySetResponse is the result of host.activity.set. It is empty.
 message HostActivitySetResponse {}
+
+// HostNginxSnippetPutRequest is the params of host.nginx.snippet.put.
+message HostNginxSnippetPutRequest {
+  // Name of the snippet inside the plugin, 1 to 64 characters of [a-z0-9_-]
+  // starting with a letter or digit.
+  string name = 1;
+  // nginx configuration text, at most 256 KiB of UTF-8.
+  string content = 2;
+}
+
+// HostNginxSnippetPutResponse is the result of host.nginx.snippet.put.
+message HostNginxSnippetPutResponse {
+  // False when the snippet already had this content and nothing was reloaded.
+  bool changed = 1;
+  // The directive that includes the snippet, such as
+  // "include snippets/plugins/<plugin id>/<name>.conf;".
+  string include = 2;
+}
+
+// HostNginxSnippetDeleteRequest is the params of host.nginx.snippet.delete.
+message HostNginxSnippetDeleteRequest {
+  string name = 1;
+}
+
+// HostNginxSnippetDeleteResponse is the result of host.nginx.snippet.delete.
+message HostNginxSnippetDeleteResponse {
+  // False when there was no such snippet.
+  bool removed = 1;
+}
+
+// HostNginxSnippetListRequest is the params of host.nginx.snippet.list. It is
+// empty.
+message HostNginxSnippetListRequest {}
+
+// HostNginxSnippetListResponse is the result of host.nginx.snippet.list.
+message HostNginxSnippetListResponse {
+  // Sorted by name. Never null.
+  repeated HostNginxSnippet snippets = 1;
+}
+
+// HostNginxSnippet is one entry of HostNginxSnippetListResponse.
+message HostNginxSnippet {
+  string name = 1;
+  // The directive that includes the snippet.
+  string include = 2;
+}
+
+// HostNginxConfigListRequest is the params of host.nginx.config.list. It is
+// empty.
+message HostNginxConfigListRequest {}
+
+// HostNginxConfigListResponse is the result of host.nginx.config.list.
+message HostNginxConfigListResponse {
+  // Paths relative to the nginx configuration directory, separated by "/"
+  // and sorted. Never null.
+  repeated string files = 1;
+}
+
+// HostNginxConfigGetRequest is the params of host.nginx.config.get.
+message HostNginxConfigGetRequest {
+  // One of the paths host.nginx.config.list returns.
+  string path = 1;
+}
+
+// HostNginxConfigGetResponse is the result of host.nginx.config.get.
+message HostNginxConfigGetResponse {
+  string content = 1;
+}
+
+// HostSitesListRequest is the params of host.sites.list. It is empty.
+message HostSitesListRequest {}
+
+// HostSitesListResponse is the result of host.sites.list.
+message HostSitesListResponse {
+  // Sorted by name. Never null.
+  repeated HostSite sites = 1;
+}
+
+// HostSite is one entry of HostSitesListResponse.
+message HostSite {
+  // Name of the site, which is the name of its configuration file.
+  string name = 1;
+  // "enabled", "disabled" or "maintenance".
+  string status = 2;
+  // The addresses the site answers on, such as "https://example.com".
+  repeated string urls = 3;
+  // Configuration file of the site relative to the nginx configuration
+  // directory, readable with host.nginx.config.get.
+  string config_file = 4;
+}
+
+// HostCertsListRequest is the params of host.certs.list. It is empty.
+message HostCertsListRequest {}
+
+// HostCertsListResponse is the result of host.certs.list.
+message HostCertsListResponse {
+  // Sorted by name. Never null.
+  repeated HostCert certs = 1;
+}
+
+// HostCert is one entry of HostCertsListResponse. It never carries a private
+// key.
+message HostCert {
+  // Identifier of the certificate in the host, in decimal.
+  string id = 1;
+  string name = 2;
+  // Domains the certificate was requested for.
+  repeated string domains = 3;
+  // True when the host renews the certificate itself.
+  bool auto_renew = 4;
+  // "http01", "dns01" or empty when the host does not issue it.
+  string challenge_method = 5;
+  // Key type, such as "2048" or "P256".
+  string key_type = 6;
+  // Validity of the certificate file as RFC 3339 timestamps. Empty when the
+  // file cannot be read.
+  string not_before = 7;
+  string not_after = 8;
+  // Organization or name of the issuing CA. Empty when the file cannot be
+  // read.
+  string issuer = 9;
+}

@@ -240,6 +240,76 @@
     "direction": "plugin_to_host"
   },
   {
+    "rpc_name": "host.nginx.snippet.put",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "NginxSnippetPut",
+    "full_method": "/nginxui.plugin.v1.Host/NginxSnippetPut",
+    "request": "nginxui.plugin.v1.HostNginxSnippetPutRequest",
+    "response": "nginxui.plugin.v1.HostNginxSnippetPutResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.nginx.snippet.delete",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "NginxSnippetDelete",
+    "full_method": "/nginxui.plugin.v1.Host/NginxSnippetDelete",
+    "request": "nginxui.plugin.v1.HostNginxSnippetDeleteRequest",
+    "response": "nginxui.plugin.v1.HostNginxSnippetDeleteResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.nginx.snippet.list",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "NginxSnippetList",
+    "full_method": "/nginxui.plugin.v1.Host/NginxSnippetList",
+    "request": "nginxui.plugin.v1.HostNginxSnippetListRequest",
+    "response": "nginxui.plugin.v1.HostNginxSnippetListResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.nginx.config.list",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "NginxConfigList",
+    "full_method": "/nginxui.plugin.v1.Host/NginxConfigList",
+    "request": "nginxui.plugin.v1.HostNginxConfigListRequest",
+    "response": "nginxui.plugin.v1.HostNginxConfigListResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.nginx.config.get",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "NginxConfigGet",
+    "full_method": "/nginxui.plugin.v1.Host/NginxConfigGet",
+    "request": "nginxui.plugin.v1.HostNginxConfigGetRequest",
+    "response": "nginxui.plugin.v1.HostNginxConfigGetResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.sites.list",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "SitesList",
+    "full_method": "/nginxui.plugin.v1.Host/SitesList",
+    "request": "nginxui.plugin.v1.HostSitesListRequest",
+    "response": "nginxui.plugin.v1.HostSitesListResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
+    "rpc_name": "host.certs.list",
+    "service": "nginxui.plugin.v1.Host",
+    "method": "CertsList",
+    "full_method": "/nginxui.plugin.v1.Host/CertsList",
+    "request": "nginxui.plugin.v1.HostCertsListRequest",
+    "response": "nginxui.plugin.v1.HostCertsListResponse",
+    "notification": false,
+    "direction": "plugin_to_host"
+  },
+  {
     "rpc_name": "http.handle",
     "service": "nginxui.plugin.v1.HTTP",
     "method": "Handle",

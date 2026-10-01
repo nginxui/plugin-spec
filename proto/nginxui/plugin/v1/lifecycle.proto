@@ -63,7 +63,8 @@ message PluginInitializeRequest {
   HostInfo host = 1;
   // Current settings values. Free-form JSON object keyed by setting key.
   google.protobuf.Struct settings = 2;
-  // Permissions the person granted. It may be a subset of the manifest's.
+  // Permissions the plugin holds. They always equal the manifest's, since the
+  // host does not start a plugin whose permissions wait for approval.
   repeated string permissions = 3;
 }
 
@@ -77,17 +78,23 @@ message PluginInitializeResponse {
   // stdio only.
   repeated string transports = 3;
   // Loopback port of the http capability, reported by Windows plugins that
-  // cannot listen on a Unix socket.
+  // cannot open a named pipe. Used when http_pipe is empty.
   int32 http_port = 4;
   // Loopback port of the gRPC transport, reported by Windows plugins that
-  // cannot listen on a Unix socket.
+  // cannot open a named pipe. Used when rpc_pipe is empty.
   int32 rpc_port = 5;
-  // One-time token the host presents on the loopback gRPC transport.
+  // One-time token the host presents on the Windows gRPC transport, named
+  // pipe or loopback port.
   string rpc_token = 6;
   // Absolute path of the Unix socket the gRPC transport listens on. Empty
   // means <NGINX_UI_PLUGIN_DATA_DIR>/rpc.sock. A plugin reports it when the
   // default path does not fit the platform's socket path limit.
   string rpc_socket = 7;
+  // Named pipe of the http capability on Windows, such as
+  // \\.\pipe\nginx-ui-plugin-<random>.
+  string http_pipe = 8;
+  // Named pipe of the gRPC transport on Windows.
+  string rpc_pipe = 9;
 }
 
 // PluginInitializedRequest is the params of plugin.initialized. It is empty.
