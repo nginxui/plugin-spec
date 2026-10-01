@@ -60,6 +60,10 @@
       "additionalProperties": true,
       "properties": {
         "url": { "$ref": "#/$defs/url" },
+        "dark_url": {
+          "$ref": "#/$defs/url",
+          "description": "PKG-29: the same view in the dark theme; hosts show url when it is absent."
+        },
         "caption": { "$ref": "#/$defs/localized" }
       }
     },
