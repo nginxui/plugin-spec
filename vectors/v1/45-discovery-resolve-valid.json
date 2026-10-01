@@ -1,6 +1,5 @@
 {
   "description": "The host resolves a service; the plugin replies with every server that backs it, their weights and how long the answer stays fresh.",
-  "requirement": "DISCOVERY-5",
   "method": "discovery.resolve",
   "direction": "host_to_plugin",
   "kind": "request",

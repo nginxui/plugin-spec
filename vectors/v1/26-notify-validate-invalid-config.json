@@ -1,6 +1,5 @@
 {
   "description": "A malformed field is reported as CodeInvalidConfig with data.field, so the host can highlight it in the channel form.",
-  "requirement": "NOTIFY-8",
   "method": "notify.validate",
   "direction": "host_to_plugin",
   "kind": "request",

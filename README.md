@@ -1,104 +1,53 @@
-# NGINX UI Plugin Specification
+# NGINX UI Plugin Contract
 
-This repository is the normative specification for the [NGINX UI](https://github.com/0xJacky/nginx-ui)
-plugin system: the on-disk package format, the manifest schema, the
-JSON-RPC 2.0 wire protocol between the host and a plugin process, the
-lifecycle a conformant plugin and host MUST follow, the `dns01`, `notify`,
-`probe`, `mcp`, `storage`, `cert.deploy`, `security.blocklist`, `upstream.discovery` and `log.sink` capabilities, content plugins, the host API a plugin process may call, the browser webapp contract, security
-and packaging rules, and the naming conventions plugin authors MUST follow.
+The machine readable contract between [NGINX UI](https://github.com/0xJacky/nginx-ui)
+and its plugins: the protobuf definitions of every method and message, the
+JSON Schemas of `plugin.json`, the marketplace catalog and the partner
+keyring, the generated Go code, and test vectors of the wire protocol.
 
-It exists so that a plugin can be written in any language, against this
-document alone, and work with any host that implements it — not only the
-reference [nginx-ui](https://github.com/0xJacky/nginx-ui) host, and not only
-plugins written with the reference SDKs.
-
-## Who this is for
-
-* **Plugin authors** who want a contract that does not change under them and
-  does not require reading Go source.
-* **SDK maintainers** ([plugin-sdk-go](https://github.com/nginxui/plugin-sdk-go),
-  [plugin-sdk-web](https://github.com/nginxui/plugin-sdk-web),
-  or an SDK in a third language) who need the wire format, error codes and
-  timing contract to build a helper library against.
-* **Host implementers** who want to run the same plugin packages the
-  reference host runs, or who are auditing the reference host's behavior
-  against a written spec instead of its source.
+The host, the SDKs and the official plugins all build on this one copy.
+How to write a plugin, what each capability does and how the host behaves
+is described in the developer guide:
+**[nginxui.com/plugin](https://nginxui.com/plugin/overview)**.
 
 ## Layout
 
 | Path | Contents |
 | --- | --- |
-| `spec/01-manifest.md` | `plugin.json` schema and validation rules (`MAN-n`) |
-| `spec/02-packaging.md` | Archive format, layout, size limits, required files, embedded signature, partner certificate, catalog downloads (`PKG-n`) |
-| `spec/03-wire-protocol.md` | JSON-RPC 2.0 framing, error codes, message limits, the gRPC transport and streaming rpcs (`WIRE-n`) |
-| `spec/04-lifecycle.md` | Handshake, liveness, configuration, shutdown, resource limits (`LIFE-n`) |
-| `spec/05-capabilities-dns01.md` | The `dns01` capability's methods (`DNS01-n`) |
-| `spec/06-host-api.md` | `host.*` methods, events and cron delivery (`HOST-n`) |
-| `spec/07-webapp.md` | Browser bundle contract, slots, registry API (`WEB-n`) |
-| `spec/08-security.md` | Permission model, credential handling, trust boundary, trust levels derived from the package signature, the partner keyring (`SEC-n`) |
-| `spec/09-conformance.md` | Conformance levels: `core`, `dns01`, `webapp`, `notify`, `probe`, `mcp`, `storage`, `cert.deploy`, `content`, `security.blocklist`, `upstream.discovery`, `log.sink`, and the transport checks (`CONF-n`, `TRANSPORT-1`) |
-| `spec/10-versioning.md` | Spec versioning, `api_version`, upgrade compatibility (`VER-n`) |
-| `spec/11-naming.md` | Plugin id, provider, channel, probe kind, storage backend, deploy target kind, blocklist source kind and discovery provider code namespaces, MCP tool names, resource groups (`NAME-n`) |
-| `spec/12-capabilities-notify.md` | The `notify` capability's methods (`NOTIFY-n`) |
-| `spec/13-capabilities-probe.md` | The `probe` capability's methods (`PROBE-n`) |
-| `spec/14-capabilities-mcp.md` | The `mcp` capability's methods (`MCP-n`) |
-| `spec/15-capabilities-storage.md` | The `storage` capability's methods (`STORAGE-n`) |
-| `spec/16-capabilities-deploy.md` | The `cert.deploy` capability's methods (`DEPLOY-n`) |
-| `spec/17-content-plugins.md` | Templates and translation files of the `content` block, process-less plugins (`CONTENT-n`) |
-| `spec/18-capabilities-blocklist.md` | The `security.blocklist` capability's methods (`BLOCKLIST-n`) |
-| `spec/19-capabilities-discovery.md` | The `upstream.discovery` capability's methods (`DISCOVERY-n`) |
-| `spec/20-capabilities-logsink.md` | The `log.sink` capability's stream (`LOGSINK-n`) |
-| `spec/methods.json` | Generated table of every JSON-RPC method and its proto rpc (WIRE-9) |
-| `proto/nginxui/plugin/v1/` | The proto contract, source of truth for methods and message shapes (WIRE-9) |
+| `proto/nginxui/plugin/v1/` | The proto contract, source of truth for methods and message shapes |
 | `gen/go/` | Generated Go package `pluginv1`, a Go module of its own |
-| `tools/` | Generator of `spec/methods.json` and the consistency tests, a Go module of its own |
+| `gen/methods.json` | Generated table of every JSON-RPC method name and its proto rpc |
 | `schema/plugin.schema.json` | JSON Schema (draft 2020-12) for `plugin.json`, checked against `manifest.proto` |
-| `schema/catalog.schema.json` | JSON Schema (draft 2020-12) for a marketplace catalog document (PKG-14, PKG-24) |
-| `schema/partners.schema.json` | JSON Schema (draft 2020-12) for the partner keyring published next to the official catalog (SEC-25, SEC-26) |
-| `spec/rfcs/` | Accepted design changes, with the reasoning the numbered requirements leave out |
-| `examples/python-dns01/` | Zero-dependency Python 3 reference plugin |
-| `vectors/v1/` | Request/response test vectors for SDK authors |
-
-Every requirement is numbered (e.g. `LIFE-3`, `DNS01-7`) so it can be linked
-to and cited from an implementation's tests or a conformance report. Keywords
-"MUST", "MUST NOT", "SHOULD", "SHOULD NOT" and "MAY" are used as defined by
-[RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
-
-## Versioning
-
-This document describes **spec 1.0**, which corresponds to wire protocol
-`api_version = 1`. See `spec/10-versioning.md` for the full compatibility
-model: how `api_version`, a plugin's own `version` and `min_nginx_ui_version`
-relate, and what changes are permitted within spec 1.x without incrementing
-`api_version`.
+| `schema/catalog.schema.json` | JSON Schema (draft 2020-12) for a marketplace catalog document |
+| `schema/partners.schema.json` | JSON Schema (draft 2020-12) for the partner keyring published next to the official catalog |
+| `vectors/v1/` | Request and response test vectors for SDK and host authors |
+| `examples/python-dns01/` | Zero dependency Python 3 example plugin |
+| `tools/` | Generator of `gen/methods.json` and the consistency tests, a Go module of its own |
 
 ## Source of truth
 
 Method names, message shapes, error codes and the manifest structure are
-defined once, in the proto contract under `proto/nginxui/plugin/v1/`
-(`spec/03-wire-protocol.md` WIRE-9). The JSON on the wire is the protobuf
-JSON mapping of those messages with proto field names (WIRE-10), so a plugin
-author can keep working from the JSON examples alone.
+defined once, in the proto contract under `proto/nginxui/plugin/v1/`. The JSON
+on the wire is the protobuf JSON mapping of those messages with proto field
+names, so a plugin author can work from the JSON examples alone.
 
 Everything else follows from the proto and is checked against it:
 
-* `spec/methods.json` and `gen/go/` are generated from it.
+* `gen/methods.json` and `gen/go/` are generated from it.
 * `schema/plugin.schema.json` is written by hand and tested against
   `manifest.proto` (`schema/README.md`).
 * The vectors under `vectors/v1/` are tested to decode into the proto
-  messages of their methods.
-* The reference host ([`internal/plugin/protocol`](https://github.com/0xJacky/nginx-ui/tree/main/internal/plugin/protocol))
+  messages of their methods (`vectors/README.md`).
+* The host ([`internal/plugin/protocol`](https://github.com/0xJacky/nginx-ui/tree/dev/internal/plugin/protocol))
   and the Go SDK keep a verbatim copy of `gen/go` in a `pb` package and test
-  their hand-written wire types against it.
+  their hand-written wire types against it. The Rust SDK generates its own
+  code from `proto/` and checks its rpc table against `gen/methods.json`.
 
-Behavior that the proto cannot express, such as ordering, timeouts and
-permissions, is specified by the chapters and follows the reference host
-([`internal/plugin`](https://github.com/0xJacky/nginx-ui/tree/main/internal/plugin))
-and the reference browser runtime
-([`app/src/plugin`](https://github.com/0xJacky/nginx-ui/tree/main/app/src/plugin)).
-Where the reference host's own implementation choice is not itself part of
-the wire contract (for example, a specific timeout value), this spec says so
-and marks the behavior as a recommendation rather than a hard requirement.
+Behavior the proto cannot express, such as ordering, timeouts and
+permissions, is described in the developer guide and implemented by the host
+([`internal/plugin`](https://github.com/0xJacky/nginx-ui/tree/dev/internal/plugin))
+and its browser runtime
+([`app/src/plugin`](https://github.com/0xJacky/nginx-ui/tree/dev/app/src/plugin)).
 
 ## Toolchain
 
@@ -107,7 +56,7 @@ plugins. buf compiles the proto itself, `protoc` is not needed.
 
 ```bash
 make tools      # go install buf, protoc-gen-go and protoc-gen-go-grpc (pinned)
-make generate   # regenerate gen/go and spec/methods.json
+make generate   # regenerate gen/go and gen/methods.json
 make lint       # buf lint (STANDARD rules) and buf format
 make check      # lint, fail on stale generated files, run the Go tests
 ```
@@ -115,48 +64,39 @@ make check      # lint, fail on stale generated files, run the Go tests
 The tools land in `$(go env GOPATH)/bin`, which the Makefile puts on `PATH`.
 Lint uses the `STANDARD` rule set with one exception, `SERVICE_SUFFIX`: the
 service names (`Plugin`, `Host`, `DNS01`, `HTTP`, `Notify`, `Probe`, `MCP`,
-`Storage`, `Deploy`, `Blocklist`, `Discovery`, `LogSink`, `Events`) are part of the
-published gRPC paths and stay short. The generated
-files are committed, since they are published with the spec; run
-`make generate` after every change under `proto/` and commit its output
-together with the change.
+`Storage`, `Deploy`, `Blocklist`, `Discovery`, `LogSink`, `Events`) are part
+of the published gRPC paths and stay short. The generated files are
+committed; run `make generate` after every change under `proto/` and commit
+its output together with the change.
 
 `gen/go` is the Go module `github.com/nginxui/plugin-spec/gen/go`
 (package `pluginv1`, import path `.../gen/go/nginxui/plugin/v1`). `tools/` is a
 separate module that uses it through a `replace` directive and is not meant
 to be imported.
 
-## Change process (RFC process summary)
+## Changing the contract
 
-This spec changes by pull request against this repository:
+Changes land by pull request, together with their implementation in the host
+and the SDKs:
 
-1. **Propose.** Open an issue or a draft PR describing the problem, not just
-   the field you want to add. Link the nginx-ui issue or discussion if there
-   is one.
-2. **Draft.** Write the change as a diff to the relevant `spec/*.md` file(s),
-   using the next free requirement number in that file's series (never
-   reuse or renumber an existing id — see `spec/10-versioning.md`). When the
-   change affects the wire format, change the proto under `proto/` first and
-   run `make generate`, then update `schema/plugin.schema.json` and add or
-   update a vector under `vectors/v1/` (or a new `vectors/v2/` once
-   `api_version` actually changes). `make check` MUST pass.
-3. **Reference check.** A change MUST match what at least one real
-   implementation does, or MUST be implemented in the reference host and the
-   reference SDKs before merge. This spec does not accept speculative fields.
-4. **Review.** Two maintainers of nginx-ui or a listed SDK approve the PR.
-   A change that breaks an existing MUST requirement needs a version bump per
-   `spec/10-versioning.md`, not a silent edit.
-5. **Land.** Merge to `main`. A change that adds a new optional field or a
-   new capability does not require a new spec version; a change that breaks
-   wire compatibility does, and ships as spec 2.0 / `api_version = 2` with
-   both versions documented side by side until the old one is retired.
+1. Change the proto under `proto/` and run `make generate`.
+2. Update the schemas and add or update a vector under `vectors/v1/` when the
+   wire format changes. `make check` must pass.
+3. Describe the change in the developer guide of the nginx-ui repository
+   (`docs/plugin/`) and add an entry to [CHANGELOG.md](CHANGELOG.md).
+
+A new optional field or a new capability keeps `api_version` 1. A change that
+breaks wire compatibility ships as `api_version` 2, with both versions
+supported side by side until the old one is retired.
 
 ## Related repositories
 
-* [nginx-ui](https://github.com/0xJacky/nginx-ui) — the reference host
-* [plugin-sdk-go](https://github.com/nginxui/plugin-sdk-go) — Go SDK for server-side plugins
-* [plugin-sdk-web](https://github.com/nginxui/plugin-sdk-web) — TypeScript SDK for browser plugin bundles
-* [plugin-dns01](https://github.com/nginxui/plugin-dns01) — the official `dns01` capability plugin
+* [nginx-ui](https://github.com/0xJacky/nginx-ui): the host
+* [plugin-sdk-go](https://github.com/nginxui/plugin-sdk-go): Go SDK for server side plugins
+* [plugin-sdk-rust](https://github.com/nginxui/plugin-sdk-rust): Rust SDK for server side plugins
+* [plugin-sdk-web](https://github.com/nginxui/plugin-sdk-web): TypeScript SDK for browser plugin bundles
+* [plugins](https://github.com/nginxui/plugins): the official catalog, served at plugins.nginxui.com
+* [plugin-dns01](https://github.com/nginxui/plugin-dns01): the official `dns01` plugin
 
 ## License
 

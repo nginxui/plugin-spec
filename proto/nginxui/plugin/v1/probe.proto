@@ -8,7 +8,8 @@ option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;plu
 
 // Probe is the probe capability. A plugin that declares the capability checks
 // the health of a target with the probe kinds its manifest lists, and the host
-// is the caller. See spec/13-capabilities-probe.md.
+// is the caller. See
+// https://nginxui.com/plugin/capabilities/probe.
 service Probe {
   // Checks one target once.
   rpc Check(ProbeCheckRequest) returns (ProbeCheckResponse) {

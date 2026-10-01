@@ -28,4 +28,5 @@ The same package also decodes every `examples/*/plugin.json` into `Manifest`.
 
 1. Add the field to `manifest.proto` and run `make generate`.
 2. Add the property to `plugin.schema.json` with its validation rules.
-3. Describe it in `spec/01-manifest.md` and run `make check`.
+3. Run `make check`, then describe the field in the manifest guide of the
+   nginx-ui documentation (`docs/plugin/manifest.md`).

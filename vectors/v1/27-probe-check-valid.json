@@ -1,6 +1,5 @@
 {
   "description": "The plugin checks the target once and reports it healthy with the time the check took.",
-  "requirement": "PROBE-5",
   "method": "probe.check",
   "direction": "host_to_plugin",
   "kind": "request",

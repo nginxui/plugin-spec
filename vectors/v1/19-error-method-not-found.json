@@ -1,6 +1,5 @@
 {
   "description": "No handler exists for this method at all, as opposed to CodeUnsupported (a recognized but unimplemented capability method, see vector 12).",
-  "requirement": "WIRE-6",
   "method": "dns01.rotate_keys",
   "direction": "host_to_plugin",
   "kind": "request",

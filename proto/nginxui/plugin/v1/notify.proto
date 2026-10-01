@@ -8,7 +8,8 @@ option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;plu
 
 // Notify is the notify capability. A plugin that declares the capability
 // delivers nginx-ui notifications through the vendor channels its manifest
-// lists, and the host is the caller. See spec/12-capabilities-notify.md.
+// lists, and the host is the caller. See
+// https://nginxui.com/plugin/capabilities/notify.
 service Notify {
   // Delivers one notification through a channel.
   rpc Send(NotifySendRequest) returns (NotifySendResponse) {

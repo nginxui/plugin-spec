@@ -1,6 +1,5 @@
 {
   "description": "A required target field is missing: the plugin reports CodeInvalidConfig naming the field without contacting the target.",
-  "requirement": "DEPLOY-9",
   "method": "deploy.validate",
   "direction": "host_to_plugin",
   "kind": "request",

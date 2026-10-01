@@ -1,6 +1,5 @@
 {
   "description": "Valid JSON, but not a valid JSON-RPC 2.0 message: the jsonrpc member is missing/wrong.",
-  "requirement": "WIRE-6",
   "method": null,
   "direction": "host_to_plugin",
   "kind": "request",

@@ -1,6 +1,5 @@
 {
   "description": "Remove the record dns01.present published. Same params shape as present.",
-  "requirement": "DNS01-7",
   "method": "dns01.cleanup",
   "direction": "host_to_plugin",
   "kind": "request",

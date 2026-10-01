@@ -1,6 +1,5 @@
 {
   "description": "A required source field is missing: the plugin reports CodeInvalidConfig naming the field instead of an empty list.",
-  "requirement": "BLOCKLIST-6",
   "method": "blocklist.fetch",
   "direction": "host_to_plugin",
   "kind": "request",

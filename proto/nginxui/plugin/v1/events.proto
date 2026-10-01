@@ -8,7 +8,7 @@ import "nginxui/plugin/v1/options.proto";
 option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // Events delivers subscribed host events to the plugin. The plugin serves it
-// and the host is the caller. See spec/06-host-api.md.
+// and the host is the caller. See https://nginxui.com/plugin/host-api.
 service Events {
   // Delivers one event. At most once, never answered.
   rpc On(EventsOnRequest) returns (EventsOnResponse) {
@@ -19,7 +19,7 @@ service Events {
 
 // EventsOnRequest is the params of events.on. A fired cron entry reuses this
 // shape as the params of a request to the entry's own method, with type set
-// to the entry id and no data (spec/06-host-api.md HOST-10).
+// to the entry id and no data.
 message EventsOnRequest {
   // Event type such as "cert.renewed".
   string type = 1;

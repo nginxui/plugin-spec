@@ -7,7 +7,7 @@ export PATH := $(GOBIN):$(PATH)
 
 BUF ?= $(or $(shell command -v buf 2>/dev/null),$(GOBIN)/buf)
 GEN_DIR := gen/go/nginxui/plugin/v1
-METHODS := spec/methods.json
+METHODS := gen/methods.json
 
 # Pinned so that regenerated files do not churn between machines.
 BUF_VERSION := v1.73.0
@@ -32,7 +32,7 @@ lint:
 	$(BUF) lint
 	$(BUF) format --diff --exit-code
 
-# check fails when the generated Go code or spec/methods.json is stale, then
+# check fails when the generated Go code or gen/methods.json is stale, then
 # runs the tests of both Go modules.
 check: lint
 	@tmp=$$(mktemp -d) && trap 'rm -rf "$$tmp"' EXIT && \

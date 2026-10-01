@@ -1,6 +1,5 @@
 {
   "description": "The record has not propagated everywhere yet; ready is false with a human readable detail.",
-  "requirement": "DNS01-11",
   "method": "dns01.check",
   "direction": "host_to_plugin",
   "kind": "request",

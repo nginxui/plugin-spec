@@ -1,6 +1,5 @@
 {
   "description": "The required credential field is missing: the plugin MUST report CodeInvalidConfig naming the field, not attempt the call.",
-  "requirement": "DNS01-5",
   "method": "dns01.present",
   "direction": "host_to_plugin",
   "kind": "request",

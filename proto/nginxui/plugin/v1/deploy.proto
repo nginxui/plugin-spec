@@ -9,7 +9,7 @@ option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;plu
 // Deploy is the cert.deploy capability. A plugin that declares the capability
 // pushes issued certificates to the kinds of external target its manifest
 // lists (a CDN, a cloud load balancer, another server), and the host is the
-// caller. See spec/16-capabilities-deploy.md.
+// caller. See https://nginxui.com/plugin/capabilities/cert-deploy.
 service Deploy {
   // Validates a target configuration without contacting the target.
   // Optional.

@@ -1,6 +1,5 @@
 {
   "description": "An empty credential field is reported by name while a person is still filling in the form, before anything is issued.",
-  "requirement": "DNS01-9",
   "method": "dns01.validate",
   "direction": "host_to_plugin",
   "kind": "request",

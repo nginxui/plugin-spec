@@ -3,7 +3,8 @@
 
 Standard library only. Speaks JSON-RPC 2.0 as newline-delimited JSON on
 stdin/stdout; stdout carries protocol frames only, everything else goes to
-stderr. See ../../spec/03-wire-protocol.md and 05-capabilities-dns01.md.
+stderr. See https://nginxui.com/plugin/protocol and
+https://nginxui.com/plugin/capabilities/dns01.
 """
 import json
 import sys

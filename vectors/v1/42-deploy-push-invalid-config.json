@@ -1,6 +1,5 @@
 {
   "description": "The target rejects the credentials: the plugin reports CodeInvalidConfig naming the field instead of a generic failure.",
-  "requirement": "DEPLOY-5",
   "method": "deploy.push",
   "direction": "host_to_plugin",
   "kind": "request",

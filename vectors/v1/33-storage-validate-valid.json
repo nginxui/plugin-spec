@@ -1,6 +1,5 @@
 {
   "description": "A well-formed backend configuration is accepted without storing anything.",
-  "requirement": "STORAGE-10",
   "method": "storage.validate",
   "direction": "host_to_plugin",
   "kind": "request",

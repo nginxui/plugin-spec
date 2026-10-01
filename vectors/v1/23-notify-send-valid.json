@@ -1,6 +1,5 @@
 {
   "description": "The host delivers one notification through a channel the plugin declares; the plugin replies with an empty result once the vendor accepted it.",
-  "requirement": "NOTIFY-5",
   "method": "notify.send",
   "direction": "host_to_plugin",
   "kind": "request",

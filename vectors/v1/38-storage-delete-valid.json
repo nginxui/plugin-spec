@@ -1,6 +1,5 @@
 {
   "description": "The plugin removes the object; deleting a key that does not exist succeeds as well.",
-  "requirement": "STORAGE-9",
   "method": "storage.delete",
   "direction": "host_to_plugin",
   "kind": "request",

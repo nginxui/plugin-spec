@@ -1,6 +1,5 @@
 {
   "description": "The plugin asks which nginx log files it may read. The caller has the log.files permission. Rotated files are not listed.",
-  "requirement": "HOST-17",
   "method": "host.logs.list",
   "direction": "plugin_to_host",
   "kind": "request",

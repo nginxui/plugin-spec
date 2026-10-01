@@ -1,6 +1,5 @@
 {
   "description": "The host pushes a renewed certificate with its private key and chain; the plugin replies with a summary once the target serves it.",
-  "requirement": "DEPLOY-5",
   "method": "deploy.push",
   "direction": "host_to_plugin",
   "kind": "request",

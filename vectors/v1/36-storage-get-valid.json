@@ -1,6 +1,5 @@
 {
   "description": "The plugin writes the stored object to the target path the host chose in the exchange directory.",
-  "requirement": "STORAGE-7",
   "method": "storage.get",
   "direction": "host_to_plugin",
   "kind": "request",

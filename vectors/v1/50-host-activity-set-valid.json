@@ -1,6 +1,5 @@
 {
   "description": "The plugin shows its background indexing in the host's processing indicator. No permission is needed.",
-  "requirement": "HOST-19",
   "method": "host.activity.set",
   "direction": "plugin_to_host",
   "kind": "request",

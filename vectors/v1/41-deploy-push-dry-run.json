@@ -1,6 +1,5 @@
 {
   "description": "A dry run checks the target and the credentials and changes nothing; the message says what a real push would do.",
-  "requirement": "DEPLOY-6",
   "method": "deploy.push",
   "direction": "host_to_plugin",
   "kind": "request",

@@ -1,6 +1,5 @@
 {
   "description": "The host pushes a new settings map after a person saves the plugin's settings form.",
-  "requirement": "LIFE-7",
   "method": "plugin.configure",
   "direction": "host_to_plugin",
   "kind": "request",

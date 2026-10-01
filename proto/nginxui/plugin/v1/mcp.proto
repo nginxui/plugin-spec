@@ -9,7 +9,8 @@ option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;plu
 
 // MCP is the mcp capability. A plugin that declares the capability serves the
 // Model Context Protocol tools its manifest lists; the host publishes them on
-// its MCP server and forwards every call. See spec/14-capabilities-mcp.md.
+// its MCP server and forwards every call. See
+// https://nginxui.com/plugin/capabilities/mcp.
 service MCP {
   // Runs one tool.
   rpc Call(MCPCallRequest) returns (MCPCallResponse) {

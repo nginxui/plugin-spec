@@ -1,6 +1,5 @@
 {
   "description": "Report the propagation timing this provider needs, overriding the host's generic default.",
-  "requirement": "DNS01-10",
   "method": "dns01.options",
   "direction": "host_to_plugin",
   "kind": "request",

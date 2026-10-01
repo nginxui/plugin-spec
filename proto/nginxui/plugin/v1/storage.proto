@@ -10,7 +10,8 @@ option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;plu
 // keeps host files, such as backups, in the storage backends its manifest
 // lists, and the host is the caller. File contents never travel in a message:
 // the host and the plugin exchange them through files in the plugin's data
-// directory. See spec/15-capabilities-storage.md.
+// directory. See
+// https://nginxui.com/plugin/capabilities/storage.
 service Storage {
   // Validates a backend configuration without storing anything. Optional.
   rpc Validate(StorageValidateRequest) returns (StorageValidateResponse) {

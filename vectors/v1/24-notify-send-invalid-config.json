@@ -1,6 +1,5 @@
 {
   "description": "A required channel field is missing: the plugin reports CodeInvalidConfig naming the field instead of calling the vendor.",
-  "requirement": "NOTIFY-5",
   "method": "notify.send",
   "direction": "host_to_plugin",
   "kind": "request",

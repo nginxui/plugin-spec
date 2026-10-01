@@ -1,6 +1,5 @@
 {
   "description": "An unreachable target is a result, not an error: the plugin reports status down with a message.",
-  "requirement": "PROBE-5",
   "method": "probe.check",
   "direction": "host_to_plugin",
   "kind": "request",

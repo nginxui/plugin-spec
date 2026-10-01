@@ -1,6 +1,5 @@
 {
   "description": "Successful handshake: the plugin reports a matching api_version and a capability set identical to its manifest.",
-  "requirement": "LIFE-2",
   "method": "plugin.initialize",
   "direction": "host_to_plugin",
   "kind": "request",

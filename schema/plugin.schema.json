@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/nginxui/plugin-spec/schema/plugin.schema.json",
   "title": "NGINX UI plugin manifest",
-  "description": "plugin.json, as defined by spec/01-manifest.md. The structure mirrors the Manifest message of proto/nginxui/plugin/v1/manifest.proto and is tested against it (schema/README.md); the reference host validates it in internal/plugin/manifest.go.",
+  "description": "plugin.json, see https://nginxui.com/plugin/manifest. The structure mirrors the Manifest message of proto/nginxui/plugin/v1/manifest.proto and is tested against it (schema/README.md); the reference host validates it in internal/plugin/manifest.go.",
   "type": "object",
   "required": ["id", "name", "version", "api_version"],
   "additionalProperties": true,
@@ -103,7 +103,7 @@
       "type": "string",
       "maxLength": 64,
       "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
-      "description": "MAN-2. See spec/11-naming.md for the namespace rules."
+      "description": "Reverse domain plugin id. See https://nginxui.com/plugin/naming for the namespace rules."
     },
     "name": {
       "type": "string",
@@ -112,21 +112,21 @@
     "version": {
       "type": "string",
       "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
-      "description": "MAN-4, Semantic Versioning 2.0.0."
+      "description": "Plugin version, Semantic Versioning 2.0.0."
     },
     "description": { "type": "string" },
     "i18n": {
       "type": "object",
       "propertyNames": { "$ref": "#/$defs/locale" },
       "additionalProperties": { "$ref": "#/$defs/manifestI18n" },
-      "description": "MAN-40. Translations of name and description keyed by host locale code."
+      "description": "Translations of name and description keyed by host locale code."
     },
     "homepage_url": { "type": "string", "format": "uri" },
     "icon_path": { "$ref": "#/$defs/safeRelativePath" },
     "api_version": {
       "type": "integer",
       "minimum": 1,
-      "description": "MAN-5. Spec 1.x requires exactly 1."
+      "description": "Plugin API version. This version of the contract requires exactly 1."
     },
     "min_nginx_ui_version": { "type": "string" },
     "server": { "$ref": "#/$defs/manifestServer" },
@@ -136,12 +136,12 @@
       "type": "array",
       "items": { "type": "string", "enum": ["dns01", "http", "notify", "probe", "mcp", "storage", "cert.deploy", "security.blocklist", "upstream.discovery", "log.sink"] },
       "uniqueItems": true,
-      "description": "MAN-19, MAN-20."
+      "description": "Capabilities the plugin implements."
     },
     "permissions": {
       "type": "array",
       "items": { "$ref": "#/$defs/permission" },
-      "description": "MAN-23."
+      "description": "Permissions the plugin asks for. The user approves them before the plugin runs."
     },
     "requires": {
       "type": "array",
@@ -155,12 +155,12 @@
       "type": "array",
       "items": { "type": "string" },
       "uniqueItems": true,
-      "description": "MAN-42. Plugin ids that must not be enabled at the same time as this plugin (LIFE-20)."
+      "description": "Plugin ids that must not be enabled at the same time as this plugin. The check is symmetric: either side declaring it is enough."
     },
     "events": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "spec/06-host-api.md HOST-16."
+      "description": "Host events the plugin subscribes to, delivered through events.on."
     },
     "cron": {
       "type": "array",
@@ -192,17 +192,17 @@
       "type": "string",
       "minLength": 1,
       "not": { "pattern": "(^/|^[A-Za-z]:|\\\\|(^|/)\\.\\.(/|$)|//)" },
-      "description": "PKG-3: forward slashes only, not absolute, no .. segment."
+      "description": "Forward slashes only, not absolute, no .. segment."
     },
     "locale": {
       "type": "string",
       "enum": ["en", "zh_CN", "zh_TW", "fr_FR", "es", "de_DE", "ru_RU", "vi_VN", "ko_KR", "tr_TR", "ar", "uk_UA", "ja_JP", "pt_PT"],
-      "description": "A language the reference host translates its interface into, see CONTENT-6."
+      "description": "A language the reference host translates its interface into, see https://nginxui.com/plugin/capabilities/content."
     },
     "manifestI18n": {
       "type": "object",
       "additionalProperties": false,
-      "description": "MAN-40. An empty or absent field falls back to the top level one.",
+      "description": "An empty or absent field falls back to the top level one.",
       "properties": {
         "name": { "type": "string" },
         "description": { "type": "string" }
@@ -270,7 +270,7 @@
     "manifestResources": {
       "type": "object",
       "additionalProperties": false,
-      "description": "MAN-39. Hints a host that confines plugin processes applies, capped by its own limits (LIFE-16), and the memory that suits the plugin (LIFE-19).",
+      "description": "Hints a host that confines plugin processes applies, capped by its own limits, and the memory that suits the plugin.",
       "properties": {
         "memory_mb": {
           "type": "integer",
@@ -285,7 +285,7 @@
         "recommended_memory_mb": {
           "type": "integer",
           "minimum": 0,
-          "description": "Memory in MiB the machine, or the container the host runs in, should have for the plugin to work well. Advice only (LIFE-19). 0 or absent means no hint."
+          "description": "Memory in MiB the machine, or the container the host runs in, should have for the plugin to work well. Advice only. 0 or absent means no hint."
         }
       }
     },
@@ -305,7 +305,7 @@
         },
         "chunks": {
           "type": "object",
-          "description": "MAN-41, WEB-13: chunk name to a package relative .js file.",
+          "description": "Chunk name to a package relative .js file.",
           "propertyNames": { "pattern": "^[a-z0-9][a-z0-9_-]{0,31}$" },
           "additionalProperties": {
             "allOf": [
@@ -334,15 +334,15 @@
     "manifestContent": {
       "type": "object",
       "additionalProperties": false,
-      "description": "MAN-18, spec/17-content-plugins.md.",
+      "description": "Process-less contributions: templates and translation files. See https://nginxui.com/plugin/capabilities/content.",
       "properties": {
         "templates": {
           "$ref": "#/$defs/safeRelativePath",
-          "description": "CONTENT-2: a directory holding conf/*.conf and block/*.conf templates."
+          "description": "A directory holding conf/*.conf and block/*.conf templates."
         },
         "locales": {
           "$ref": "#/$defs/safeRelativePath",
-          "description": "CONTENT-6: a directory holding one <lang>.po file per language."
+          "description": "A directory holding one <lang>.po file per language."
         }
       }
     },
@@ -367,7 +367,7 @@
         "code": {
           "type": "string",
           "pattern": "^[a-z0-9-]{2,32}$",
-          "description": "DNS01-2. NAME-4: shared namespace across every installed dns01 plugin."
+          "description": "A code no two installed dns01 plugins may share."
         },
         "links": {
           "type": "object",
@@ -385,18 +385,18 @@
       "type": "object",
       "required": ["fields"],
       "additionalProperties": false,
-      "description": "DNS01-14 through DNS01-18.",
+      "description": "The credential form the host renders for this provider.",
       "properties": {
         "fields": {
           "type": "array",
           "items": { "$ref": "#/$defs/dns01ProviderField" },
-          "description": "DNS01-15. Every value the provider accepts, in display order. Empty when it takes none."
+          "description": "Every value the provider accepts, in display order. Empty when it takes none."
         },
         "methods": {
           "type": "array",
           "minItems": 2,
           "items": { "$ref": "#/$defs/dns01ProviderMethod" },
-          "description": "DNS01-16. Present only when there is more than one way to sign in."
+          "description": "Present only when there is more than one way to sign in."
         }
       }
     },
@@ -406,8 +406,8 @@
       "additionalProperties": false,
       "properties": {
         "key": { "type": "string", "minLength": 1, "description": "The config key the value is stored and sent under." },
-        "label": { "type": "string", "minLength": 1, "description": "DNS01-17: an English gettext msgid." },
-        "help": { "type": "string", "description": "DNS01-17: an English gettext msgid." },
+        "label": { "type": "string", "minLength": 1, "description": "An English gettext msgid." },
+        "help": { "type": "string", "description": "An English gettext msgid." },
         "group": { "type": "string", "enum": ["credential", "setting"] },
         "optional": { "type": "boolean" },
         "secret": { "type": "boolean" },
@@ -421,18 +421,18 @@
       "required": ["name", "fields"],
       "additionalProperties": false,
       "properties": {
-        "name": { "type": "string", "minLength": 1, "description": "DNS01-17: an English gettext msgid." },
+        "name": { "type": "string", "minLength": 1, "description": "An English gettext msgid." },
         "recommended": { "type": "boolean" },
         "fields": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 },
-          "description": "DNS01-16. Keys of credential fields, empty when the method needs none."
+          "description": "Keys of credential fields, empty when the method needs none."
         },
         "values": {
           "type": "object",
           "propertyNames": { "minLength": 1 },
           "additionalProperties": { "type": "string" },
-          "description": "DNS01-16. Fixed config values the host stores while this method is chosen."
+          "description": "Fixed config values the host stores while this method is chosen."
         }
       }
     },
@@ -467,7 +467,7 @@
         "code": {
           "type": "string",
           "pattern": "^[a-z0-9-]{2,32}$",
-          "description": "NOTIFY-2. NAME-10: shared namespace across every installed notify plugin."
+          "description": "A code no two installed notify plugins may share."
         },
         "name": { "type": "string", "minLength": 1 },
         "configuration": { "$ref": "#/$defs/configurationSchema" }
@@ -493,7 +493,7 @@
         "code": {
           "type": "string",
           "pattern": "^[a-z0-9-]{2,32}$",
-          "description": "PROBE-2. NAME-10: shared namespace across every installed probe plugin."
+          "description": "A code no two installed probe plugins may share."
         },
         "name": { "type": "string", "minLength": 1 },
         "configuration": { "$ref": "#/$defs/configurationSchema" }
@@ -519,7 +519,7 @@
         "code": {
           "type": "string",
           "pattern": "^[a-z0-9-]{2,32}$",
-          "description": "STORAGE-2. NAME-10: shared namespace across every installed storage plugin."
+          "description": "A code no two installed storage plugins may share."
         },
         "name": { "type": "string", "minLength": 1 },
         "configuration": { "$ref": "#/$defs/configurationSchema" }
@@ -545,7 +545,7 @@
         "code": {
           "type": "string",
           "pattern": "^[a-z0-9-]{2,32}$",
-          "description": "DEPLOY-2. NAME-10: shared namespace across every installed cert.deploy plugin."
+          "description": "A code no two installed cert.deploy plugins may share."
         },
         "name": { "type": "string", "minLength": 1 },
         "configuration": { "$ref": "#/$defs/configurationSchema" }
@@ -571,14 +571,14 @@
         "code": {
           "type": "string",
           "pattern": "^[a-z0-9-]{2,32}$",
-          "description": "BLOCKLIST-2. NAME-10: shared namespace across every installed security.blocklist plugin."
+          "description": "A code no two installed security.blocklist plugins may share."
         },
         "name": { "type": "string", "minLength": 1 },
         "configuration": { "$ref": "#/$defs/configurationSchema" },
         "refresh_seconds": {
           "type": "integer",
           "anyOf": [{ "const": 0 }, { "minimum": 60 }],
-          "description": "BLOCKLIST-3. 0 or absent means 3600."
+          "description": "0 or absent means 3600."
         }
       }
     },
@@ -602,7 +602,7 @@
         "code": {
           "type": "string",
           "pattern": "^[a-z0-9-]{2,32}$",
-          "description": "DISCOVERY-2. NAME-10: shared namespace across every installed upstream.discovery plugin."
+          "description": "A code no two installed upstream.discovery plugins may share."
         },
         "name": { "type": "string", "minLength": 1 },
         "configuration": { "$ref": "#/$defs/configurationSchema" }
@@ -616,7 +616,7 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 4096,
-          "description": "LOGSINK-2. 0 or absent means 256."
+          "description": "0 or absent means 256."
         },
         "flush_interval_ms": {
           "type": "integer",
@@ -624,13 +624,13 @@
             { "const": 0 },
             { "minimum": 50 }
           ],
-          "description": "LOGSINK-2. 0 or absent means 500."
+          "description": "0 or absent means 500."
         },
         "formats": {
           "type": "array",
           "items": { "type": "string", "enum": ["combined", "raw"] },
           "uniqueItems": true,
-          "description": "LOGSINK-3. Empty or absent means every line."
+          "description": "Empty or absent means every line."
         }
       }
     },
@@ -681,12 +681,12 @@
         "name": {
           "type": "string",
           "pattern": "^[a-z0-9][a-z0-9_-]{0,47}$",
-          "description": "MCP-2. The host publishes it as <id with dots replaced by underscores>__<name>, NAME-11."
+          "description": "The host publishes it as <id with dots replaced by underscores>__<name>."
         },
         "description": { "type": "string", "minLength": 1 },
         "input_schema": {
           "type": "object",
-          "description": "MCP-3. A JSON Schema whose type is object."
+          "description": "A JSON Schema whose type is object."
         }
       }
     },

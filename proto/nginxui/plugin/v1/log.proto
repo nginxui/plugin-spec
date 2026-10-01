@@ -10,7 +10,8 @@ option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;plu
 // receives the nginx access log lines of the host, parsed, while they are
 // written, and ships them wherever it likes (a log store, a SIEM, a metrics
 // pipeline). The host is the caller and streams the lines in batches over the
-// gRPC transport only. See spec/20-capabilities-logsink.md.
+// gRPC transport only. See
+// https://nginxui.com/plugin/capabilities/log-sink.
 service LogSink {
   // Delivers one batch of access log entries. The host sends every entry of
   // the batch as one message, closes the stream and the plugin answers once.
@@ -45,7 +46,7 @@ message LogEntry {
   // Response status, $status.
   int32 status = 6;
   // Size of the response body in bytes, $body_bytes_sent. A double so that
-  // sizes past 4 GiB stay exact (WIRE-10).
+  // sizes past 4 GiB stay exact.
   double body_bytes_sent = 7;
   // $http_referer.
   string referer = 8;

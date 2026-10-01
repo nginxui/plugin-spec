@@ -1,6 +1,6 @@
 {
   "description": "params is present but does not decode into the shape dns01.present expects (config must be an object, not a string).",
-  "requirement": "WIRE-6",
+  "malformed_params": true,
   "method": "dns01.present",
   "direction": "host_to_plugin",
   "kind": "request",

@@ -1,6 +1,5 @@
 {
-  "description": "A plugin whose manifest never requested the kv permission (or whose upgrade added it without re-approval, SEC-9) is refused, not given partial access.",
-  "requirement": "HOST-2",
+  "description": "A plugin whose manifest never requested the kv permission (or whose upgrade added it without re-approval) is refused, not given partial access.",
   "method": "host.kv.get",
   "direction": "plugin_to_host",
   "kind": "request",

@@ -1,6 +1,5 @@
 {
   "description": "First step of a deliberate stop: the plugin finishes in-flight work and replies before the host sends plugin.exit.",
-  "requirement": "LIFE-10",
   "method": "plugin.shutdown",
   "direction": "host_to_plugin",
   "kind": "request",

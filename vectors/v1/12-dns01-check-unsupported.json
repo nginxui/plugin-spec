@@ -1,6 +1,5 @@
 {
-  "description": "dns01.check is optional (DNS01-11 table): a plugin that only implements present/cleanup/validate replies Unsupported, and the host falls back to its own propagation check.",
-  "requirement": "DNS01-11",
+  "description": "dns01.check is optional: a plugin that only implements present/cleanup/validate replies Unsupported, and the host falls back to its own propagation check.",
   "method": "dns01.check",
   "direction": "host_to_plugin",
   "kind": "request",

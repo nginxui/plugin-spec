@@ -1,6 +1,5 @@
 {
   "description": "Handshake of a plugin serving the http capability on a loopback port, as it does where Unix sockets are unavailable: it reports the port in http_port and the host uses it instead of the socket in the data directory.",
-  "requirement": "LIFE-18",
   "method": "plugin.initialize",
   "direction": "host_to_plugin",
   "kind": "request",

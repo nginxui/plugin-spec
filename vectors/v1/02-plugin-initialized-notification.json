@@ -1,6 +1,5 @@
 {
-  "description": "Sent by the host right after a successful handshake (LIFE-6). No reply is expected.",
-  "requirement": "LIFE-6",
+  "description": "Sent by the host right after a successful handshake. No reply is expected.",
   "method": "plugin.initialized",
   "direction": "host_to_plugin",
   "kind": "notification",

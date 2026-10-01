@@ -1,11 +1,11 @@
-// Command methods writes spec/methods.json, the table that maps every
+// Command methods writes gen/methods.json, the table that maps every
 // JSON-RPC method name of the plugin contract onto its proto rpc.
 //
 // It reads the file descriptors compiled into the generated Go package, so
 // run it after `buf generate`:
 //
-//	go run ./methods -out ../spec/methods.json
-//	go run ./methods -out ../spec/methods.json -check
+//	go run ./methods -out ../gen/methods.json
+//	go run ./methods -out ../gen/methods.json -check
 package main
 
 import (
@@ -22,7 +22,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoregistry"
 )
 
-// Direction values used by spec/methods.json and vectors/v1.
+// Direction values used by gen/methods.json and vectors/v1.
 const (
 	HostToPlugin = "host_to_plugin"
 	PluginToHost = "plugin_to_host"
@@ -46,7 +46,7 @@ var serviceDirections = map[protoreflect.Name]string{
 	"Host":      PluginToHost,
 }
 
-// Method is one entry of spec/methods.json.
+// Method is one entry of gen/methods.json.
 type Method struct {
 	RPCName      string `json:"rpc_name"`
 	Service      string `json:"service"`
@@ -56,8 +56,8 @@ type Method struct {
 	Response     string `json:"response"`
 	Notification bool   `json:"notification"`
 	Direction    string `json:"direction"`
-	// Streaming marks a client streaming rpc, which travels on gRPC only
-	// (WIRE-12). It is omitted for the unary rpcs.
+	// Streaming marks a client streaming rpc, which travels on gRPC only.
+	// It is omitted for the unary rpcs.
 	Streaming bool `json:"streaming,omitempty"`
 }
 
@@ -133,7 +133,7 @@ func Collect() ([]Method, error) {
 	return methods, nil
 }
 
-// Render returns the content of spec/methods.json.
+// Render returns the content of gen/methods.json.
 func Render() ([]byte, error) {
 	methods, err := Collect()
 	if err != nil {
@@ -151,7 +151,7 @@ func Render() ([]byte, error) {
 }
 
 func main() {
-	out := flag.String("out", "../spec/methods.json", "path of the methods table")
+	out := flag.String("out", "../gen/methods.json", "path of the methods table")
 	check := flag.Bool("check", false, "fail when the file on disk differs instead of writing it")
 	flag.Parse()
 

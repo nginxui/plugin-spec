@@ -10,7 +10,8 @@ option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;plu
 // capability resolves a service name into the servers that currently back it,
 // through the providers its manifest lists (a service registry, a container
 // orchestrator, a cloud API), and the host is the caller: it turns every
-// answer into an nginx upstream block. See spec/19-capabilities-discovery.md.
+// answer into an nginx upstream block. See
+// https://nginxui.com/plugin/capabilities/discovery.
 service Discovery {
   // Resolves one service into its current targets.
   rpc Resolve(DiscoveryResolveRequest) returns (DiscoveryResolveResponse) {

@@ -7,7 +7,7 @@ lint:
     - STANDARD
   except:
     # Service names are part of the gRPC full method names published in
-    # spec/methods.json (e.g. /nginxui.plugin.v1.DNS01/Present), so they stay
+    # gen/methods.json (e.g. /nginxui.plugin.v1.DNS01/Present), so they stay
     # short instead of carrying a "Service" suffix.
     - SERVICE_SUFFIX
 breaking:

@@ -1,6 +1,5 @@
 {
   "description": "The plugin lists the objects whose key starts with the prefix, with their size and modification time.",
-  "requirement": "STORAGE-8",
   "method": "storage.list",
   "direction": "host_to_plugin",
   "kind": "request",

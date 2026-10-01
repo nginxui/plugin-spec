@@ -1,6 +1,5 @@
 {
   "description": "The probe cannot run with the configuration it got: the plugin reports CodeInvalidConfig naming the field.",
-  "requirement": "PROBE-5",
   "method": "probe.check",
   "direction": "host_to_plugin",
   "kind": "request",

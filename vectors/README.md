@@ -1,16 +1,16 @@
 # Test vectors
 
-Each file in `v1/` is one wire-level scenario for spec 1.0 (`api_version =
-1`): a JSON-RPC frame (or two, for a request/response pair) an SDK or host
-implementation can replay to check it produces, or accepts, the same bytes
-this spec describes.
+Each file in `v1/` is one wire-level scenario for plugin API version 1
+(`api_version = 1`): a JSON-RPC frame (or two, for a request/response pair)
+an SDK or host implementation can replay to check it produces, or accepts,
+the same bytes the contract describes. The protocol itself is described in
+the [protocol guide](https://nginxui.com/plugin/protocol).
 
 ## Shape
 
 ```json
 {
   "description": "One line summary of what this vector checks.",
-  "requirement": "LIFE-2",
   "method": "plugin.initialize",
   "direction": "host_to_plugin",
   "kind": "request",
@@ -22,12 +22,12 @@ this spec describes.
 | Field | Meaning |
 | --- | --- |
 | `description` | What this vector demonstrates, in one sentence. |
-| `requirement` | The requirement id (`spec/*.md`) this vector is evidence for. |
 | `method` | The JSON-RPC method under test. |
 | `direction` | `host_to_plugin` or `plugin_to_host` — who originates `request`. |
 | `kind` | `request` (expects `response`) or `notification` (no `response` key at all). |
 | `request` | The exact frame sent, as parsed JSON. Serializing it and appending `\n` reproduces the wire bytes. |
-| `response` | Present only for `kind: "request"`: the exact frame the callee MUST reply with. Field order does not matter; a vector's response is compared by value, not by byte-for-byte JSON text. |
+| `response` | Present only for `kind: "request"`: the exact frame the callee replies with. Field order does not matter; a vector's response is compared by value, not by byte-for-byte JSON text. |
+| `malformed_params` | Set on a vector whose `params` must not decode into the rpc's request message, so the callee answers `-32602`. |
 | `request_raw` | Used instead of `request` only for the two frames that are not valid JSON-RPC 2.0 objects at all (`17-error-parse-error.json`, `18-error-invalid-request.json`): the literal line sent, as a string. |
 
 ## Checks
@@ -35,12 +35,11 @@ this spec describes.
 `make check` runs the tests of `tools/methods`, which assert for every vector
 that `method` is an rpc of the proto contract with the same `direction` and
 `kind` (except the `-32601` vectors, whose method must be unknown or a
-streaming rpc that stdio refuses, WIRE-12), and that
-`params` and `result` decode strictly into the rpc's request and response
-messages and re-encode to the same values (`spec/03-wire-protocol.md`
-WIRE-9, WIRE-10). A WIRE-6 vector that expects `-32602` must fail to decode;
-a capability vector that expects `-32602` for params that decode, such as an
-unknown MCP tool (MCP-6), must decode like any other.
+streaming rpc that stdio refuses), and that `params` and `result` decode
+strictly into the rpc's request and response messages and re-encode to the
+same values. A vector marked `malformed_params` must fail to decode; a
+capability vector that expects `-32602` for params that decode, such as an
+unknown MCP tool, must decode like any other.
 
 ## Numbering
 

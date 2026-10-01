@@ -8,7 +8,8 @@ import "nginxui/plugin/v1/options.proto";
 option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // DNS01 is the dns01 capability. A plugin that declares the capability serves
-// it and the host is the caller. See spec/05-capabilities-dns01.md.
+// it and the host is the caller. See
+// https://nginxui.com/plugin/capabilities/dns01.
 service DNS01 {
   // Publishes the challenge TXT record.
   rpc Present(DNS01PresentRequest) returns (DNS01PresentResponse) {

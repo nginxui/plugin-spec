@@ -1,6 +1,5 @@
 {
   "description": "Publish the challenge TXT record for a certificate whose challenge form supplied per-certificate options.",
-  "requirement": "DNS01-4",
   "method": "dns01.present",
   "direction": "host_to_plugin",
   "kind": "request",

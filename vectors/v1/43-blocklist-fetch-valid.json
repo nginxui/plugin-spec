@@ -1,6 +1,5 @@
 {
   "description": "The host fetches the current list of a source; the plugin replies with every address and network to deny and how long the list stays fresh.",
-  "requirement": "BLOCKLIST-5",
   "method": "blocklist.fetch",
   "direction": "host_to_plugin",
   "kind": "request",

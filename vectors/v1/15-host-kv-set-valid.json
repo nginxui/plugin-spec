@@ -1,6 +1,5 @@
 {
   "description": "The plugin persists a small value in its own key-value store. The caller has the kv permission.",
-  "requirement": "HOST-4",
   "method": "host.kv.set",
   "direction": "plugin_to_host",
   "kind": "request",

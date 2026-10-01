@@ -10,7 +10,7 @@ option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;plu
 // capability fetches lists of addresses to deny from the kinds of source its
 // manifest lists (a threat feed, a reputation service, a shared ban list),
 // and the host is the caller: it turns every list into nginx deny rules. See
-// spec/18-capabilities-blocklist.md.
+// https://nginxui.com/plugin/capabilities/blocklist.
 service Blocklist {
   // Fetches the current entries of one source.
   rpc Fetch(BlocklistFetchRequest) returns (BlocklistFetchResponse) {

@@ -1,6 +1,5 @@
 {
   "description": "The host placed the file in the exchange directory; the plugin stores it under the key and reports the stored size.",
-  "requirement": "STORAGE-6",
   "method": "storage.put",
   "direction": "host_to_plugin",
   "kind": "request",

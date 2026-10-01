@@ -1,6 +1,5 @@
 {
   "description": "A required provider field is missing: the plugin reports CodeInvalidConfig naming the field without contacting the provider.",
-  "requirement": "DISCOVERY-6",
   "method": "discovery.resolve",
   "direction": "host_to_plugin",
   "kind": "request",

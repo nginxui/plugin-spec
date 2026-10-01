@@ -8,7 +8,7 @@ import "nginxui/plugin/v1/options.proto";
 option go_package = "github.com/nginxui/plugin-spec/gen/go/nginxui/plugin/v1;pluginv1";
 
 // Plugin is the lifecycle service every plugin process serves. The host is
-// the caller. See spec/04-lifecycle.md.
+// the caller. See https://nginxui.com/plugin/lifecycle.
 service Plugin {
   // Handshake. It MUST complete before any other method is sent in either
   // direction.

@@ -1,6 +1,5 @@
 {
   "description": "Handshake of a plugin that also serves gRPC: it lists grpc in transports and reports the Unix socket it listens on, so the host sends capability calls there.",
-  "requirement": "WIRE-11",
   "method": "plugin.initialize",
   "direction": "host_to_plugin",
   "kind": "request",

@@ -1,6 +1,5 @@
 {
   "description": "A line that is not valid JSON at all. The receiver replies CodeParseError with a null id, since it cannot know which request this was.",
-  "requirement": "WIRE-6",
   "method": null,
   "direction": "host_to_plugin",
   "kind": "request",

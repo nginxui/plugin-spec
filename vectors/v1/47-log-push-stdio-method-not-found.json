@@ -1,6 +1,5 @@
 {
   "description": "log.push is a client streaming rpc that travels on gRPC only: sent on stdio it has no handler and answers method not found, like an unknown method.",
-  "requirement": "WIRE-12",
   "method": "log.push",
   "direction": "host_to_plugin",
   "kind": "request",

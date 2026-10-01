@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	methodsPath = "../../spec/methods.json"
+	methodsPath = "../../gen/methods.json"
 	vectorsGlob = "../../vectors/v1/*.json"
 
 	codeMethodNotFound = -32601
@@ -23,19 +23,17 @@ const (
 
 // vector is the subset of a vectors/v1 file these tests read.
 type vector struct {
-	Method      *string `json:"method"`
-	Requirement string  `json:"requirement"`
-	Direction   string  `json:"direction"`
-	Kind        string  `json:"kind"`
-	Request     *frame  `json:"request"`
-	Response    *frame  `json:"response"`
-	file        string
+	Method    *string `json:"method"`
+	Direction string  `json:"direction"`
+	Kind      string  `json:"kind"`
+	// MalformedParams marks a vector whose params must not decode. A
+	// capability may also answer -32602 for params that decode but name
+	// something unknown, such as an MCP tool.
+	MalformedParams bool   `json:"malformed_params"`
+	Request         *frame `json:"request"`
+	Response        *frame `json:"response"`
+	file            string
 }
-
-// malformedParamsRequirement is the requirement of the vectors whose params
-// do not decode. A capability may also answer -32602 for params that decode
-// but name something unknown, such as an MCP tool (MCP-6).
-const malformedParamsRequirement = "WIRE-6"
 
 // frame is a JSON-RPC message of a vector.
 type frame struct {
@@ -122,7 +120,7 @@ func TestVectorMethodsHaveRPCs(t *testing.T) {
 
 		if errorCode(v.Response) == codeMethodNotFound {
 			// A streaming rpc has no JSON-RPC form, so stdio answers -32601
-			// for it like for an unknown method (WIRE-12).
+			// for it like for an unknown method.
 			if ok && !m.Streaming {
 				t.Errorf("%s: %s is expected to be unknown but is an rpc", v.file, *v.Method)
 			}
@@ -150,7 +148,7 @@ func TestVectorMethodsHaveRPCs(t *testing.T) {
 
 // TestVectorPayloadsDecode asserts that params and results of the vectors are
 // the protobuf JSON mapping of the rpc messages, and that re-encoding them
-// keeps every non-default value. A WIRE-6 vector that expects -32602 carries
+// keeps every non-default value. A vector marked malformed_params carries
 // params that must not decode.
 func TestVectorPayloadsDecode(t *testing.T) {
 	index := methodIndex(t)
@@ -164,9 +162,12 @@ func TestVectorPayloadsDecode(t *testing.T) {
 			continue
 		}
 
+		if v.MalformedParams && errorCode(v.Response) != codeInvalidParams {
+			t.Errorf("%s: malformed_params needs a %d response", v.file, codeInvalidParams)
+		}
 		if v.Request != nil && len(v.Request.Params) > 0 {
 			err := roundTrip(m.Request, v.Request.Params)
-			if errorCode(v.Response) == codeInvalidParams && v.Requirement == malformedParamsRequirement {
+			if v.MalformedParams {
 				if err == nil {
 					t.Errorf("%s: params decoded although the vector expects invalid params", v.file)
 				}

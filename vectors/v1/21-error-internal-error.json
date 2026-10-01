@@ -1,6 +1,5 @@
 {
   "description": "The handler ran and failed for a reason that is not the caller's fault and not one of the more specific codes (e.g. the vendor API returned a 500). Any error not otherwise classified MUST surface as -32000.",
-  "requirement": "WIRE-6",
   "method": "dns01.present",
   "direction": "host_to_plugin",
   "kind": "request",

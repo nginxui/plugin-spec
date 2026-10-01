@@ -2,22 +2,22 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/nginxui/plugin-spec/schema/catalog.schema.json",
   "title": "NGINX UI plugin catalog",
-  "description": "The static catalog document a host fetches from a marketplace source, schema_version 1, including the per-platform downloads of RFC 0001 (spec/02-packaging.md PKG-14 through PKG-17) and the publisher members of PKG-24. Packages carry their own signature (PKG-19, PKG-20, RFC 0012), so a release names none; signature_url and signed_by of older catalogs are ignored. The reference host reads it in internal/plugin/marketplace.go. Unknown members are ignored by a host, so the schema allows them.",
+  "description": "The static catalog document a host fetches from a marketplace source, schema_version 1, including per-platform downloads and the publisher members. Packages carry their own signature, so a release names none; signature_url and signed_by of older catalogs are ignored. See https://nginxui.com/plugin/catalog. The reference host reads it in internal/plugin/marketplace.go. Unknown members are ignored by a host, so the schema allows them.",
   "type": "object",
   "required": ["schema_version", "plugins"],
   "additionalProperties": true,
   "properties": {
     "schema_version": {
       "const": 1,
-      "description": "The only catalog layout spec 1.x defines. Adding downloads did not change it: a host that does not know downloads still reads download_url."
+      "description": "The only catalog layout defined so far. Adding downloads did not change it: a host that does not know downloads still reads download_url."
     },
     "name": {
       "$ref": "#/$defs/localized",
-      "description": "PKG-30: the name of the catalog a host shows for this source, locale code to text, en is the fallback."
+      "description": "The name of the catalog a host shows for this source, locale code to text, en is the fallback."
     },
     "icon": {
       "$ref": "#/$defs/url",
-      "description": "PKG-30: a square image that stands for the catalog, loaded under the rules PKG-29 sets for screenshots."
+      "description": "A square image that stands for the catalog, loaded under the same rules as screenshots."
     },
     "updated_at": {
       "type": "string",
@@ -33,12 +33,12 @@
       "type": "string",
       "maxLength": 64,
       "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
-      "description": "NAME-1."
+      "description": "Plugin id, see https://nginxui.com/plugin/naming."
     },
     "platformKey": {
       "type": "string",
       "pattern": "^([a-z0-9]+-[a-z0-9]+|any)$",
-      "description": "NAME-9: <goos>-<goarch> as Go spells them, or any."
+      "description": "<goos>-<goarch> as Go spells them, or any."
     },
     "sha256": {
       "type": "string",
@@ -62,7 +62,7 @@
         "url": { "$ref": "#/$defs/url" },
         "dark_url": {
           "$ref": "#/$defs/url",
-          "description": "PKG-29: the same view in the dark theme; hosts show url when it is absent."
+          "description": "The same view in the dark theme; hosts show url when it is absent."
         },
         "caption": { "$ref": "#/$defs/localized" }
       }
@@ -78,7 +78,7 @@
         "author": { "type": "string" },
         "author_public_key": {
           "type": "string",
-          "description": "PKG-24: minisign public key (the base64 line of a .pub file) the author signs the packages of this entry with. A package downloaded from this entry and signed with it is community (SEC-18)."
+          "description": "Minisign public key (the base64 line of a .pub file) the author signs the packages of this entry with. A package downloaded from this entry and signed with it is community."
         },
         "homepage_url": { "$ref": "#/$defs/url" },
         "repository_url": { "$ref": "#/$defs/url" },
@@ -87,7 +87,7 @@
         "screenshots": {
           "type": "array",
           "maxItems": 8,
-          "description": "PKG-29: images of the plugin in use, in display order.",
+          "description": "Images of the plugin in use, in display order.",
           "items": { "$ref": "#/$defs/screenshot" }
         },
         "categories": { "type": "array", "items": { "type": "string" } },
@@ -95,11 +95,11 @@
         "license": { "type": "string" },
         "trust": {
           "enum": ["official", "verified", "community"],
-          "description": "PKG-24: informational label for listing and filtering. A host derives the level of a package from its signer (SEC-18) and never grants one from this member (SEC-19)."
+          "description": "Informational label for listing and filtering. A host derives the level of a package from its signer and never grants one from this member."
         },
         "stage": {
           "type": "string",
-          "description": "Maturity shown next to the plugin, e.g. production or beta. Display only, release channels are set per release (PKG-28)."
+          "description": "Maturity shown next to the plugin, e.g. production or beta. Display only, release channels are set per release."
         },
         "releases": {
           "type": "array",
@@ -111,12 +111,12 @@
       "type": "object",
       "required": ["url"],
       "additionalProperties": true,
-      "description": "PKG-14: one package of a release.",
+      "description": "One package of a release.",
       "properties": {
         "url": { "$ref": "#/$defs/url" },
         "sha256": {
           "$ref": "#/$defs/sha256",
-          "description": "SHA-256 of the package file, a check of the download (PKG-16)."
+          "description": "SHA-256 of the package file, a check of the download."
         }
       }
     },
@@ -152,7 +152,7 @@
           "type": "object",
           "propertyNames": { "$ref": "#/$defs/platformKey" },
           "additionalProperties": { "$ref": "#/$defs/download" },
-          "description": "PKG-14: per-platform packages, keyed by <goos>-<goarch> or any. A host picks downloads[platform], then downloads[any], then the portable package (PKG-15)."
+          "description": "Per-platform packages, keyed by <goos>-<goarch> or any. A host picks downloads[platform], then downloads[any], then the portable package."
         },
         "download_url": {
           "type": "string",
@@ -167,11 +167,11 @@
         "channel": {
           "type": "string",
           "enum": ["stable", "beta", "dev"],
-          "description": "PKG-28: the release channel, from the most to the least stable. Without it the host infers the channel from the version: no prerelease part is stable, a prerelease starting with alpha, dev, nightly, snapshot, canary or preview is dev, any other prerelease is beta."
+          "description": "The release channel, from the most to the least stable. Without it the host infers the channel from the version: no prerelease part is stable, a prerelease starting with alpha, dev, nightly, snapshot, canary or preview is dev, any other prerelease is beta."
         },
         "manifest": {
           "$ref": "plugin.schema.json",
-          "description": "PKG-17: snapshot of the release manifest, whose server.executables names every platform the release ships."
+          "description": "Snapshot of the release manifest, whose server.executables names every platform the release ships."
         }
       }
     }
