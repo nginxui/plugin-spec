@@ -170,6 +170,7 @@
       "type": "array",
       "items": { "type": "string" }
     },
+    "permission_reasons": { "$ref": "#/$defs/permissionReasons" },
     "dns01": { "$ref": "#/$defs/manifestDns01" },
     "http": { "$ref": "#/$defs/manifestHttp" },
     "settings_schema": {
@@ -205,8 +206,15 @@
       "description": "An empty or absent field falls back to the top level one.",
       "properties": {
         "name": { "type": "string" },
-        "description": { "type": "string" }
+        "description": { "type": "string" },
+        "permission_reasons": { "$ref": "#/$defs/permissionReasons" }
       }
+    },
+    "permissionReasons": {
+      "type": "object",
+      "description": "Why the plugin asks for a permission, keyed by an entry of permissions. The host shows it next to the permission before the person grants it. An empty reason is the same as none, and an empty translation falls back to the top level one.",
+      "propertyNames": { "$ref": "#/$defs/permission" },
+      "additionalProperties": { "type": "string", "maxLength": 300 }
     },
     "permission": {
       "type": "string",

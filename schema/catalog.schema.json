@@ -243,7 +243,8 @@
         "requires": { "$ref": "plugin.schema.json#/properties/requires" },
         "requires_capabilities": { "$ref": "plugin.schema.json#/properties/requires_capabilities" },
         "conflicts": { "$ref": "plugin.schema.json#/properties/conflicts" },
-        "network_hosts": { "$ref": "plugin.schema.json#/properties/network_hosts" }
+        "network_hosts": { "$ref": "plugin.schema.json#/properties/network_hosts" },
+        "permission_reasons": { "$ref": "plugin.schema.json#/properties/permission_reasons" }
       }
     }
   }
