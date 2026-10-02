@@ -204,3 +204,76 @@ func TestExampleManifestsDecode(t *testing.T) {
 		}
 	}
 }
+
+// TestCatalogSnapshotMembersAreManifestMembers asserts that every member of
+// the manifest snapshot in catalog.schema.json refers to the plugin.json
+// member of the same name.
+func TestCatalogSnapshotMembersAreManifestMembers(t *testing.T) {
+	var manifest, catalog node
+	for path, target := range map[string]*node{schemaPath: &manifest, "../../schema/catalog.schema.json": &catalog} {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := json.Unmarshal(data, target); err != nil {
+			t.Fatalf("%s: %v", path, err)
+		}
+	}
+
+	members := manifest["properties"].(node)
+	snapshot := catalog["$defs"].(node)["manifestSnapshot"].(node)
+	for name, schema := range snapshot["properties"].(node) {
+		if _, ok := members[name]; !ok {
+			t.Errorf("snapshot member %q is not a plugin.json member", name)
+		}
+		if ref := schema.(node)["$ref"]; ref != "plugin.schema.json#/properties/"+name {
+			t.Errorf("snapshot member %q refers to %v", name, ref)
+		}
+	}
+	for _, name := range snapshot["required"].([]any) {
+		if !slices.Contains(manifest["required"].([]any), name) {
+			t.Errorf("snapshot requires %v, which plugin.json does not", name)
+		}
+	}
+}
+
+// TestCatalogProvidesRefersToManifestDefinitions asserts that the members of
+// a provided dns01 provider refer to definitions plugin.schema.json has.
+func TestCatalogProvidesRefersToManifestDefinitions(t *testing.T) {
+	var manifest, catalog node
+	for path, target := range map[string]*node{schemaPath: &manifest, "../../schema/catalog.schema.json": &catalog} {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := json.Unmarshal(data, target); err != nil {
+			t.Fatalf("%s: %v", path, err)
+		}
+	}
+
+	defs := catalog["$defs"].(node)
+	members := map[string]any{"since of dns01": defs["providesDns01"].(node)["properties"].(node)["since"]}
+	for name, schema := range defs["providedDns01"].(node)["properties"].(node) {
+		members[name] = schema
+	}
+	for name, schema := range members {
+		ref, _ := schema.(node)["$ref"].(string)
+		pointer, ok := strings.CutPrefix(ref, "plugin.schema.json#/")
+		if !ok {
+			t.Errorf("provided dns01 member %q refers to %q, not into plugin.schema.json", name, ref)
+			continue
+		}
+		var at any = manifest
+		for _, part := range strings.Split(pointer, "/") {
+			object, isObject := at.(node)
+			if !isObject {
+				at = nil
+				break
+			}
+			at = object[part]
+		}
+		if at == nil {
+			t.Errorf("provided dns01 member %q refers to %q, which plugin.schema.json lacks", name, ref)
+		}
+	}
+}

@@ -101,9 +101,52 @@
           "type": "string",
           "description": "Maturity shown next to the plugin, e.g. production or beta. Display only, release channels are set per release."
         },
+        "provides": {
+          "type": "object",
+          "description": "What the plugin provides, read from the plugin.json of its newest release, so a host can find the plugin before installing it. Optional: a host that does not read it ignores it.",
+          "additionalProperties": true,
+          "properties": {
+            "dns01": { "$ref": "#/$defs/providesDns01" }
+          }
+        },
         "releases": {
           "type": "array",
           "items": { "$ref": "#/$defs/release" }
+        }
+      }
+    },
+    "providesDns01": {
+      "type": "object",
+      "description": "The dns01 providers of the plugin: the ones of its newest release, and the ones a newer release dropped while the newest stable release still has them. A host takes a provider as available in the release it would install when since <= that version < removed_in, comparing by semantic versioning.",
+      "required": ["since", "providers"],
+      "additionalProperties": false,
+      "properties": {
+        "since": {
+          "$ref": "plugin.schema.json#/properties/version",
+          "description": "The plugin version since which the plugin provides dns01, the earliest since of its providers. A provider without a since of its own is provided since this version."
+        },
+        "providers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/providedDns01" }
+        }
+      }
+    },
+    "providedDns01": {
+      "type": "object",
+      "description": "One dns01 provider of a plugin.",
+      "required": ["code", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "$ref": "plugin.schema.json#/$defs/dns01Provider/properties/code" },
+        "name": { "$ref": "plugin.schema.json#/$defs/dns01Provider/properties/name" },
+        "since": {
+          "$ref": "plugin.schema.json#/properties/version",
+          "description": "The plugin version since which the plugin provides it, the first release of the newest unbroken run of releases that declare it. Left out when it is the since of dns01."
+        },
+        "removed_in": {
+          "$ref": "plugin.schema.json#/properties/version",
+          "description": "The first release after that run, which no longer declares it. Left out while the newest release declares it."
         }
       }
     },
@@ -175,9 +218,32 @@
           "description": "The release channel, from the most to the least stable. Without it the host infers the channel from the version: no prerelease part is stable, a prerelease starting with alpha, dev, nightly, snapshot, canary or preview is dev, any other prerelease is beta."
         },
         "manifest": {
-          "$ref": "plugin.schema.json",
+          "$ref": "#/$defs/manifestSnapshot",
           "description": "Snapshot of the release manifest, whose server.executables names every platform the release ships."
         }
+      }
+    },
+    "manifestSnapshot": {
+      "type": "object",
+      "description": "The members of the plugin.json of a release a host reads before the install: what the plugin is, where it runs, what it asks for and what it needs. The capability blocks (dns01, http, notify and the others), webapp, content, events, cron and settings_schema stay in the package, whose plugin.json is the one the host installs, so the catalog does not repeat what changes from release to release. A host ignores any other member.",
+      "required": ["id", "name", "version", "api_version"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "$ref": "plugin.schema.json#/properties/id" },
+        "name": { "$ref": "plugin.schema.json#/properties/name" },
+        "version": { "$ref": "plugin.schema.json#/properties/version" },
+        "description": { "$ref": "plugin.schema.json#/properties/description" },
+        "i18n": { "$ref": "plugin.schema.json#/properties/i18n" },
+        "homepage_url": { "$ref": "plugin.schema.json#/properties/homepage_url" },
+        "api_version": { "$ref": "plugin.schema.json#/properties/api_version" },
+        "min_nginx_ui_version": { "$ref": "plugin.schema.json#/properties/min_nginx_ui_version" },
+        "server": { "$ref": "plugin.schema.json#/properties/server" },
+        "capabilities": { "$ref": "plugin.schema.json#/properties/capabilities" },
+        "permissions": { "$ref": "plugin.schema.json#/properties/permissions" },
+        "requires": { "$ref": "plugin.schema.json#/properties/requires" },
+        "requires_capabilities": { "$ref": "plugin.schema.json#/properties/requires_capabilities" },
+        "conflicts": { "$ref": "plugin.schema.json#/properties/conflicts" },
+        "network_hosts": { "$ref": "plugin.schema.json#/properties/network_hosts" }
       }
     }
   }

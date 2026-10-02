@@ -17,3 +17,9 @@ First public version, plugin API version 1 (`api_version = 1`):
 - Test vectors of the wire protocol and a Python example plugin.
 - A catalog release can carry its `notes` in Markdown next to
   `release_notes_url`.
+- The `manifest` of a catalog release is a snapshot of the members a host
+  reads before the install. The capability blocks stay in the package.
+- A catalog entry can list what the plugin `provides`: the dns01 providers of
+  its newest release with the plugin version since which it provides dns01,
+  a version of its own on each provider added later, and the version that
+  dropped a provider the newest stable release still has.
