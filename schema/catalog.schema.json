@@ -163,6 +163,11 @@
           "anyOf": [{ "$ref": "#/$defs/sha256" }, { "const": "" }]
         },
         "release_notes_url": { "$ref": "#/$defs/url" },
+        "notes": {
+          "type": "string",
+          "maxLength": 4096,
+          "description": "What changed in the release, in Markdown. A host sanitizes the rendered HTML and links to release_notes_url for the full notes."
+        },
         "yanked": { "type": "boolean" },
         "channel": {
           "type": "string",

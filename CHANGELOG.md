@@ -15,3 +15,5 @@ First public version, plugin API version 1 (`api_version = 1`):
 - JSON Schemas of `plugin.json`, the marketplace catalog and the partner
   keyring.
 - Test vectors of the wire protocol and a Python example plugin.
+- A catalog release can carry its `notes` in Markdown next to
+  `release_notes_url`.
