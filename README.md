@@ -83,7 +83,7 @@ and the SDKs:
 2. Update the schemas and add or update a vector under `vectors/v1/` when the
    wire format changes. `make check` must pass.
 3. Describe the change in the developer guide of the nginx-ui repository
-   (`docs/plugin/`) and add an entry to [CHANGELOG.md](CHANGELOG.md).
+   (`docs/plugin/`).
 
 A new optional field or a new capability keeps `api_version` 1. A change that
 breaks wire compatibility ships as `api_version` 2, with both versions
