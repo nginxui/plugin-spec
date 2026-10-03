@@ -44,6 +44,11 @@
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     },
+    "keyId": {
+      "type": "string",
+      "pattern": "^[0-9A-F]{16}$",
+      "description": "A minisign key id in upper case hex."
+    },
     "url": {
       "type": "string",
       "format": "uri",
@@ -100,6 +105,12 @@
         "trust": {
           "enum": ["official", "verified", "community"],
           "description": "Informational label for listing and filtering. A host derives the level of a package from its signer and never grants one from this member."
+        },
+        "revoked_signers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/keyId" },
+          "uniqueItems": true,
+          "description": "Ids of the signing keys the author withdrew. A package signed by one is unsigned, and the releases they signed are yanked."
         },
         "provides": {
           "type": "object",
@@ -212,6 +223,10 @@
           "description": "What changed in the release, in Markdown. A host sanitizes the rendered HTML and links to release_notes_url for the full notes."
         },
         "yanked": { "type": "boolean" },
+        "signer": {
+          "$ref": "#/$defs/keyId",
+          "description": "Id of the key that signed plugin.sums in the packages of the release."
+        },
         "channel": {
           "type": "string",
           "enum": ["stable", "beta", "dev"],
