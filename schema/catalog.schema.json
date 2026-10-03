@@ -90,7 +90,11 @@
           "description": "Images of the plugin in use, in display order.",
           "items": { "$ref": "#/$defs/screenshot" }
         },
-        "categories": { "type": "array", "items": { "type": "string" } },
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Lowercase category ids for filtering, such as certificates or logs. A host translates the ids it knows and shows any other id as it is, so a catalog may add categories."
+        },
         "capabilities": { "type": "array", "items": { "type": "string" } },
         "license": { "type": "string" },
         "trust": {
