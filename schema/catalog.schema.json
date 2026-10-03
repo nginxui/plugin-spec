@@ -97,10 +97,6 @@
           "enum": ["official", "verified", "community"],
           "description": "Informational label for listing and filtering. A host derives the level of a package from its signer and never grants one from this member."
         },
-        "stage": {
-          "type": "string",
-          "description": "Maturity shown next to the plugin, e.g. production or beta. Display only, release channels are set per release."
-        },
         "provides": {
           "type": "object",
           "description": "What the plugin provides, read from the plugin.json of its newest release, so a host can find the plugin before installing it. Optional: a host that does not read it ignores it.",
