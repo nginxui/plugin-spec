@@ -171,6 +171,12 @@
       "items": { "type": "string" }
     },
     "permission_reasons": { "$ref": "#/$defs/permissionReasons" },
+    "screenshots": {
+      "type": "array",
+      "maxItems": 8,
+      "description": "Images of the plugin in use for catalog listings, in display order. PNG, JPEG or WebP, about 16:10 at 1280 to 1920 pixels wide.",
+      "items": { "$ref": "#/$defs/manifestScreenshot" }
+    },
     "dns01": { "$ref": "#/$defs/manifestDns01" },
     "http": { "$ref": "#/$defs/manifestHttp" },
     "settings_schema": {
@@ -207,8 +213,35 @@
       "properties": {
         "name": { "type": "string" },
         "description": { "type": "string" },
-        "permission_reasons": { "$ref": "#/$defs/permissionReasons" }
+        "permission_reasons": { "$ref": "#/$defs/permissionReasons" },
+        "screenshot_captions": {
+          "type": "object",
+          "description": "Translations of the screenshot captions, keyed by screenshot id.",
+          "propertyNames": { "$ref": "#/$defs/screenshotId" },
+          "additionalProperties": { "type": "string", "maxLength": 200 }
+        }
       }
+    },
+    "manifestScreenshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path"],
+      "description": "Paths are relative to the root of the plugin repository at the release tag, not to the package, so the images stay out of the package.",
+      "properties": {
+        "id": { "$ref": "#/$defs/screenshotId" },
+        "path": { "$ref": "#/$defs/screenshotPath" },
+        "dark_path": { "$ref": "#/$defs/screenshotPath", "description": "The same view in the dark theme, at the size of path." },
+        "caption": { "type": "string", "maxLength": 200 }
+      }
+    },
+    "screenshotId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,31}$",
+      "description": "Names a screenshot within the manifest, unique among its screenshots."
+    },
+    "screenshotPath": {
+      "allOf": [{ "$ref": "#/$defs/safeRelativePath" }],
+      "pattern": "\\.(png|jpe?g|webp)$"
     },
     "permissionReasons": {
       "type": "object",

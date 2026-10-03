@@ -244,7 +244,11 @@
         "requires_capabilities": { "$ref": "plugin.schema.json#/properties/requires_capabilities" },
         "conflicts": { "$ref": "plugin.schema.json#/properties/conflicts" },
         "network_hosts": { "$ref": "plugin.schema.json#/properties/network_hosts" },
-        "permission_reasons": { "$ref": "plugin.schema.json#/properties/permission_reasons" }
+        "permission_reasons": { "$ref": "plugin.schema.json#/properties/permission_reasons" },
+        "screenshots": {
+          "$ref": "plugin.schema.json#/properties/screenshots",
+          "description": "The screenshots of the release, which the catalog lists the entry with. A host reads the screenshots of the entry instead."
+        }
       }
     }
   }

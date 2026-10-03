@@ -79,6 +79,21 @@ message Manifest {
   // and shown next to it before the person grants it. Optional per
   // permission.
   map<string, string> permission_reasons = 32;
+  // Images of the plugin in use for catalog listings, in display order.
+  repeated ManifestScreenshot screenshots = 33;
+}
+
+// ManifestScreenshot is one image of a catalog listing. The paths are
+// relative to the root of the plugin repository at the release tag, not to
+// the package, so the images stay out of the package.
+message ManifestScreenshot {
+  // Names the screenshot within the manifest, e.g. "dashboard".
+  string id = 1;
+  string path = 2;
+  // The same view in the dark theme, at the size of path.
+  string dark_path = 3;
+  // English caption. ManifestI18n.screenshot_captions translates it.
+  string caption = 4;
 }
 
 // ManifestI18n translates the display fields of a manifest into one
@@ -88,6 +103,8 @@ message ManifestI18n {
   string description = 2;
   // Translations of permission_reasons, keyed the same way.
   map<string, string> permission_reasons = 3;
+  // Translations of the screenshot captions, keyed by screenshot id.
+  map<string, string> screenshot_captions = 4;
 }
 
 // ManifestServer describes how to start the plugin process.
