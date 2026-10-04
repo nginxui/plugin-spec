@@ -95,6 +95,11 @@
           "description": "Images of the plugin in use, in display order.",
           "items": { "$ref": "#/$defs/screenshot" }
         },
+        "permission_reasons": {
+          "type": "object",
+          "description": "Translations of the notes that explain each permission, keyed by permission and then by host locale code. They come from the store document of the plugin and win over the translations in the manifest of a release; English stays in that manifest. Optional: a host that does not read it shows the manifest's.",
+          "additionalProperties": { "type": "object", "additionalProperties": { "type": "string", "maxLength": 300 } }
+        },
         "categories": {
           "type": "array",
           "items": { "type": "string" },
