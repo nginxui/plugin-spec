@@ -203,8 +203,8 @@
     },
     "locale": {
       "type": "string",
-      "enum": ["en", "zh_CN", "zh_TW", "fr_FR", "es", "de_DE", "ru_RU", "vi_VN", "ko_KR", "tr_TR", "ar", "uk_UA", "ja_JP", "pt_PT"],
-      "description": "A language the reference host translates its interface into, see https://nginxui.com/plugin/capabilities/content."
+      "pattern": "^[a-z]{2,3}(_[A-Z]{2})?$",
+      "description": "A language code of the form the reference host uses, such as zh_CN, ja_JP or es. A host shows the languages its interface has and falls back to the top level text for the others, so a plugin can carry a language before every host has it. See https://nginxui.com/plugin/manifest#translations."
     },
     "manifestI18n": {
       "type": "object",
