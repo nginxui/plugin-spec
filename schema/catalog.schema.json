@@ -106,6 +106,16 @@
           "enum": ["official", "verified", "community"],
           "description": "Informational label for listing and filtering. A host derives the level of a package from its signer and never grants one from this member."
         },
+        "commercial": {
+          "type": "object",
+          "description": "Present on a commercial partner plugin: its price text by language, where to buy it, trial days and license kind. Hosts show a Commercial badge with these; payment and license checks are the vendor's and the plugin's.",
+          "properties": {
+            "pricing": { "type": "object", "additionalProperties": { "type": "string" } },
+            "purchase_url": { "type": "string", "format": "uri", "pattern": "^https://" },
+            "trial_days": { "type": "integer", "minimum": 0 },
+            "license": { "type": "string" }
+          }
+        },
         "revoked_signers": {
           "type": "array",
           "items": { "$ref": "#/$defs/keyId" },
