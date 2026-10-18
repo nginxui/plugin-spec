@@ -26,9 +26,38 @@
     "plugins": {
       "type": "array",
       "items": { "$ref": "#/$defs/entry" }
+    },
+    "delisted": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/delisted" },
+      "description": "Plugins the catalog listed and took down. A host tells the users of an installed copy, and warns about it when its version or the key that signed it is among the withdrawn ones. An id that a source still lists is not delisted."
     }
   },
   "$defs": {
+    "delisted": {
+      "type": "object",
+      "required": ["id", "delisted_at"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "$ref": "#/$defs/pluginId" },
+        "reason": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Why the plugin was taken down, as the maintainers wrote it."
+        },
+        "delisted_at": { "type": "string", "format": "date" },
+        "yanked": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Versions the entry had withdrawn when it was taken down."
+        },
+        "revoked_signers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/keyId" },
+          "description": "Signing keys the entry had revoked when it was taken down."
+        }
+      }
+    },
     "pluginId": {
       "type": "string",
       "maxLength": 64,
