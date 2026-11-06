@@ -95,7 +95,7 @@ supported side by side until the old one is retired.
 * [plugin-sdk-go](https://github.com/nginxui/plugin-sdk-go): Go SDK for server side plugins
 * [plugin-sdk-rust](https://github.com/nginxui/plugin-sdk-rust): Rust SDK for server side plugins
 * [plugin-sdk-web](https://github.com/nginxui/plugin-sdk-web): TypeScript SDK for browser plugin bundles
-* [plugins](https://github.com/nginxui/plugins): the official catalog, served at plugins.nginxui.com
+* [Official catalog](https://nginxui.com/plugin/official-catalog): served at plugins.nginxui.com, plugins are submitted through the Developer Center at portal.nginxui.com
 * [plugin-dns01](https://github.com/nginxui/plugin-dns01): the official `dns01` plugin
 
 ## License
