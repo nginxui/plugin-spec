@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"sort"
 	"strings"
@@ -274,6 +275,51 @@ func TestCatalogProvidesRefersToManifestDefinitions(t *testing.T) {
 		}
 		if at == nil {
 			t.Errorf("provided dns01 member %q refers to %q, which plugin.schema.json lacks", name, ref)
+		}
+	}
+}
+
+// TestSchemaAcceptsHostProtoPermissions asserts that the permission
+// definition of plugin.schema.json accepts every permission a host method of
+// host.proto names, so that a manifest asking for one passes the catalog
+// checks.
+func TestSchemaAcceptsHostProtoPermissions(t *testing.T) {
+	data, err := os.ReadFile(schemaPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest node
+	if err = json.Unmarshal(data, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	var names []any
+	var patterns []*regexp.Regexp
+	for _, branch := range manifest["$defs"].(node)["permission"].(node)["anyOf"].([]any) {
+		if values, ok := branch.(node)["enum"].([]any); ok {
+			names = append(names, values...)
+		}
+		if pattern, ok := branch.(node)["pattern"].(string); ok {
+			patterns = append(patterns, regexp.MustCompile(pattern))
+		}
+	}
+
+	proto, err := os.ReadFile("../../proto/nginxui/plugin/v1/host.proto")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A comment may wrap between the word Permission and the quoted name.
+	mentions := regexp.MustCompile(`Permission\s*(?://\s*)?"([^"]+)"`).FindAllSubmatch(proto, -1)
+	if len(mentions) == 0 {
+		t.Fatal("host.proto names no permission")
+	}
+	for _, mention := range mentions {
+		permission := strings.ReplaceAll(string(mention[1]), "<kind>", "dns")
+		accepted := slices.Contains(names, any(permission))
+		for _, pattern := range patterns {
+			accepted = accepted || pattern.MatchString(permission)
+		}
+		if !accepted {
+			t.Errorf("host.proto names permission %q, which plugin.schema.json rejects", permission)
 		}
 	}
 }
