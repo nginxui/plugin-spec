@@ -252,7 +252,7 @@
     "permission": {
       "type": "string",
       "anyOf": [
-        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api", "mcp", "cert.deploy", "log.read", "log.files"] },
+        { "enum": ["kv", "network", "cron", "notify", "metrics.read", "core_api", "mcp", "cert.deploy", "log.read", "log.files", "nginx.snippet", "nginx.config.read", "sites.read", "certs.read"] },
         { "pattern": "^credentials\\.read:.+$" }
       ]
     },
