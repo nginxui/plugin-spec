@@ -81,6 +81,10 @@ message Manifest {
   map<string, string> permission_reasons = 32;
   // Images of the plugin in use for catalog listings, in display order.
   repeated ManifestScreenshot screenshots = 33;
+  // Who the plugin is by. Informational: the catalog lists a community
+  // plugin by the GitHub owner of its repository, and the submission checks
+  // warn when this differs.
+  string author = 34;
 }
 
 // ManifestScreenshot is one image of a catalog listing. The paths are

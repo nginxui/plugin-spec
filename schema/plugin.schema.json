@@ -121,6 +121,12 @@
       "additionalProperties": { "$ref": "#/$defs/manifestI18n" },
       "description": "Translations of name and description keyed by host locale code."
     },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Who the plugin is by. Informational: the catalog lists a community plugin by the GitHub owner of its repository (https://nginxui.com/plugin/manifest), so set it to that login."
+    },
     "homepage_url": { "type": "string", "format": "uri" },
     "icon_path": { "$ref": "#/$defs/safeRelativePath" },
     "api_version": {

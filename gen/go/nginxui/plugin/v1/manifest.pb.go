@@ -94,7 +94,11 @@ type Manifest struct {
 	// permission.
 	PermissionReasons map[string]string `protobuf:"bytes,32,rep,name=permission_reasons,json=permissionReasons,proto3" json:"permission_reasons,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// Images of the plugin in use for catalog listings, in display order.
-	Screenshots   []*ManifestScreenshot `protobuf:"bytes,33,rep,name=screenshots,proto3" json:"screenshots,omitempty"`
+	Screenshots []*ManifestScreenshot `protobuf:"bytes,33,rep,name=screenshots,proto3" json:"screenshots,omitempty"`
+	// Who the plugin is by. Informational: the catalog lists a community
+	// plugin by the GitHub owner of its repository, and the submission checks
+	// warn when this differs.
+	Author        string `protobuf:"bytes,34,opt,name=author,proto3" json:"author,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -358,6 +362,13 @@ func (x *Manifest) GetScreenshots() []*ManifestScreenshot {
 		return x.Screenshots
 	}
 	return nil
+}
+
+func (x *Manifest) GetAuthor() string {
+	if x != nil {
+		return x.Author
+	}
+	return ""
 }
 
 // ManifestScreenshot is one image of a catalog listing. The paths are
@@ -2641,7 +2652,7 @@ var File_nginxui_plugin_v1_manifest_proto protoreflect.FileDescriptor
 
 const file_nginxui_plugin_v1_manifest_proto_rawDesc = "" +
 	"\n" +
-	" nginxui/plugin/v1/manifest.proto\x12\x11nginxui.plugin.v1\x1a\x1cgoogle/protobuf/struct.proto\"\xa4\x0e\n" +
+	" nginxui/plugin/v1/manifest.proto\x12\x11nginxui.plugin.v1\x1a\x1cgoogle/protobuf/struct.proto\"\xbc\x0e\n" +
 	"\bManifest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
@@ -2677,7 +2688,8 @@ const file_nginxui_plugin_v1_manifest_proto_rawDesc = "" +
 	"\x04i18n\x18\x1e \x03(\v2%.nginxui.plugin.v1.Manifest.I18nEntryR\x04i18n\x12\x1c\n" +
 	"\tconflicts\x18\x1f \x03(\tR\tconflicts\x12a\n" +
 	"\x12permission_reasons\x18  \x03(\v22.nginxui.plugin.v1.Manifest.PermissionReasonsEntryR\x11permissionReasons\x12G\n" +
-	"\vscreenshots\x18! \x03(\v2%.nginxui.plugin.v1.ManifestScreenshotR\vscreenshots\x1aX\n" +
+	"\vscreenshots\x18! \x03(\v2%.nginxui.plugin.v1.ManifestScreenshotR\vscreenshots\x12\x16\n" +
+	"\x06author\x18\" \x01(\tR\x06author\x1aX\n" +
 	"\tI18nEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
 	"\x05value\x18\x02 \x01(\v2\x1f.nginxui.plugin.v1.ManifestI18nR\x05value:\x028\x01\x1aD\n" +
